@@ -503,6 +503,30 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .detail-loading p { color: hsl(var(--ink-soft)); font-size: 12px; margin-top: 24px; }
 @keyframes panel-pulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
 .committee-footer { max-width: 1380px; margin: 0 auto; padding-left: clamp(20px, 5vw, 76px); padding-right: clamp(20px, 5vw, 76px); }
+.committee-user { display: flex; flex-direction: column; align-items: end; line-height: 1.15; }
+.committee-user strong { color: hsl(var(--surface)); font-size: 12px; }
+.committee-user small { color: hsl(var(--surface) / .58); font-size: 10px; margin-top: 4px; }
+.logout-button { border: 0; border-bottom: 1px solid hsl(var(--surface) / .35); background: transparent; color: hsl(var(--surface) / .78); padding: 0 0 3px; font-size: 12px; }
+.logout-button:hover { color: hsl(var(--saffron)); border-color: hsl(var(--saffron)); }
+.committee-auth-shell { min-height: 100dvh; display: flex; flex-direction: column; }
+.committee-auth-main { flex: 1; display: grid; place-items: center; position: relative; padding: 65px 20px; overflow: hidden; }
+.committee-auth-main::before { content: ''; position: absolute; width: 450px; height: 450px; border: 1px solid hsl(var(--teal) / .10); border-radius: 50%; transform: translate(34%, -12%); }
+.committee-auth-card { width: min(100%, 440px); position: relative; background: hsl(var(--surface)); border: 1px solid hsl(var(--line)); border-radius: 18px; padding: 38px clamp(24px, 6vw, 50px) 34px; box-shadow: var(--shadow-card); }
+.committee-auth-card h1 { font: 700 clamp(34px, 5vw, 48px)/1 var(--app-font-serif); letter-spacing: -.04em; margin: 12px 0 16px; }
+.committee-auth-card h1 em { color: hsl(var(--coral)); font-style: normal; }
+.auth-lede { color: hsl(var(--ink-soft)); font-size: 13px; line-height: 1.7; margin: 0 0 28px; }
+.committee-login-form { display: grid; gap: 8px; }
+.committee-login-form label { font: 600 11px var(--app-font-mono); color: hsl(var(--foreground)); margin-top: 8px; }
+.committee-login-form input { width: 100%; height: 46px; border: 1px solid hsl(var(--line)); border-radius: 8px; background: hsl(var(--background)); color: hsl(var(--foreground)); padding: 0 13px; outline: none; font-size: 13px; }
+.committee-login-form input:focus { border-color: hsl(var(--teal)); box-shadow: 0 0 0 3px hsl(var(--teal) / .12); }
+.auth-submit { height: 46px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; border: 0; border-radius: 8px; background: hsl(var(--teal)); color: hsl(var(--surface)); font-weight: 700; font-size: 12px; transition: background .2s, transform .2s; }
+.auth-submit:hover { background: hsl(var(--teal-deep)); transform: translateY(-1px); }
+.auth-submit:disabled { opacity: .65; transform: none; }
+.auth-error { color: hsl(var(--danger)); background: hsl(10 70% 92%); border-radius: 7px; padding: 10px 12px; margin: 9px 0 0; font-size: 12px; line-height: 1.4; }
+.auth-note { text-align: center; color: hsl(var(--ink-soft)); font-size: 11px; line-height: 1.5; margin: 23px 0 0; }
+.committee-auth-ornament { position: absolute; top: 9%; left: calc(50% + min(290px, 30vw)); width: 92px; height: 92px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid hsl(var(--saffron) / .55); color: hsl(var(--coral)); border-radius: 50%; transform: rotate(-12deg); }
+.committee-auth-ornament span { font: 600 15px var(--app-font-serif); letter-spacing: .08em; }
+.committee-auth-ornament small { font: 9px var(--app-font-mono); margin-top: 5px; }
 
 @media (max-width: 980px) {
   .committee-workspace { grid-template-columns: 1fr; }
@@ -532,4 +556,10 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
   .row-chevron { grid-column: 3; grid-row: 1 / span 2; }
   .detail-scroll { padding: 20px 16px; }
   .detail-heading { flex-direction: column; }
+  .committee-topbar-actions { gap: 12px; }
+  .committee-user { display: none; }
+  .committee-auth-main { padding: 40px 16px; }
+  .committee-auth-ornament { top: 4%; left: auto; right: 8%; width: 68px; height: 68px; }
+  .committee-auth-ornament span { font-size: 11px; }
+  .committee-auth-ornament small { font-size: 7px; }
 }

@@ -13,10 +13,12 @@ export type StudentApplicationInputJenjang = typeof StudentApplicationInputJenja
 
 
 export const StudentApplicationInputJenjang = {
-  TK: 'TK',
+  Playgroup: 'Playgroup',
+  Daycare: 'Daycare',
+  'TK-A': 'TK-A',
+  'TK-B': 'TK-B',
   SD: 'SD',
   SMP: 'SMP',
-  SMA: 'SMA',
 } as const;
 
 export type StudentApplicationInputJenisKelamin = typeof StudentApplicationInputJenisKelamin[keyof typeof StudentApplicationInputJenisKelamin];
@@ -141,9 +143,28 @@ export interface ApplicationStatusResponse {
   status: string;
 }
 
+export interface CommitteeUser {
+  username: string;
+  label: string;
+  allowedJenjang: string[];
+}
+
+export interface CommitteeAuthResponse {
+  success: boolean;
+  user: CommitteeUser;
+}
+
 export interface ErrorResponse {
   error: string;
 }
+
+export type CommitteeMe200 = {
+  user: CommitteeUser;
+};
+
+export type CommitteeLogout200 = {
+  success: boolean;
+};
 
 export type ListApplicationsParams = {
 /**
@@ -159,10 +180,12 @@ export type ListApplicationsJenjang = typeof ListApplicationsJenjang[keyof typeo
 
 export const ListApplicationsJenjang = {
   Semua: 'Semua',
-  TK: 'TK',
+  Playgroup: 'Playgroup',
+  Daycare: 'Daycare',
+  'TK-A': 'TK-A',
+  'TK-B': 'TK-B',
   SD: 'SD',
   SMP: 'SMP',
-  SMA: 'SMA',
 } as const;
 
 export type ListApplicationsStatus = typeof ListApplicationsStatus[keyof typeof ListApplicationsStatus];

@@ -1,9 +1,9 @@
 import { Router } from "express";
 import path from "node:path";
 import { getPendaftar, listPendaftar, updatePendaftarStatus, uploadsDirectory } from "../lib/spmb-database";
+import { canAccessJenjang, committeeStatuses, requireCommitteeAuth } from "../middlewares/committee-auth";
 
 const router = Router();
-const statuses = ["Baru", "Diverifikasi", "Perlu Perbaikan", "Diterima", "Ditolak"] as const;
 const documentFields = {
   foto_3x4_path: { field: "foto_3x4", label: "Pas foto 3×4" },
   akte_lahir_path: { field: "akte_lahir", label: "Akta kelahiran" },
@@ -11,6 +11,8 @@ const documentFields = {
   ktp_orangtua_path: { field: "ktp_orangtua", label: "KTP orang tua" },
   bukti_bayar_path: { field: "bukti_bayar", label: "Bukti pembayaran" },
 } as const;
+
+router.use("/applications", requireCommitteeAuth);
 
 function parseId(value: string) {
   const id = Number(value);
@@ -23,6 +25,7 @@ router.get("/applications", async (request, response) => {
       search: typeof request.query.q === "string" ? request.query.q : undefined,
       jenjang: typeof request.query.jenjang === "string" ? request.query.jenjang : undefined,
       status: typeof request.query.status === "string" ? request.query.status : undefined,
+      allowedJenjang: request.committeeAccount?.allowedJenjang,
     });
     return response.json(result);
   } catch (error) {
@@ -39,6 +42,9 @@ router.get("/applications/:id/files/:field", async (request, response) => {
   }
 
   const application = await getPendaftar(id);
+  if (!application || !request.committeeAccount || !canAccessJenjang(request.committeeAccount, application.jenjang)) {
+    return response.status(404).json({ error: "Berkas tidak ditemukan." });
+  }
   const column = Object.entries(documentFields).find(([, item]) => item.field === field)?.[0] as keyof typeof documentFields | undefined;
   const relativePath = column && application?.[column];
   if (!relativePath || typeof relativePath !== "string") {
@@ -64,7 +70,9 @@ router.get("/applications/:id", async (request, response) => {
 
   try {
     const application = await getPendaftar(id);
-    if (!application) return response.status(404).json({ error: "Pendaftar tidak ditemukan." });
+    if (!application || !request.committeeAccount || !canAccessJenjang(request.committeeAccount, application.jenjang)) {
+      return response.status(404).json({ error: "Pendaftar tidak ditemukan." });
+    }
 
     const files = Object.entries(documentFields).map(([column, item]) => ({
       field: item.field,
@@ -83,11 +91,15 @@ router.get("/applications/:id", async (request, response) => {
 router.patch("/applications/:id/status", async (request, response) => {
   const id = parseId(request.params.id);
   const status = typeof request.body?.status === "string" ? request.body.status : "";
-  if (!id || !statuses.includes(status as (typeof statuses)[number])) {
+  if (!id || !committeeStatuses.includes(status as (typeof committeeStatuses)[number])) {
     return response.status(400).json({ error: "Status pendaftar tidak valid." });
   }
 
   try {
+    const application = await getPendaftar(id);
+    if (!application || !request.committeeAccount || !canAccessJenjang(request.committeeAccount, application.jenjang)) {
+      return response.status(404).json({ error: "Pendaftar tidak ditemukan." });
+    }
     const updated = await updatePendaftarStatus(id, status);
     if (!updated) return response.status(404).json({ error: "Pendaftar tidak ditemukan." });
     request.log.info({ applicationId: id, status }, "SPMB application status updated");

@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import cookieParser from "cookie-parser";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -26,6 +27,10 @@ app.use(
   }),
 );
 app.use(cors());
+if (!process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET environment variable is required for committee authentication.");
+}
+app.use(cookieParser(process.env.SESSION_SECRET));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

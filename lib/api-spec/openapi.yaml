@@ -51,12 +51,53 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /auth/me:
+    get:
+      operationId: committeeMe
+      tags: [applications]
+      summary: Get the signed-in committee user
+      security:
+        - committeeSession: []
+      responses:
+        "200":
+          description: Current committee user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/CommitteeUser"
+                required: [user]
+        "401":
+          description: Not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/logout:
+    post:
+      operationId: committeeLogout
+      tags: [applications]
+      summary: Sign out of the committee panel
+      responses:
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                required: [success]
   /applications:
     get:
       operationId: listApplications
       tags: [applications]
       summary: List SPMB applications
       description: Returns application summaries for the committee panel.
+      security:
+        - committeeSession: []
       parameters:
         - name: q
           in: query
@@ -66,7 +107,7 @@ paths:
         - name: jenjang
           in: query
           required: false
-          schema: { type: string, enum: [Semua, TK, SD, SMP, SMA] }
+          schema: { type: string, enum: [Semua, Playgroup, Daycare, TK-A, TK-B, SD, SMP] }
         - name: status
           in: query
           required: false
@@ -83,6 +124,8 @@ paths:
       operationId: getApplication
       tags: [applications]
       summary: Get an application detail
+      security:
+        - committeeSession: []
       parameters:
         - name: id
           in: path
@@ -106,6 +149,8 @@ paths:
       operationId: updateApplicationStatus
       tags: [applications]
       summary: Update application status
+      security:
+        - committeeSession: []
       requestBody:
         required: true
         content:
@@ -135,6 +180,8 @@ paths:
       operationId: getApplicationFile
       tags: [applications]
       summary: Open an uploaded application document
+      security:
+        - committeeSession: []
       parameters:
         - name: id
           in: path
@@ -158,6 +205,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 components:
+  securitySchemes:
+    committeeSession:
+      type: apiKey
+      in: cookie
+      name: spmb_committee_session
   schemas:
     HealthStatus:
       type: object
@@ -210,7 +262,7 @@ components:
         - nama_wali
         - hubungan_wali
       properties:
-        jenjang: { type: string, enum: [TK, SD, SMP, SMA] }
+        jenjang: { type: string, enum: [Playgroup, Daycare, TK-A, TK-B, SD, SMP] }
         nama_calon: { type: string, minLength: 2 }
         nama_panggilan: { type: string, minLength: 1 }
         jenis_kelamin: { type: string, enum: [Laki-laki, Perempuan] }
@@ -316,6 +368,22 @@ components:
         id: { type: number }
         status: { type: string }
       required: [success, message, id, status]
+    CommitteeUser:
+      type: object
+      properties:
+        username: { type: string }
+        label: { type: string }
+        allowedJenjang:
+          type: array
+          items: { type: string }
+      required: [username, label, allowedJenjang]
+    CommitteeAuthResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        user:
+          $ref: "#/components/schemas/CommitteeUser"
+      required: [success, user]
     ErrorResponse:
       type: object
       properties:

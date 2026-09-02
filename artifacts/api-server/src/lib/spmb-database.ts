@@ -5,6 +5,7 @@ import {
   desc,
   eq,
   ilike,
+  inArray,
   or,
   sql,
 } from "drizzle-orm";
@@ -36,6 +37,7 @@ export async function listPendaftar(filters: {
   search?: string;
   jenjang?: string;
   status?: string;
+  allowedJenjang?: readonly string[];
 }) {
   const conditions = [];
   const search = filters.search?.trim();
@@ -55,6 +57,10 @@ export async function listPendaftar(filters: {
 
   if (filters.status && filters.status !== "Semua") {
     conditions.push(eq(pendaftarTable.status, filters.status));
+  }
+
+  if (filters.allowedJenjang?.length) {
+    conditions.push(inArray(pendaftarTable.jenjang, [...filters.allowedJenjang]));
   }
 
   const where = conditions.length ? and(...conditions) : undefined;

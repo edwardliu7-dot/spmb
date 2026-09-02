@@ -27,7 +27,7 @@ export const submitApplicationBodyNamaCalonMin = 2;
 
 
 export const SubmitApplicationBody = zod.object({
-  "jenjang": zod.enum(['TK', 'SD', 'SMP', 'SMA']),
+  "jenjang": zod.enum(['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']),
   "nama_calon": zod.string().min(submitApplicationBodyNamaCalonMin),
   "nama_panggilan": zod.string().min(1),
   "jenis_kelamin": zod.enum(['Laki-laki', 'Perempuan']),
@@ -82,12 +82,32 @@ export const SubmitApplicationResponse = zod.object({
 
 
 /**
+ * @summary Get the signed-in committee user
+ */
+export const CommitteeMeResponse = zod.object({
+  "user": zod.object({
+  "username": zod.string(),
+  "label": zod.string(),
+  "allowedJenjang": zod.array(zod.string())
+})
+})
+
+
+/**
+ * @summary Sign out of the committee panel
+ */
+export const CommitteeLogoutResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
  * Returns application summaries for the committee panel.
  * @summary List SPMB applications
  */
 export const ListApplicationsQueryParams = zod.object({
   "q": zod.coerce.string().optional().describe('Search by applicant name or application number.'),
-  "jenjang": zod.enum(['Semua', 'TK', 'SD', 'SMP', 'SMA']).optional(),
+  "jenjang": zod.enum(['Semua', 'Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']).optional(),
   "status": zod.enum(['Semua', 'Baru', 'Diverifikasi', 'Perlu Perbaikan', 'Diterima', 'Ditolak']).optional()
 })
 
@@ -126,7 +146,7 @@ export const GetApplicationResponse = zod.object({
   "status": zod.string(),
   "created_at": zod.string()
 }).and(zod.object({
-  "jenjang": zod.enum(['TK', 'SD', 'SMP', 'SMA']),
+  "jenjang": zod.enum(['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']),
   "nama_calon": zod.string().min(getApplicationResponseTwoNamaCalonMin),
   "nama_panggilan": zod.string().min(1),
   "jenis_kelamin": zod.enum(['Laki-laki', 'Perempuan']),

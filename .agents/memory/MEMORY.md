@@ -1,1 +1,2 @@
 - [SPMB runtime decisions](spmb-runtime.md) — PostgreSQL uses the secure runtime-managed DATABASE_URL; uploads persist on disk with paths in the database.
+- [Committee access](committee-access.md) — panel sessions use signed HTTP-only cookies and server-enforced jenjang scopes for the four fixed accounts.

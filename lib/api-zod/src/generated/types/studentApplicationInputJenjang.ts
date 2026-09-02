@@ -10,8 +10,10 @@ export type StudentApplicationInputJenjang = typeof StudentApplicationInputJenja
 
 
 export const StudentApplicationInputJenjang = {
-  TK: 'TK',
+  Playgroup: 'Playgroup',
+  Daycare: 'Daycare',
+  'TK-A': 'TK-A',
+  'TK-B': 'TK-B',
   SD: 'SD',
   SMP: 'SMP',
-  SMA: 'SMA',
 } as const;

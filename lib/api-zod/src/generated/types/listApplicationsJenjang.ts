@@ -11,8 +11,10 @@ export type ListApplicationsJenjang = typeof ListApplicationsJenjang[keyof typeo
 
 export const ListApplicationsJenjang = {
   Semua: 'Semua',
-  TK: 'TK',
+  Playgroup: 'Playgroup',
+  Daycare: 'Daycare',
+  'TK-A': 'TK-A',
+  'TK-B': 'TK-B',
   SD: 'SD',
   SMP: 'SMP',
-  SMA: 'SMA',
 } as const;

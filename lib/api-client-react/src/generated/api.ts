@@ -24,6 +24,8 @@ import type {
   ApplicationListResponse,
   ApplicationStatusResponse,
   ApplicationStatusUpdate,
+  CommitteeLogout200,
+  CommitteeMe200,
   ErrorResponse,
   HealthStatus,
   ListApplicationsParams,
@@ -262,6 +264,154 @@ export const useSubmitApplication = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getSubmitApplicationMutationOptions(options));
+    }
+
+export const getCommitteeMeUrl = () => {
+
+
+
+
+  return `/api/auth/me`
+}
+
+/**
+ * @summary Get the signed-in committee user
+ */
+export const committeeMe = async ( options?: Parameters<typeof customFetch>[1]): Promise<CommitteeMe200> => {
+
+  return customFetch<CommitteeMe200>(getCommitteeMeUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getCommitteeMeQueryKey = () => {
+    return [
+    `/api/auth/me`
+    ] as const;
+    }
+
+
+export const getCommitteeMeQueryOptions = <TData = Awaited<ReturnType<typeof committeeMe>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof committeeMe>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getCommitteeMeQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof committeeMe>>> = ({ signal }) => committeeMe({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof committeeMe>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type CommitteeMeQueryResult = NonNullable<Awaited<ReturnType<typeof committeeMe>>>
+export type CommitteeMeQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get the signed-in committee user
+ */
+
+export function useCommitteeMe<TData = Awaited<ReturnType<typeof committeeMe>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof committeeMe>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getCommitteeMeQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCommitteeLogoutUrl = () => {
+
+
+
+
+  return `/api/auth/logout`
+}
+
+/**
+ * @summary Sign out of the committee panel
+ */
+export const committeeLogout = async ( options?: Parameters<typeof customFetch>[1]): Promise<CommitteeLogout200> => {
+
+  return customFetch<CommitteeLogout200>(getCommitteeLogoutUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getCommitteeLogoutMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof committeeLogout>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof committeeLogout>>, TError,void, TContext> => {
+
+const mutationKey = ['committeeLogout'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof committeeLogout>>, void> = () => {
+
+
+          return  committeeLogout(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CommitteeLogoutMutationResult = NonNullable<Awaited<ReturnType<typeof committeeLogout>>>
+
+    export type CommitteeLogoutMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Sign out of the committee panel
+ */
+export const useCommitteeLogout = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof committeeLogout>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof committeeLogout>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getCommitteeLogoutMutationOptions(options));
     }
 
 export const getListApplicationsUrl = (params?: ListApplicationsParams,) => {

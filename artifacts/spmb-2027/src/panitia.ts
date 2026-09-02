@@ -18,10 +18,17 @@ type ApplicationDetail = ApplicationListItem & Record<string, unknown> & {
   files: ApplicationFile[];
 };
 
-const statuses = ["Baru", "Diverifikasi", "Perlu Perbaikan", "Diterima", "Ditolak"];
-const root = document.getElementById("root");
+type AuthUser = {
+  username: string;
+  label: string;
+  allowedJenjang: string[];
+};
 
-if (!root) throw new Error("Elemen root tidak ditemukan.");
+const statuses = ["Baru", "Diverifikasi", "Perlu Perbaikan", "Diterima", "Ditolak"];
+const rootElement = document.getElementById("root");
+
+if (!rootElement) throw new Error("Elemen root tidak ditemukan.");
+const root = rootElement;
 
 function escapeHtml(value: unknown): string {
   return String(value ?? "")
@@ -68,7 +75,62 @@ async function requestJSON<T>(url: string, options?: RequestInit): Promise<T> {
   return payload;
 }
 
-root.innerHTML = `
+function renderLogin(errorMessage = "") {
+  root.innerHTML = `
+    <div class="committee-auth-shell">
+      <header class="committee-topbar">
+        <a class="brand" href="/" aria-label="Kembali ke formulir SPMB">
+          <span class="brand-mark" aria-hidden="true">S</span>
+          <span class="brand-copy"><span class="brand-name">SPMB</span><span class="brand-sub">Ruang kerja panitia</span></span>
+        </a>
+        <a class="back-link" href="/">Kembali ke formulir</a>
+      </header>
+      <main class="committee-auth-main">
+        <div class="committee-auth-ornament" aria-hidden="true"><span>SPMB</span><small>2027 / 2028</small></div>
+        <section class="committee-auth-card">
+          <p class="eyebrow">Akses internal · panitia</p>
+          <h1>Selamat datang <em>kembali.</em></h1>
+          <p class="auth-lede">Masuk untuk meninjau dan mengelola data pendaftar sesuai tanggung jawab jenjang Anda.</p>
+          <form id="committee-login-form" class="committee-login-form">
+            <label for="committee-username">Username</label>
+            <input id="committee-username" name="username" type="text" autocomplete="username" placeholder="Masukkan username" required />
+            <label for="committee-password">Password</label>
+            <input id="committee-password" name="password" type="password" autocomplete="current-password" placeholder="Masukkan password" required />
+            ${errorMessage ? `<p class="auth-error" role="alert">${escapeHtml(errorMessage)}</p>` : ""}
+            <button type="submit" class="auth-submit">Masuk ke panel <span aria-hidden="true">→</span></button>
+          </form>
+          <p class="auth-note">Gunakan akun panitia yang telah diberikan oleh administrator.</p>
+        </section>
+      </main>
+      <footer class="footer committee-footer"><p>SPMB 2027/2028 · Panel panitia</p><span class="footer-code">INTERNAL / 01</span></footer>
+    </div>
+  `;
+
+  const form = document.getElementById("committee-login-form") as HTMLFormElement;
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const button = form.querySelector("button");
+    const username = (form.elements.namedItem("username") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+    if (button) {
+      button.disabled = true;
+      button.innerHTML = "Memeriksa…";
+    }
+    try {
+      const result = await requestJSON<{ user: AuthUser }>("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ username, password }),
+      });
+      renderDashboard(result.user);
+    } catch (error) {
+      renderLogin(error instanceof Error ? error.message : "Login belum berhasil.");
+    }
+  });
+}
+
+function renderDashboard(user: AuthUser) {
+  const allowedLevels = user.allowedJenjang;
+  root.innerHTML = `
   <div class="committee-shell">
     <header class="committee-topbar">
       <a class="brand" href="/" aria-label="Kembali ke formulir SPMB">
@@ -76,7 +138,8 @@ root.innerHTML = `
         <span class="brand-copy"><span class="brand-name">SPMB</span><span class="brand-sub">Ruang kerja panitia</span></span>
       </a>
       <div class="committee-topbar-actions">
-        <span class="committee-access"><span class="access-dot" aria-hidden="true"></span>Akses internal panitia</span>
+        <span class="committee-user"><strong>${escapeHtml(user.username)}</strong><small>${escapeHtml(user.label)}</small></span>
+        <button class="logout-button" id="logout-button" type="button">Keluar</button>
         <a class="back-link" href="/">Kembali ke formulir</a>
       </div>
     </header>
@@ -113,10 +176,7 @@ root.innerHTML = `
               <span class="sr-only">Filter jenjang</span>
               <select id="level-filter">
                 <option value="Semua">Semua jenjang</option>
-                <option value="TK">TK</option>
-                <option value="SD">SD</option>
-                <option value="SMP">SMP</option>
-                <option value="SMA">SMA</option>
+                ${allowedLevels.map((level) => `<option value="${escapeHtml(level)}">${escapeHtml(level)}</option>`).join("")}
               </select>
             </label>
             <label class="filter-field">
@@ -285,6 +345,23 @@ filterForm.addEventListener("submit", (event) => {
   void loadList();
 });
 
+document.getElementById("logout-button")?.addEventListener("click", async () => {
+  await requestJSON("/api/auth/logout", { method: "POST" }).catch(() => undefined);
+  renderLogin();
+});
+
 void loadList();
+}
+
+async function bootstrap() {
+  try {
+    const result = await requestJSON<{ user: AuthUser }>("/api/auth/me");
+    renderDashboard(result.user);
+  } catch {
+    renderLogin();
+  }
+}
+
+void bootstrap();
 
 export {};

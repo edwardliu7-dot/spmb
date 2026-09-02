@@ -60,7 +60,7 @@ function fileField(name: string, label: string, detail: string): string {
 }
 
 const studentFields = [
-  inputField('jenjang', 'Jenjang yang dituju', 'select', ['TK', 'SD', 'SMP', 'SMA']),
+  inputField('jenjang', 'Jenjang yang dituju', 'select', ['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']),
   inputField('nama_calon', 'Nama lengkap calon peserta didik'),
   inputField('nama_panggilan', 'Nama panggilan'),
   inputField('jenis_kelamin', 'Jenis kelamin', 'select', ['Laki-laki', 'Perempuan']),

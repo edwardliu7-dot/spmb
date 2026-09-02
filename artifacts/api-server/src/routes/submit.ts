@@ -3,6 +3,7 @@ import multer from "multer";
 import path from "node:path";
 import { unlink } from "node:fs/promises";
 import { uploadsDirectory, insertPendaftar } from "../lib/spmb-database";
+import { allJenjang } from "../middlewares/committee-auth";
 
 const router = Router();
 
@@ -115,7 +116,7 @@ router.post("/submit", uploadMiddleware, async (request, response) => {
   const email = getValue(request, "email");
   const jenjang = getValue(request, "jenjang");
   const jenisKelamin = getValue(request, "jenis_kelamin");
-  const validLevels = ["TK", "SD", "SMP", "SMA"];
+  const validLevels = allJenjang;
   const validGenders = ["Laki-laki", "Perempuan"];
 
   const numericMinimums: Record<string, number> = {
@@ -136,7 +137,7 @@ router.post("/submit", uploadMiddleware, async (request, response) => {
     invalidFields.length ||
     invalidNumbers.length ||
     missingFiles.length ||
-    !validLevels.includes(jenjang) ||
+    !(validLevels as readonly string[]).includes(jenjang) ||
     !validGenders.includes(jenisKelamin) ||
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   ) {
