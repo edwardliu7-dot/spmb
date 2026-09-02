@@ -3,8 +3,8 @@ name: SPMB runtime decisions
 description: Runtime constraints and implementation choices for the SPMB registration app.
 ---
 
-The SPMB app uses Node.js 24's built-in `node:sqlite` instead of a native SQLite npm addon. This keeps the requested SQLite backend runnable in the workspace without requiring native addon build approval.
+The SPMB app uses the workspace's runtime-managed `DATABASE_URL` for PostgreSQL through Drizzle ORM. Uploaded document bytes remain on the server filesystem and only relative paths are stored in PostgreSQL.
 
-**Why:** Native addon installation was blocked from running build scripts in this environment, while `node:sqlite` is available in the configured Node runtime.
+**Why:** The project now needs PostgreSQL-backed persistence and the workspace database credentials are supplied securely at runtime.
 
-**How to apply:** Keep the API server on Node.js 24+ and preserve the `uploads/` plus SQLite file layout when extending the registration flow.
+**How to apply:** Keep database access through `@workspace/db` and the runtime-managed connection; do not put database credentials in source files.

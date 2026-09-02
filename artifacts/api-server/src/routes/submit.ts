@@ -148,20 +148,60 @@ router.post("/submit", uploadMiddleware, async (request, response) => {
   }
 
   try {
-    const values = [
-      ...textFields.map((field) =>
-        numericFields.includes(field)
-          ? Number(getValue(request, field))
-          : getValue(request, field),
-      ),
-      ...documentFields.map((field) => {
-        const file = getUploadedFile(request, field);
-        return file ? path.relative(path.resolve(uploadsDirectory, ".."), file.path) : null;
-      }),
-    ];
+    const uploadedPath = (field: (typeof documentFields)[number]) => {
+      const file = getUploadedFile(request, field);
+      return file ? path.relative(path.resolve(uploadsDirectory, ".."), file.path) : null;
+    };
+    const values = {
+      jenjang,
+      nama_calon: getValue(request, "nama_calon"),
+      nama_panggilan: getValue(request, "nama_panggilan"),
+      jenis_kelamin: jenisKelamin,
+      tempat_lahir: getValue(request, "tempat_lahir"),
+      tanggal_lahir: getValue(request, "tanggal_lahir"),
+      nisn: getValue(request, "nisn"),
+      nik_anak: getValue(request, "nik_anak"),
+      alamat_domisili: getValue(request, "alamat_domisili"),
+      anak_ke: Number(getValue(request, "anak_ke")),
+      jumlah_saudara: Number(getValue(request, "jumlah_saudara")),
+      status_anak: getValue(request, "status_anak"),
+      agama: getValue(request, "agama"),
+      warga_negara: getValue(request, "warga_negara"),
+      tinggi_badan: Number(getValue(request, "tinggi_badan")),
+      berat_badan: Number(getValue(request, "berat_badan")),
+      riwayat_penyakit: getValue(request, "riwayat_penyakit"),
+      transportasi: getValue(request, "transportasi"),
+      jarak_sekolah: getValue(request, "jarak_sekolah"),
+      nama_sekolah_asal: getValue(request, "nama_sekolah_asal"),
+      tahun_lulus: Number(getValue(request, "tahun_lulus")),
+      alamat_sekolah_asal: getValue(request, "alamat_sekolah_asal"),
+      nomor_kk: getValue(request, "nomor_kk"),
+      nik_orangtua: getValue(request, "nik_orangtua"),
+      nomor_hp_orangtua: getValue(request, "nomor_hp_orangtua"),
+      email,
+      nama_ayah: getValue(request, "nama_ayah"),
+      ttl_ayah: getValue(request, "ttl_ayah"),
+      pendidikan_ayah: getValue(request, "pendidikan_ayah"),
+      pekerjaan_ayah: getValue(request, "pekerjaan_ayah"),
+      penghasilan_ayah: getValue(request, "penghasilan_ayah"),
+      instansi_jabatan_ayah: getValue(request, "instansi_jabatan_ayah"),
+      nama_ibu: getValue(request, "nama_ibu"),
+      ttl_ibu: getValue(request, "ttl_ibu"),
+      pendidikan_ibu: getValue(request, "pendidikan_ibu"),
+      pekerjaan_ibu: getValue(request, "pekerjaan_ibu"),
+      penghasilan_ibu: getValue(request, "penghasilan_ibu"),
+      instansi_jabatan_ibu: getValue(request, "instansi_jabatan_ibu"),
+      nama_wali: getValue(request, "nama_wali"),
+      hubungan_wali: getValue(request, "hubungan_wali"),
+      foto_3x4_path: uploadedPath("foto_3x4"),
+      akte_lahir_path: uploadedPath("akte_lahir"),
+      kartu_keluarga_path: uploadedPath("kartu_keluarga"),
+      ktp_orangtua_path: uploadedPath("ktp_orangtua"),
+      bukti_bayar_path: uploadedPath("bukti_bayar"),
+    };
 
-    const result = insertPendaftar.run(...values);
-    const id = Number(result.lastInsertRowid);
+    const result = await insertPendaftar(values);
+    const id = Number(result.id);
     request.log.info({ applicationId: id }, "SPMB application submitted");
 
     return response.status(201).json({

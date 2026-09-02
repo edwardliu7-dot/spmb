@@ -1,1 +1,1 @@
-- [SPMB runtime decisions](spmb-runtime.md) — Node 24 built-in SQLite avoids native addon build approval while preserving the requested local SQLite backend.
+- [SPMB runtime decisions](spmb-runtime.md) — PostgreSQL uses the secure runtime-managed DATABASE_URL; uploads persist on disk with paths in the database.
