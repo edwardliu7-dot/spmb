@@ -81,3 +81,133 @@ export const SubmitApplicationResponse = zod.object({
 })
 
 
+/**
+ * Returns application summaries for the committee panel.
+ * @summary List SPMB applications
+ */
+export const ListApplicationsQueryParams = zod.object({
+  "q": zod.coerce.string().optional().describe('Search by applicant name or application number.'),
+  "jenjang": zod.enum(['Semua', 'TK', 'SD', 'SMP', 'SMA']).optional(),
+  "status": zod.enum(['Semua', 'Baru', 'Diverifikasi', 'Perlu Perbaikan', 'Diterima', 'Ditolak']).optional()
+})
+
+export const ListApplicationsResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "nama_calon": zod.string(),
+  "jenjang": zod.string(),
+  "nama_sekolah_asal": zod.string(),
+  "email": zod.string(),
+  "status": zod.string(),
+  "created_at": zod.string()
+})),
+  "total": zod.number()
+})
+
+
+/**
+ * @summary Get an application detail
+ */
+export const GetApplicationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const getApplicationResponseTwoNamaCalonMin = 2;
+
+
+
+
+export const GetApplicationResponse = zod.object({
+  "id": zod.number(),
+  "nama_calon": zod.string(),
+  "jenjang": zod.string(),
+  "nama_sekolah_asal": zod.string(),
+  "email": zod.string(),
+  "status": zod.string(),
+  "created_at": zod.string()
+}).and(zod.object({
+  "jenjang": zod.enum(['TK', 'SD', 'SMP', 'SMA']),
+  "nama_calon": zod.string().min(getApplicationResponseTwoNamaCalonMin),
+  "nama_panggilan": zod.string().min(1),
+  "jenis_kelamin": zod.enum(['Laki-laki', 'Perempuan']),
+  "tempat_lahir": zod.string(),
+  "tanggal_lahir": zod.coerce.date(),
+  "nisn": zod.string(),
+  "nik_anak": zod.string(),
+  "alamat_domisili": zod.string(),
+  "anak_ke": zod.string().describe('Integer greater than or equal to 1'),
+  "jumlah_saudara": zod.string().describe('Integer greater than or equal to 0'),
+  "status_anak": zod.string(),
+  "agama": zod.string(),
+  "warga_negara": zod.string(),
+  "tinggi_badan": zod.string().describe('Height in centimeters'),
+  "berat_badan": zod.string().describe('Weight in kilograms'),
+  "riwayat_penyakit": zod.string(),
+  "transportasi": zod.string(),
+  "jarak_sekolah": zod.string(),
+  "nama_sekolah_asal": zod.string(),
+  "tahun_lulus": zod.string().describe('Graduation year, 1900 or later'),
+  "alamat_sekolah_asal": zod.string(),
+  "nomor_kk": zod.string(),
+  "nik_orangtua": zod.string(),
+  "nomor_hp_orangtua": zod.string(),
+  "email": zod.string(),
+  "nama_ayah": zod.string(),
+  "ttl_ayah": zod.string(),
+  "pendidikan_ayah": zod.string(),
+  "pekerjaan_ayah": zod.string(),
+  "penghasilan_ayah": zod.string(),
+  "instansi_jabatan_ayah": zod.string(),
+  "nama_ibu": zod.string(),
+  "ttl_ibu": zod.string(),
+  "pendidikan_ibu": zod.string(),
+  "pekerjaan_ibu": zod.string(),
+  "penghasilan_ibu": zod.string(),
+  "instansi_jabatan_ibu": zod.string(),
+  "nama_wali": zod.string(),
+  "hubungan_wali": zod.string(),
+  "foto_3x4": zod.string().optional().describe('Uploaded file'),
+  "akte_lahir": zod.string().optional().describe('Uploaded file'),
+  "kartu_keluarga": zod.string().optional().describe('Uploaded file'),
+  "ktp_orangtua": zod.string().optional().describe('Uploaded file'),
+  "bukti_bayar": zod.string().optional().describe('Uploaded file')
+})).and(zod.object({
+  "files": zod.array(zod.object({
+  "field": zod.string(),
+  "label": zod.string(),
+  "url": zod.string(),
+  "available": zod.boolean()
+}))
+}))
+
+
+/**
+ * @summary Update application status
+ */
+export const UpdateApplicationStatusParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateApplicationStatusBody = zod.object({
+  "status": zod.enum(['Baru', 'Diverifikasi', 'Perlu Perbaikan', 'Diterima', 'Ditolak'])
+})
+
+export const UpdateApplicationStatusResponse = zod.object({
+  "success": zod.boolean(),
+  "message": zod.string(),
+  "id": zod.number(),
+  "status": zod.string()
+})
+
+
+/**
+ * @summary Open an uploaded application document
+ */
+export const GetApplicationFileParams = zod.object({
+  "id": zod.coerce.number(),
+  "field": zod.enum(['foto_3x4', 'akte_lahir', 'kartu_keluarga', 'ktp_orangtua', 'bukti_bayar'])
+})
+
+export const GetApplicationFileResponse = zod.unknown()
+
+

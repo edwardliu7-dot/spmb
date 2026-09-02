@@ -116,8 +116,11 @@ const uploadFields = [
   fileField('bukti_bayar', 'Bukti pembayaran', 'Belum ada berkas dipilih'),
 ].join('');
 
-const root = document.getElementById('root');
-if (!root) throw new Error('Elemen root tidak ditemukan.');
+if (window.location.pathname.replace(/\/+$/, '') === '/panitia') {
+  void import('./panitia');
+} else {
+  const root = document.getElementById('root');
+  if (!root) throw new Error('Elemen root tidak ditemukan.');
 
 root.innerHTML = `
   <div class="app-shell">
@@ -330,3 +333,4 @@ healthCheck()
     healthDot.style.backgroundColor = 'hsl(10 60% 54%)';
     healthStatus.textContent = 'Koneksi perlu diperiksa';
   });
+}

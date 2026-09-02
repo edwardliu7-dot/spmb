@@ -6,8 +6,18 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './applicationDetail';
+export * from './applicationFile';
+export * from './applicationListItem';
+export * from './applicationListResponse';
+export * from './applicationStatusResponse';
+export * from './applicationStatusUpdate';
+export * from './applicationStatusUpdateStatus';
 export * from './errorResponse';
 export * from './healthStatus';
+export * from './listApplicationsJenjang';
+export * from './listApplicationsParams';
+export * from './listApplicationsStatus';
 export * from './studentApplicationInput';
 export * from './studentApplicationInputJenisKelamin';
 export * from './studentApplicationInputJenjang';

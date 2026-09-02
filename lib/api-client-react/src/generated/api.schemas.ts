@@ -93,7 +93,87 @@ export interface SubmissionResult {
   id: number;
 }
 
+export interface ApplicationListItem {
+  id: number;
+  nama_calon: string;
+  jenjang: string;
+  nama_sekolah_asal: string;
+  email: string;
+  status: string;
+  created_at: string;
+}
+
+export interface ApplicationListResponse {
+  items: ApplicationListItem[];
+  total: number;
+}
+
+export interface ApplicationFile {
+  field: string;
+  label: string;
+  url: string;
+  available: boolean;
+}
+
+export type ApplicationDetail = ApplicationListItem & StudentApplicationInput & {
+  files: ApplicationFile[];
+};
+
+export type ApplicationStatusUpdateStatus = typeof ApplicationStatusUpdateStatus[keyof typeof ApplicationStatusUpdateStatus];
+
+
+export const ApplicationStatusUpdateStatus = {
+  Baru: 'Baru',
+  Diverifikasi: 'Diverifikasi',
+  Perlu_Perbaikan: 'Perlu Perbaikan',
+  Diterima: 'Diterima',
+  Ditolak: 'Ditolak',
+} as const;
+
+export interface ApplicationStatusUpdate {
+  status: ApplicationStatusUpdateStatus;
+}
+
+export interface ApplicationStatusResponse {
+  success: boolean;
+  message: string;
+  id: number;
+  status: string;
+}
+
 export interface ErrorResponse {
   error: string;
 }
+
+export type ListApplicationsParams = {
+/**
+ * Search by applicant name or application number.
+ */
+q?: string;
+jenjang?: ListApplicationsJenjang;
+status?: ListApplicationsStatus;
+};
+
+export type ListApplicationsJenjang = typeof ListApplicationsJenjang[keyof typeof ListApplicationsJenjang];
+
+
+export const ListApplicationsJenjang = {
+  Semua: 'Semua',
+  TK: 'TK',
+  SD: 'SD',
+  SMP: 'SMP',
+  SMA: 'SMA',
+} as const;
+
+export type ListApplicationsStatus = typeof ListApplicationsStatus[keyof typeof ListApplicationsStatus];
+
+
+export const ListApplicationsStatus = {
+  Semua: 'Semua',
+  Baru: 'Baru',
+  Diverifikasi: 'Diverifikasi',
+  Perlu_Perbaikan: 'Perlu Perbaikan',
+  Diterima: 'Diterima',
+  Ditolak: 'Ditolak',
+} as const;
 

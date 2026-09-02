@@ -20,8 +20,13 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ApplicationDetail,
+  ApplicationListResponse,
+  ApplicationStatusResponse,
+  ApplicationStatusUpdate,
   ErrorResponse,
   HealthStatus,
+  ListApplicationsParams,
   StudentApplicationInput,
   SubmissionResult
 } from './api.schemas';
@@ -258,4 +263,320 @@ export const useSubmitApplication = <TError = ErrorType<ErrorResponse>,
       > => {
       return useMutation(getSubmitApplicationMutationOptions(options));
     }
+
+export const getListApplicationsUrl = (params?: ListApplicationsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/applications?${stringifiedParams}` : `/api/applications`
+}
+
+/**
+ * Returns application summaries for the committee panel.
+ * @summary List SPMB applications
+ */
+export const listApplications = async (params?: ListApplicationsParams, options?: Parameters<typeof customFetch>[1]): Promise<ApplicationListResponse> => {
+
+  return customFetch<ApplicationListResponse>(getListApplicationsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListApplicationsQueryKey = (params?: ListApplicationsParams,) => {
+    return [
+    `/api/applications`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListApplicationsQueryOptions = <TData = Awaited<ReturnType<typeof listApplications>>, TError = ErrorType<unknown>>(params?: ListApplicationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listApplications>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListApplicationsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listApplications>>> = ({ signal }) => listApplications(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listApplications>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListApplicationsQueryResult = NonNullable<Awaited<ReturnType<typeof listApplications>>>
+export type ListApplicationsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List SPMB applications
+ */
+
+export function useListApplications<TData = Awaited<ReturnType<typeof listApplications>>, TError = ErrorType<unknown>>(
+ params?: ListApplicationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listApplications>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListApplicationsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetApplicationUrl = (id: number,) => {
+
+
+
+
+  return `/api/applications/${id}`
+}
+
+/**
+ * @summary Get an application detail
+ */
+export const getApplication = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<ApplicationDetail> => {
+
+  return customFetch<ApplicationDetail>(getGetApplicationUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetApplicationQueryKey = (id: number,) => {
+    return [
+    `/api/applications/${id}`
+    ] as const;
+    }
+
+
+export const getGetApplicationQueryOptions = <TData = Awaited<ReturnType<typeof getApplication>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApplication>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetApplicationQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApplication>>> = ({ signal }) => getApplication(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApplication>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetApplicationQueryResult = NonNullable<Awaited<ReturnType<typeof getApplication>>>
+export type GetApplicationQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get an application detail
+ */
+
+export function useGetApplication<TData = Awaited<ReturnType<typeof getApplication>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApplication>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetApplicationQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateApplicationStatusUrl = (id: number,) => {
+
+
+
+
+  return `/api/applications/${id}/status`
+}
+
+/**
+ * @summary Update application status
+ */
+export const updateApplicationStatus = async (id: number,
+    applicationStatusUpdate: ApplicationStatusUpdate, options?: Parameters<typeof customFetch>[1]): Promise<ApplicationStatusResponse> => {
+
+  return customFetch<ApplicationStatusResponse>(getUpdateApplicationStatusUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(applicationStatusUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateApplicationStatusMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateApplicationStatus>>, TError,{id: number;data: BodyType<ApplicationStatusUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateApplicationStatus>>, TError,{id: number;data: BodyType<ApplicationStatusUpdate>}, TContext> => {
+
+const mutationKey = ['updateApplicationStatus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateApplicationStatus>>, {id: number;data: BodyType<ApplicationStatusUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateApplicationStatus(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateApplicationStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateApplicationStatus>>>
+    export type UpdateApplicationStatusMutationBody = BodyType<ApplicationStatusUpdate>
+    export type UpdateApplicationStatusMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Update application status
+ */
+export const useUpdateApplicationStatus = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateApplicationStatus>>, TError,{id: number;data: BodyType<ApplicationStatusUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateApplicationStatus>>,
+        TError,
+        {id: number;data: BodyType<ApplicationStatusUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateApplicationStatusMutationOptions(options));
+    }
+
+export const getGetApplicationFileUrl = (id: number,
+    field: 'foto_3x4' | 'akte_lahir' | 'kartu_keluarga' | 'ktp_orangtua' | 'bukti_bayar',) => {
+
+
+
+
+  return `/api/applications/${id}/files/${field}`
+}
+
+/**
+ * @summary Open an uploaded application document
+ */
+export const getApplicationFile = async (id: number,
+    field: 'foto_3x4' | 'akte_lahir' | 'kartu_keluarga' | 'ktp_orangtua' | 'bukti_bayar', options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetApplicationFileUrl(id,field),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetApplicationFileQueryKey = (id: number,
+    field: 'foto_3x4' | 'akte_lahir' | 'kartu_keluarga' | 'ktp_orangtua' | 'bukti_bayar',) => {
+    return [
+    `/api/applications/${id}/files/${field}`
+    ] as const;
+    }
+
+
+export const getGetApplicationFileQueryOptions = <TData = Awaited<ReturnType<typeof getApplicationFile>>, TError = ErrorType<ErrorResponse>>(id: number,
+    field: 'foto_3x4' | 'akte_lahir' | 'kartu_keluarga' | 'ktp_orangtua' | 'bukti_bayar', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApplicationFile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetApplicationFileQueryKey(id,field);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApplicationFile>>> = ({ signal }) => getApplicationFile(id,field, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined && field !== null && field !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApplicationFile>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetApplicationFileQueryResult = NonNullable<Awaited<ReturnType<typeof getApplicationFile>>>
+export type GetApplicationFileQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Open an uploaded application document
+ */
+
+export function useGetApplicationFile<TData = Awaited<ReturnType<typeof getApplicationFile>>, TError = ErrorType<ErrorResponse>>(
+ id: number,
+    field: 'foto_3x4' | 'akte_lahir' | 'kartu_keluarga' | 'ktp_orangtua' | 'bukti_bayar', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApplicationFile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetApplicationFileQueryOptions(id,field,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 

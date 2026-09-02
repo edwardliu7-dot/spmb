@@ -44,6 +44,7 @@ export const pendaftarTable = pgTable("pendaftar", {
   instansi_jabatan_ibu: text("instansi_jabatan_ibu").notNull(),
   nama_wali: text("nama_wali").notNull(),
   hubungan_wali: text("hubungan_wali").notNull(),
+  status: text("status").notNull().default("Baru"),
   foto_3x4_path: text("foto_3x4_path"),
   akte_lahir_path: text("akte_lahir_path"),
   kartu_keluarga_path: text("kartu_keluarga_path"),

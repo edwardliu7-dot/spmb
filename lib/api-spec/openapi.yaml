@@ -51,6 +51,112 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /applications:
+    get:
+      operationId: listApplications
+      tags: [applications]
+      summary: List SPMB applications
+      description: Returns application summaries for the committee panel.
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema: { type: string }
+          description: Search by applicant name or application number.
+        - name: jenjang
+          in: query
+          required: false
+          schema: { type: string, enum: [Semua, TK, SD, SMP, SMA] }
+        - name: status
+          in: query
+          required: false
+          schema: { type: string, enum: [Semua, Baru, Diverifikasi, "Perlu Perbaikan", Diterima, Ditolak] }
+      responses:
+        "200":
+          description: Application summaries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationListResponse"
+  /applications/{id}:
+    get:
+      operationId: getApplication
+      tags: [applications]
+      summary: Get an application detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: number }
+      responses:
+        "200":
+          description: Full application detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationDetail"
+        "404":
+          description: Application not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /applications/{id}/status:
+    patch:
+      operationId: updateApplicationStatus
+      tags: [applications]
+      summary: Update application status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationStatusUpdate"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: number }
+      responses:
+        "200":
+          description: Updated application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationStatusResponse"
+        "400":
+          description: Invalid status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /applications/{id}/files/{field}:
+    get:
+      operationId: getApplicationFile
+      tags: [applications]
+      summary: Open an uploaded application document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: number }
+        - name: field
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [foto_3x4, akte_lahir, kartu_keluarga, ktp_orangtua, bukti_bayar]
+      responses:
+        "200":
+          description: Uploaded document
+          content:
+            application/octet-stream: {}
+        "404":
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -156,6 +262,60 @@ components:
         message: { type: string }
         id: { type: number }
       required: [success, message, id]
+    ApplicationListItem:
+      type: object
+      properties:
+        id: { type: number }
+        nama_calon: { type: string }
+        jenjang: { type: string }
+        nama_sekolah_asal: { type: string }
+        email: { type: string }
+        status: { type: string }
+        created_at: { type: string }
+      required: [id, nama_calon, jenjang, nama_sekolah_asal, email, status, created_at]
+    ApplicationListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationListItem"
+        total: { type: number }
+      required: [items, total]
+    ApplicationFile:
+      type: object
+      properties:
+        field: { type: string }
+        label: { type: string }
+        url: { type: string }
+        available: { type: boolean }
+      required: [field, label, url, available]
+    ApplicationDetail:
+      allOf:
+        - $ref: "#/components/schemas/ApplicationListItem"
+        - $ref: "#/components/schemas/StudentApplicationInput"
+        - type: object
+          properties:
+            files:
+              type: array
+              items:
+                $ref: "#/components/schemas/ApplicationFile"
+          required: [files]
+    ApplicationStatusUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [Baru, Diverifikasi, "Perlu Perbaikan", Diterima, Ditolak]
+      required: [status]
+    ApplicationStatusResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        id: { type: number }
+        status: { type: string }
+      required: [success, message, id, status]
     ErrorResponse:
       type: object
       properties:
