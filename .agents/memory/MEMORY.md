@@ -1,0 +1,1 @@
+- [SPMB runtime decisions](spmb-runtime.md) — Node 24 built-in SQLite avoids native addon build approval while preserving the requested local SQLite backend.

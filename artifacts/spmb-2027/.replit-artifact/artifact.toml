@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "SPMB 2027/2028"
+description = "Aplikasi pendaftaran siswa baru untuk tahun ajaran 2027/2028 dengan formulir data calon peserta didik, sekolah asal, orang tua atau wali, dan unggah berkas persyaratan."
+version = "1.0.0"
+id = "artifacts/spmb-2027"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20618
+
+[services.development]
+run = "pnpm --filter @workspace/spmb-2027 run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/spmb-2027", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/spmb-2027/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20618"
+BASE_PATH = "/"

@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: applications
+    description: SPMB registration operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /submit:
+    post:
+      operationId: submitApplication
+      tags: [applications]
+      summary: Submit a new SPMB application
+      description: Stores student registration data and the uploaded supporting documents.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/StudentApplicationInput"
+      responses:
+        "201":
+          description: Application submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResult"
+        "400":
+          description: Invalid form data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +60,105 @@ components:
           type: string
       required:
         - status
+    StudentApplicationInput:
+      type: object
+      required:
+        - jenjang
+        - nama_calon
+        - nama_panggilan
+        - jenis_kelamin
+        - tempat_lahir
+        - tanggal_lahir
+        - nisn
+        - nik_anak
+        - alamat_domisili
+        - anak_ke
+        - jumlah_saudara
+        - status_anak
+        - agama
+        - warga_negara
+        - tinggi_badan
+        - berat_badan
+        - riwayat_penyakit
+        - transportasi
+        - jarak_sekolah
+        - nama_sekolah_asal
+        - tahun_lulus
+        - alamat_sekolah_asal
+        - nomor_kk
+        - nik_orangtua
+        - nomor_hp_orangtua
+        - email
+        - nama_ayah
+        - ttl_ayah
+        - pendidikan_ayah
+        - pekerjaan_ayah
+        - penghasilan_ayah
+        - instansi_jabatan_ayah
+        - nama_ibu
+        - ttl_ibu
+        - pendidikan_ibu
+        - pekerjaan_ibu
+        - penghasilan_ibu
+        - instansi_jabatan_ibu
+        - nama_wali
+        - hubungan_wali
+      properties:
+        jenjang: { type: string, enum: [TK, SD, SMP, SMA] }
+        nama_calon: { type: string, minLength: 2 }
+        nama_panggilan: { type: string, minLength: 1 }
+        jenis_kelamin: { type: string, enum: [Laki-laki, Perempuan] }
+        tempat_lahir: { type: string }
+        tanggal_lahir: { type: string, format: date }
+        nisn: { type: string }
+        nik_anak: { type: string }
+        alamat_domisili: { type: string }
+        anak_ke: { type: string, description: "Integer greater than or equal to 1" }
+        jumlah_saudara: { type: string, description: "Integer greater than or equal to 0" }
+        status_anak: { type: string }
+        agama: { type: string }
+        warga_negara: { type: string }
+        tinggi_badan: { type: string, description: "Height in centimeters" }
+        berat_badan: { type: string, description: "Weight in kilograms" }
+        riwayat_penyakit: { type: string }
+        transportasi: { type: string }
+        jarak_sekolah: { type: string }
+        nama_sekolah_asal: { type: string }
+        tahun_lulus: { type: string, description: "Graduation year, 1900 or later" }
+        alamat_sekolah_asal: { type: string }
+        nomor_kk: { type: string }
+        nik_orangtua: { type: string }
+        nomor_hp_orangtua: { type: string }
+        email: { type: string }
+        nama_ayah: { type: string }
+        ttl_ayah: { type: string }
+        pendidikan_ayah: { type: string }
+        pekerjaan_ayah: { type: string }
+        penghasilan_ayah: { type: string }
+        instansi_jabatan_ayah: { type: string }
+        nama_ibu: { type: string }
+        ttl_ibu: { type: string }
+        pendidikan_ibu: { type: string }
+        pekerjaan_ibu: { type: string }
+        penghasilan_ibu: { type: string }
+        instansi_jabatan_ibu: { type: string }
+        nama_wali: { type: string }
+        hubungan_wali: { type: string }
+        foto_3x4: { type: string, description: "Uploaded file" }
+        akte_lahir: { type: string, description: "Uploaded file" }
+        kartu_keluarga: { type: string, description: "Uploaded file" }
+        ktp_orangtua: { type: string, description: "Uploaded file" }
+        bukti_bayar: { type: string, description: "Uploaded file" }
+    SubmissionResult:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        id: { type: number }
+      required: [success, message, id]
+    ErrorResponse:
+      type: object
+      properties:
+        error: { type: string }
+      required: [error]
 
