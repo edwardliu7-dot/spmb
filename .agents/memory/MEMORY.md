@@ -2,4 +2,5 @@
 - [SPMB multipart validation](spmb-submit-validation.md) — validate generated multipart contracts with upload placeholders plus separate Multer file checks.
 - [Committee access](committee-access.md) — panel sessions use signed HTTP-only cookies and server-enforced jenjang scopes for the four fixed accounts.
 - [Publish lockfile compatibility](publish-lockfile.md) — validate frozen installs with the same pnpm major/minor version used by the publish builder.
+- [SPMB production startup](spmb-production-start.md) — production must start the built server directly so health probes do not time out during a second build.
 - [SPMB receipt template](spmb-receipt.md) — the supplied receipt is a flattened sample PDF, so dynamic values require white overlays and image replacement.
