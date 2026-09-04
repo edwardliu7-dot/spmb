@@ -199,6 +199,27 @@ export const VerifyPaymentResponse = zod.object({
 
 
 /**
+ * Looks up the current application status using the number printed on the registration receipt.
+ * @summary Check a public SPMB application status
+ */
+export const getSubmissionStatusQueryNumberRegExp = new RegExp('^(SPMB-)?[0-9]+$');
+
+
+export const GetSubmissionStatusQueryParams = zod.object({
+  "number": zod.coerce.string().regex(getSubmissionStatusQueryNumberRegExp).describe('Application number, for example SPMB-000001.')
+})
+
+export const GetSubmissionStatusResponse = zod.object({
+  "id": zod.number(),
+  "applicationNumber": zod.string(),
+  "nama_calon": zod.string(),
+  "jenjang": zod.string(),
+  "status": zod.enum(['Baru', 'Diverifikasi', 'Perlu Perbaikan', 'Diterima', 'Ditolak']),
+  "created_at": zod.string()
+})
+
+
+/**
  * @summary Get the signed-in committee user
  */
 export const CommitteeMeResponse = zod.object({

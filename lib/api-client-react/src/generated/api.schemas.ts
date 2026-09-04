@@ -275,6 +275,26 @@ export interface SubmissionResult {
   receiptUrl: string;
 }
 
+export type SubmissionStatusResponseStatus = typeof SubmissionStatusResponseStatus[keyof typeof SubmissionStatusResponseStatus];
+
+
+export const SubmissionStatusResponseStatus = {
+  Baru: 'Baru',
+  Diverifikasi: 'Diverifikasi',
+  Perlu_Perbaikan: 'Perlu Perbaikan',
+  Diterima: 'Diterima',
+  Ditolak: 'Ditolak',
+} as const;
+
+export interface SubmissionStatusResponse {
+  id: number;
+  applicationNumber: string;
+  nama_calon: string;
+  jenjang: string;
+  status: SubmissionStatusResponseStatus;
+  created_at: string;
+}
+
 export interface ApplicationListItem {
   id: number;
   nama_calon: string;
@@ -338,6 +358,14 @@ export interface ErrorResponse {
   error: string;
   fields?: string[];
 }
+
+export type GetSubmissionStatusParams = {
+/**
+ * Application number, for example SPMB-000001.
+ * @pattern ^(SPMB-)?[0-9]+$
+ */
+number: string;
+};
 
 export type CommitteeMe200 = {
   user: CommitteeUser;

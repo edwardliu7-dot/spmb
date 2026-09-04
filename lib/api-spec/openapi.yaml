@@ -112,6 +112,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /submissions/status:
+    get:
+      operationId: getSubmissionStatus
+      tags: [applications]
+      summary: Check a public SPMB application status
+      description: Looks up the current application status using the number printed on the registration receipt.
+      parameters:
+        - name: number
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: "^(SPMB-)?[0-9]+$"
+          description: Application number, for example SPMB-000001.
+      responses:
+        "200":
+          description: Current application status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionStatusResponse"
+        "400":
+          description: Invalid application number
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Application number not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /auth/me:
     get:
       operationId: committeeMe
@@ -406,6 +439,16 @@ components:
         id: { type: number }
         receiptUrl: { type: string }
       required: [success, message, id, receiptUrl]
+    SubmissionStatusResponse:
+      type: object
+      properties:
+        id: { type: number }
+        applicationNumber: { type: string }
+        nama_calon: { type: string }
+        jenjang: { type: string }
+        status: { type: string, enum: [Baru, Diverifikasi, "Perlu Perbaikan", Diterima, Ditolak] }
+        created_at: { type: string }
+      required: [id, applicationNumber, nama_calon, jenjang, status, created_at]
     ApplicationListItem:
       type: object
       properties:

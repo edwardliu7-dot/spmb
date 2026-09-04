@@ -1515,6 +1515,331 @@
   font-weight: 700;
 }
 
+.form-board-status-view {
+  margin-bottom: 24px;
+  border: 1px solid #d8d5c8;
+  border-radius: 16px;
+  background: #fbf9f2;
+  box-shadow: 0 16px 34px #223d390c;
+  animation: form-board-rise 0.35s ease both;
+}
+
+.form-board-status-view[hidden] {
+  display: none;
+}
+
+.form-board-status-intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 30px 32px 24px;
+  border-bottom: 1px solid #e0ddd2;
+}
+
+.form-board-status-intro h2 {
+  margin: 12px 0 8px;
+  color: #173f43;
+  font: 600 38px/0.98 "Fraunces", Georgia, serif;
+  letter-spacing: -0.04em;
+}
+
+.form-board-status-intro h2 em {
+  color: #b55341;
+  font-style: normal;
+}
+
+.form-board-status-intro p {
+  max-width: 570px;
+  margin: 0;
+  color: #74756b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.form-board-status-badge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 11px;
+  border: 1px solid #cbd8c8;
+  border-radius: 999px;
+  background: #eef4ec;
+  color: #4d7569;
+  font: 700 9px "IBM Plex Mono", monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.form-board-status-badge svg {
+  width: 13px;
+  height: 13px;
+}
+
+.form-board-status-search {
+  padding: 24px 32px;
+  border-bottom: 1px solid #e0ddd2;
+}
+
+.form-board-status-search label {
+  display: block;
+  margin-bottom: 8px;
+  color: #3d5e59;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.form-board-status-search-row {
+  display: flex;
+  gap: 10px;
+}
+
+.form-board-status-search input {
+  min-width: 0;
+  flex: 1;
+  height: 44px;
+  border: 1px solid #b9c9bd;
+  border-radius: 8px;
+  background: #fffdf7;
+  color: #173f43;
+  padding: 0 13px;
+  font: 12px "IBM Plex Mono", monospace;
+  outline: none;
+}
+
+.form-board-status-search input:focus {
+  border-color: #1f5a5b;
+  box-shadow: 0 0 0 3px #1f5a5b1c;
+}
+
+.form-board-status-search button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: #1f5a5b;
+  color: #f7f3e9;
+  padding: 0 15px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.form-board-status-search button:hover {
+  background: #164849;
+}
+
+.form-board-status-search button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.form-board-status-search button svg {
+  width: 13px;
+  height: 13px;
+  transform: rotate(-90deg);
+}
+
+.form-board-status-search small {
+  display: block;
+  margin-top: 8px;
+  color: #8a9187;
+  font-size: 10px;
+}
+
+.form-board-status-alert {
+  margin: 20px 32px 0;
+  border: 1px solid #b553414d;
+  border-radius: 9px;
+  background: #b553411c;
+  color: #984131;
+  padding: 11px 13px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.form-board-status-alert[hidden] {
+  display: none;
+}
+
+.form-board-status-result {
+  margin: 20px 32px 32px;
+  border: 1px solid #cbd8c8;
+  border-radius: 12px;
+  background: #f6f8ef;
+  overflow: hidden;
+  animation: form-board-rise 0.3s ease both;
+}
+
+.form-board-status-result[hidden] {
+  display: none;
+}
+
+.form-board-status-result-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px;
+  border-bottom: 1px solid #d8e3d4;
+}
+
+.form-board-status-kicker,
+.form-board-status-facts span {
+  color: #b55341;
+  font: 700 9px "IBM Plex Mono", monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.form-board-status-result h3 {
+  margin: 7px 0 0;
+  color: #173f43;
+  font: 600 22px "IBM Plex Mono", monospace;
+  letter-spacing: -0.04em;
+}
+
+.form-board-status-current {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #f8edc9;
+  color: #765d1a;
+  padding: 8px 10px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.form-board-status-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding: 20px 22px;
+  border-bottom: 1px solid #d8e3d4;
+}
+
+.form-board-status-facts div {
+  min-width: 0;
+}
+
+.form-board-status-facts strong {
+  display: block;
+  overflow: hidden;
+  margin-top: 7px;
+  color: #294646;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.form-board-status-timeline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  padding: 25px 22px 20px;
+}
+
+.form-board-status-step {
+  position: relative;
+  min-width: 0;
+  padding-right: 18px;
+}
+
+.form-board-status-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 13px;
+  right: 0;
+  left: 29px;
+  height: 1px;
+  background: #cbd8c8;
+}
+
+.form-board-status-step-dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  margin-bottom: 10px;
+  border: 1px solid #b9c9bd;
+  border-radius: 50%;
+  background: #f6f8ef;
+  color: #f7f3e9;
+}
+
+.form-board-status-step-dot svg {
+  width: 13px;
+  height: 13px;
+}
+
+.form-board-status-step.is-complete .form-board-status-step-dot {
+  border-color: #1f5a5b;
+  background: #1f5a5b;
+}
+
+.form-board-status-step.is-complete::after {
+  background: #1f5a5b;
+}
+
+.form-board-status-step.is-current .form-board-status-step-dot {
+  border-color: #edbe52;
+  background: #edbe52;
+  box-shadow: 0 0 0 4px #edbe5230;
+}
+
+.form-board-status-step strong,
+.form-board-status-step small {
+  display: block;
+}
+
+.form-board-status-step strong {
+  color: #3d5e59;
+  font-size: 11px;
+}
+
+.form-board-status-step small {
+  max-width: 150px;
+  margin-top: 5px;
+  color: #8a9187;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.form-board-status-note {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 0 22px 22px;
+  border-radius: 8px;
+  background: #e7efe4;
+  color: #4d7569;
+  padding: 11px 13px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.form-board-status-note strong {
+  color: #294646;
+}
+
+.form-board-status-note.is-success {
+  background: #dcefe3;
+  color: #28634d;
+}
+
+.form-board-status-note.is-rejected {
+  background: #f4dfd8;
+  color: #984131;
+}
+
+.form-board-status-note.is-rejected strong {
+  color: #7a2e21;
+}
+
 .form-board-footer {
   display: flex;
   align-items: center;
@@ -1712,6 +2037,24 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .form-board-status-intro {
+    padding: 24px 22px 20px;
+  }
+
+  .form-board-status-search {
+    padding: 20px 22px;
+  }
+
+  .form-board-status-alert {
+    margin-right: 22px;
+    margin-left: 22px;
+  }
+
+  .form-board-status-result {
+    margin-right: 22px;
+    margin-left: 22px;
+  }
+
   .form-board-stat {
     border-right: 0;
     border-bottom: 1px solid #d6d2c6;
@@ -1794,6 +2137,81 @@
 
   .form-board-header-notice {
     margin-top: 22px;
+  }
+
+  .form-board-status-intro {
+    display: block;
+  }
+
+  .form-board-status-intro h2 {
+    font-size: 32px;
+  }
+
+  .form-board-status-badge {
+    margin-top: 18px;
+  }
+
+  .form-board-status-search-row {
+    display: block;
+  }
+
+  .form-board-status-search button {
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .form-board-status-result-head {
+    display: block;
+  }
+
+  .form-board-status-current {
+    display: inline-block;
+    margin-top: 12px;
+  }
+
+  .form-board-status-facts {
+    grid-template-columns: 1fr;
+    gap: 13px;
+  }
+
+  .form-board-status-timeline {
+    display: block;
+    padding: 20px 22px 8px;
+  }
+
+  .form-board-status-step {
+    display: grid;
+    grid-template-columns: 27px minmax(0, 1fr);
+    column-gap: 10px;
+    padding: 0 0 20px;
+  }
+
+  .form-board-status-step:not(:last-child)::after {
+    top: 27px;
+    right: auto;
+    bottom: 0;
+    left: 13px;
+    width: 1px;
+    height: auto;
+  }
+
+  .form-board-status-step-dot {
+    grid-row: span 2;
+    margin: 0;
+  }
+
+  .form-board-status-step small {
+    max-width: none;
+  }
+
+  .form-board-status-note {
+    display: block;
+  }
+
+  .form-board-status-note span {
+    display: block;
+    margin-top: 3px;
   }
 
   .form-board-contact-details {

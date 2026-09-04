@@ -3,7 +3,7 @@ import multer from "multer";
 import path from "node:path";
 import { readFile, unlink } from "node:fs/promises";
 import { SubmitApplicationBody } from "@workspace/api-zod";
-import { getPendaftar, insertPendaftar, uploadsDirectory } from "../lib/spmb-database";
+import { getPendaftar, getPublicPendaftarStatus, insertPendaftar, uploadsDirectory } from "../lib/spmb-database";
 import { allJenjang } from "../middlewares/committee-auth";
 import { createReceiptToken, createSpmbReceipt, isValidReceiptToken } from "../lib/spmb-receipt";
 
@@ -528,6 +528,45 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
       error: getSubmissionFailureMessage(error),
     });
     return;
+  }
+});
+
+function parseApplicationNumber(value: unknown): number | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toUpperCase().replace(/\s+/g, "");
+  const match = /^(?:SPMB-)?(\d+)$/.exec(normalized);
+  if (!match) return null;
+  const id = Number(match[1]);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
+
+router.get("/submissions/status", async (request, response) => {
+  const id = parseApplicationNumber(request.query.number);
+  if (!id) {
+    return response.status(400).json({
+      error: "Masukkan nomor pengajuan dengan format SPMB-000001.",
+    });
+  }
+
+  try {
+    const application = await getPublicPendaftarStatus(id);
+    if (!application) {
+      return response.status(404).json({
+        error: "Nomor pengajuan tidak ditemukan. Periksa kembali nomor pada bukti pendaftaran.",
+      });
+    }
+
+    return response.json({
+      id: application.id,
+      applicationNumber: `SPMB-${String(application.id).padStart(6, "0")}`,
+      nama_calon: application.nama_calon,
+      jenjang: application.jenjang,
+      status: application.status,
+      created_at: application.created_at,
+    });
+  } catch (error) {
+    request.log.error({ err: error, applicationId: id }, "Failed to check SPMB application status");
+    return response.status(500).json({ error: "Status pengajuan belum dapat diperiksa." });
   }
 });
 

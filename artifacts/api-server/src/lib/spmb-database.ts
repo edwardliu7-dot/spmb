@@ -94,6 +94,21 @@ export async function getPendaftar(id: number) {
   return item;
 }
 
+export async function getPublicPendaftarStatus(id: number) {
+  const [item] = await db
+    .select({
+      id: pendaftarTable.id,
+      nama_calon: pendaftarTable.nama_calon,
+      jenjang: pendaftarTable.jenjang,
+      status: pendaftarTable.status,
+      created_at: pendaftarTable.created_at,
+    })
+    .from(pendaftarTable)
+    .where(eq(pendaftarTable.id, id))
+    .limit(1);
+  return item;
+}
+
 export async function updatePendaftarStatus(
   id: number,
   status: string,

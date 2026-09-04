@@ -1,4 +1,4 @@
-import { healthCheck, submitApplication } from '@workspace/api-client-react';
+import { getSubmissionStatus, healthCheck, submitApplication } from '@workspace/api-client-react';
 import schoolLogoUrl from '../../../lib/logo tisa.png';
 import './index.css';
 import './form-board.css';
@@ -28,6 +28,15 @@ const icons: Record<IconName, string> = {
 
 function icon(name: IconName): string {
   return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${icons[name]}</svg>`;
+}
+
+function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 }
 
 const requiredMark = '<span class="form-board-required" aria-hidden="true">*</span>';
@@ -183,8 +192,8 @@ root.innerHTML = `
           </a>
         </div>
         <nav class="form-board-nav" aria-label="Navigasi pendaftaran">
-          <button type="button" class="form-board-nav-active" data-notice="Anda sedang berada di formulir pendaftaran.">Pendaftaran</button>
-          <button type="button" data-notice="Status pengajuan dapat dicek setelah formulir dikirim.">Status pengajuan</button>
+           <button type="button" class="form-board-nav-active" data-page-view="registration">Pendaftaran</button>
+           <button type="button" data-page-view="status">Status pengajuan</button>
           <button type="button" data-notice="Panduan belum tersedia.">Panduan</button>
         </nav>
         <div class="form-board-topbar-actions">
@@ -224,6 +233,42 @@ root.innerHTML = `
         <div class="form-board-stat"><div><span>WAKTU PENGISIAN</span>${icon('file-check')}</div><strong>10<span class="form-board-stat-unit">mnt</span></strong><small>siapkan dokumen resmi di dekat Anda</small></div>
         <div class="form-board-stat"><div><span>DOKUMEN PENDUKUNG</span>${icon('folder')}</div><strong>05</strong><small>PDF, JPG, atau PNG · maksimal 5 MB</small></div>
       </section>
+
+       <section class="form-board-status-view" id="status-view" hidden aria-labelledby="status-view-title">
+         <div class="form-board-status-intro">
+           <div>
+             <div class="form-board-panel-kicker">${icon('clipboard')}Lacak pengajuan</div>
+             <h2 id="status-view-title">Cek status <em>pendaftaran.</em></h2>
+             <p>Masukkan nomor yang tercetak pada bukti pendaftaran untuk melihat perkembangan pengajuan Anda.</p>
+           </div>
+           <span class="form-board-status-badge">${icon('shield')}Akses publik</span>
+         </div>
+         <form class="form-board-status-search" id="status-form">
+           <label for="status-number">Nomor pengajuan</label>
+           <div class="form-board-status-search-row">
+             <input id="status-number" name="number" type="text" inputmode="text" autocomplete="off" placeholder="Contoh: SPMB-000001" aria-describedby="status-number-hint" required />
+             <button type="submit" id="status-submit-button"><span>Cek status</span>${icon('chevron')}</button>
+           </div>
+           <small id="status-number-hint">Nomor pendaftaran menggunakan format SPMB-000001.</small>
+         </form>
+         <div class="form-board-status-alert" id="status-alert" role="alert" hidden></div>
+         <article class="form-board-status-result" id="status-result" hidden aria-live="polite">
+           <div class="form-board-status-result-head">
+             <div>
+               <span class="form-board-status-kicker">PENGAJUAN DITEMUKAN</span>
+               <h3 id="status-result-number"></h3>
+             </div>
+             <span class="form-board-status-current" id="status-result-current"></span>
+           </div>
+           <div class="form-board-status-facts">
+             <div><span>Nama calon peserta didik</span><strong id="status-result-name"></strong></div>
+             <div><span>Jenjang</span><strong id="status-result-level"></strong></div>
+             <div><span>Dikirim pada</span><strong id="status-result-date"></strong></div>
+           </div>
+           <div class="form-board-status-timeline" id="status-result-timeline"></div>
+           <div class="form-board-status-note" id="status-result-note"></div>
+         </article>
+       </section>
 
        <div class="form-board-workspace" id="registration-workspace">
         <aside class="form-board-sidebar" aria-label="Kemajuan formulir">
@@ -280,7 +325,8 @@ root.innerHTML = `
             <p>Data Anda telah masuk ke sistem SPMB. Simpan nomor pengajuan ini dan unduh bukti formulir.</p>
             <span class="success-id" id="submission-id"></span>
             <a class="receipt-download-button" id="receipt-download" href="#" download hidden data-testid="link-download-receipt">Unduh bukti formulir (PDF)</a>
-            <button class="reset-button" type="button" id="reset-button" data-testid="button-new-application">Buat pengajuan baru</button>
+             <button class="reset-button" type="button" id="success-status-button">Cek status pengajuan</button>
+             <button class="reset-button" type="button" id="reset-button" data-testid="button-new-application">Buat pengajuan baru</button>
           </div>
         </section>
       </div>
@@ -299,18 +345,43 @@ const successView = document.getElementById('success-view') as HTMLDivElement;
 const submissionId = document.getElementById('submission-id') as HTMLSpanElement;
 const receiptDownload = document.getElementById('receipt-download') as HTMLAnchorElement;
 const resetButton = document.getElementById('reset-button') as HTMLButtonElement;
+const successStatusButton = document.getElementById('success-status-button') as HTMLButtonElement;
 const healthStatus = document.getElementById('health-status') as HTMLSpanElement;
 const healthDot = document.getElementById('health-dot') as HTMLElement;
 const formNotice = document.getElementById('form-notice') as HTMLDivElement;
 const formNoticeText = formNotice.querySelector('span') as HTMLSpanElement;
 const menuButton = document.querySelector<HTMLButtonElement>('.form-board-menu-button');
 const navigation = document.querySelector<HTMLElement>('.form-board-nav');
+const pageViewButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-page-view]'));
+const registrationWorkspace = document.getElementById('registration-workspace') as HTMLDivElement;
+const statusView = document.getElementById('status-view') as HTMLElement;
+const statusForm = document.getElementById('status-form') as HTMLFormElement;
+const statusNumberInput = document.getElementById('status-number') as HTMLInputElement;
+const statusSubmitButton = document.getElementById('status-submit-button') as HTMLButtonElement;
+const statusAlert = document.getElementById('status-alert') as HTMLDivElement;
+const statusResult = document.getElementById('status-result') as HTMLElement;
+const statusResultNumber = document.getElementById('status-result-number') as HTMLHeadingElement;
+const statusResultCurrent = document.getElementById('status-result-current') as HTMLSpanElement;
+const statusResultName = document.getElementById('status-result-name') as HTMLElement;
+const statusResultLevel = document.getElementById('status-result-level') as HTMLElement;
+const statusResultDate = document.getElementById('status-result-date') as HTMLElement;
+const statusResultTimeline = document.getElementById('status-result-timeline') as HTMLElement;
+const statusResultNote = document.getElementById('status-result-note') as HTMLElement;
 const progressCurrent = document.getElementById('progress-current') as HTMLSpanElement;
 const stepNavigation = document.getElementById('step-navigation') as HTMLDivElement;
 const stepNavigationCopy = document.getElementById('step-navigation-copy') as HTMLSpanElement;
 const stepBack = document.getElementById('step-back') as HTMLButtonElement;
 const stepNext = document.getElementById('step-next') as HTMLButtonElement;
 const submitArea = document.querySelector<HTMLElement>('.form-board-submit-area');
+
+const statusDescriptions: Record<string, string> = {
+  Baru: 'Pengajuan sudah diterima dan menunggu pemeriksaan panitia.',
+  Diverifikasi: 'Berkas dan data sedang diperiksa oleh panitia.',
+  'Perlu Perbaikan': 'Panitia membutuhkan perbaikan atau kelengkapan data.',
+  Diterima: 'Pengajuan telah diterima. Ikuti informasi lanjutan dari sekolah.',
+  Ditolak: 'Pengajuan belum dapat diterima pada proses seleksi ini.',
+};
+const statusSteps = ['Baru', 'Diverifikasi', 'Perlu Perbaikan', 'Diterima'];
 
 type CachedFileMetadata = {
   name: string;
@@ -692,9 +763,75 @@ function showNotice(message: string): void {
   window.setTimeout(() => { formNotice.hidden = true; }, 2800);
 }
 
+function setPageView(view: 'registration' | 'status', shouldScroll = true): void {
+  const isStatusView = view === 'status';
+  registrationWorkspace.hidden = isStatusView;
+  statusView.hidden = !isStatusView;
+  pageViewButtons.forEach((button) => {
+    button.classList.toggle('form-board-nav-active', button.dataset.pageView === view);
+  });
+  navigation?.classList.remove('form-board-nav-open');
+  menuButton?.setAttribute('aria-expanded', 'false');
+  if (isStatusView && shouldScroll) {
+    statusView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.setTimeout(() => statusNumberInput.focus({ preventScroll: true }), 350);
+  }
+}
+
+function formatStatusDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('id-ID', {
+    dateStyle: 'long',
+    timeZone: 'Asia/Jakarta',
+  }).format(date);
+}
+
+function renderStatusResult(result: Awaited<ReturnType<typeof getSubmissionStatus>>): void {
+  const currentIndex = statusSteps.indexOf(result.status);
+  const isRejected = result.status === 'Ditolak';
+  const statusLabel = result.status === 'Baru' ? 'Diterima sistem' : result.status;
+
+  statusResultNumber.textContent = result.applicationNumber;
+  statusResultCurrent.textContent = statusLabel;
+  statusResultName.textContent = result.nama_calon;
+  statusResultLevel.textContent = result.jenjang;
+  statusResultDate.textContent = formatStatusDate(result.created_at);
+  statusResultTimeline.innerHTML = statusSteps.map((step, index) => {
+    const isCurrent = step === result.status;
+    const isComplete = !isRejected && currentIndex > index;
+    const stateClass = isCurrent ? 'is-current' : isComplete ? 'is-complete' : '';
+    return `<div class="form-board-status-step ${stateClass}">
+      <span class="form-board-status-step-dot">${isComplete ? icon('check') : ''}</span>
+      <div><strong>${escapeHtml(step === 'Baru' ? 'Pengajuan diterima' : step)}</strong><small>${escapeHtml(statusDescriptions[step])}</small></div>
+    </div>`;
+  }).join('');
+  statusResultNote.className = `form-board-status-note${isRejected ? ' is-rejected' : result.status === 'Diterima' ? ' is-success' : ''}`;
+  statusResultNote.innerHTML = `<strong>${escapeHtml(statusLabel)}</strong><span>${escapeHtml(statusDescriptions[result.status] || 'Status pengajuan sedang diperbarui.')}</span>`;
+  statusResult.hidden = false;
+}
+
+function getStatusErrorMessage(error: unknown): string {
+  const candidate = error && typeof error === 'object'
+    ? error as { message?: unknown; data?: unknown }
+    : {};
+  const data = candidate.data && typeof candidate.data === 'object'
+    ? candidate.data as { error?: unknown }
+    : null;
+  return typeof data?.error === 'string'
+    ? data.error
+    : typeof candidate.message === 'string'
+      ? candidate.message
+      : 'Status pengajuan belum dapat diperiksa. Silakan coba lagi.';
+}
+
 menuButton?.addEventListener('click', () => {
   const open = navigation?.classList.toggle('form-board-nav-open') ?? false;
   menuButton.setAttribute('aria-expanded', String(open));
+});
+
+pageViewButtons.forEach((button) => {
+  button.addEventListener('click', () => setPageView(button.dataset.pageView === 'status' ? 'status' : 'registration'));
 });
 
 document.querySelectorAll<HTMLButtonElement>('[data-notice]').forEach((button) => {
@@ -727,6 +864,38 @@ getFieldControl('jenjang')?.addEventListener('change', () => {
   updateSchoolFieldsRequirement();
   saveDraft();
 });
+
+statusForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const number = statusNumberInput.value.trim().toUpperCase();
+  statusAlert.hidden = true;
+  statusResult.hidden = true;
+  if (!/^(?:SPMB-)?\d+$/.test(number)) {
+    statusAlert.textContent = 'Masukkan nomor pengajuan dengan format SPMB-000001.';
+    statusAlert.hidden = false;
+    statusNumberInput.focus();
+    return;
+  }
+
+  statusSubmitButton.disabled = true;
+  statusSubmitButton.querySelector('span')!.textContent = 'Memeriksa';
+  try {
+    const result = await getSubmissionStatus({ number });
+    renderStatusResult(result);
+  } catch (error) {
+    statusAlert.textContent = getStatusErrorMessage(error);
+    statusAlert.hidden = false;
+  } finally {
+    statusSubmitButton.disabled = false;
+    statusSubmitButton.querySelector('span')!.textContent = 'Cek status';
+  }
+});
+
+successStatusButton.addEventListener('click', () => {
+  setPageView('status');
+  statusForm.requestSubmit();
+});
+
 restoreDraft();
 updateSchoolFieldsRequirement();
 
@@ -850,6 +1019,7 @@ form.addEventListener('submit', async (event) => {
     document.querySelectorAll<HTMLElement>('[data-file-name]').forEach((label) => { label.textContent = 'Belum ada berkas dipilih'; });
     document.querySelectorAll<HTMLElement>('[data-field]').forEach((field) => field.classList.remove('field-error'));
     submissionId.textContent = `Nomor pengajuan: SPMB-${String(result.id).padStart(6, '0')}`;
+    statusNumberInput.value = `SPMB-${String(result.id).padStart(6, '0')}`;
     receiptDownload.href = result.receiptUrl;
     receiptDownload.hidden = false;
     formBody.classList.add('is-hidden');

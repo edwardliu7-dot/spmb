@@ -27,12 +27,14 @@ import type {
   CommitteeLogout200,
   CommitteeMe200,
   ErrorResponse,
+  GetSubmissionStatusParams,
   HealthStatus,
   ListApplicationsParams,
   PaymentVerificationInput,
   PaymentVerificationResult,
   StudentApplicationInput,
-  SubmissionResult
+  SubmissionResult,
+  SubmissionStatusResponse
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -348,6 +350,91 @@ export const useVerifyPayment = <TError = ErrorType<ErrorResponse>,
       > => {
       return useMutation(getVerifyPaymentMutationOptions(options));
     }
+
+export const getGetSubmissionStatusUrl = (params: GetSubmissionStatusParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/submissions/status?${stringifiedParams}` : `/api/submissions/status`
+}
+
+/**
+ * Looks up the current application status using the number printed on the registration receipt.
+ * @summary Check a public SPMB application status
+ */
+export const getSubmissionStatus = async (params: GetSubmissionStatusParams, options?: Parameters<typeof customFetch>[1]): Promise<SubmissionStatusResponse> => {
+
+  return customFetch<SubmissionStatusResponse>(getGetSubmissionStatusUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSubmissionStatusQueryKey = (params?: GetSubmissionStatusParams,) => {
+    return [
+    `/api/submissions/status`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetSubmissionStatusQueryOptions = <TData = Awaited<ReturnType<typeof getSubmissionStatus>>, TError = ErrorType<ErrorResponse>>(params: GetSubmissionStatusParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSubmissionStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSubmissionStatusQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSubmissionStatus>>> = ({ signal }) => getSubmissionStatus(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSubmissionStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSubmissionStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getSubmissionStatus>>>
+export type GetSubmissionStatusQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Check a public SPMB application status
+ */
+
+export function useGetSubmissionStatus<TData = Awaited<ReturnType<typeof getSubmissionStatus>>, TError = ErrorType<ErrorResponse>>(
+ params: GetSubmissionStatusParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSubmissionStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSubmissionStatusQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getCommitteeMeUrl = () => {
 
