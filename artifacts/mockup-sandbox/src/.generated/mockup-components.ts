@@ -4,5 +4,6 @@ export const modules: ModuleMap = {
   "./components/mockups/spmb-committee/CommitteeDashboard.tsx": () => import("../components/mockups/spmb-committee/CommitteeDashboard.tsx"),
   "./components/mockups/spmb-committee/CommitteeDashboardCalendarVariant.tsx": () => import("../components/mockups/spmb-committee/CommitteeDashboardCalendarVariant.tsx"),
   "./components/mockups/spmb-committee/CommitteeDashboardQueueVariant.tsx": () => import("../components/mockups/spmb-committee/CommitteeDashboardQueueVariant.tsx"),
-  "./components/mockups/spmb-committee/CommitteeDashboardVariant.tsx": () => import("../components/mockups/spmb-committee/CommitteeDashboardVariant.tsx")
+  "./components/mockups/spmb-committee/CommitteeDashboardVariant.tsx": () => import("../components/mockups/spmb-committee/CommitteeDashboardVariant.tsx"),
+  "./components/mockups/spmb-form/Current.tsx": () => import("../components/mockups/spmb-form/Current.tsx")
 };
