@@ -50,10 +50,17 @@
   width: 38px;
   height: 38px;
   place-items: center;
-  border: 1px solid #edb84bcc;
-  border-radius: 12px 12px 4px 12px;
-  color: #edbe52;
-  font: 600 19px "Fraunces", Georgia, serif;
+   overflow: hidden;
+   border: 1px solid #edb84bcc;
+   border-radius: 10px;
+   background: #fff;
+}
+
+.decision-brand-mark img {
+   display: block;
+   width: 100%;
+   height: 100%;
+   object-fit: contain;
 }
 
 .decision-brand-name,

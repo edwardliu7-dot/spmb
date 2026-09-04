@@ -1,4 +1,5 @@
 import { healthCheck, submitApplication } from '@workspace/api-client-react';
+import schoolLogoUrl from '../../../lib/logo tisa.png';
 import './index.css';
 import './form-board.css';
 
@@ -155,9 +156,9 @@ root.innerHTML = `
       <div class="form-board-topbar-inner">
         <div class="form-board-brand-group">
           <button type="button" class="form-board-menu-button" aria-label="Buka navigasi" aria-expanded="false">${icon('menu')}</button>
-          <a class="form-board-brand" href="#form-board-content" data-testid="link-home" aria-label="SPMB">
-            <span class="form-board-brand-mark">S</span>
-            <span><strong>SPMB</strong><small>Penerimaan murid baru</small></span>
+          <a class="form-board-brand" href="#form-board-content" data-testid="link-home" aria-label="SPMB TISA Islamic School">
+            <span class="form-board-brand-mark"><img src="${schoolLogoUrl}" alt="TISA Islamic School" /></span>
+            <span><strong>SPMB TISA</strong><small>TISA Islamic School</small></span>
           </a>
         </div>
         <nav class="form-board-nav" aria-label="Navigasi pendaftaran">
@@ -245,7 +246,7 @@ root.innerHTML = `
         </section>
       </div>
 
-      <footer class="form-board-footer"><span>SPMB 2027/2028 · Ruang pendaftaran</span><span>${icon('lock')} Data pendaftar tersimpan aman</span></footer>
+      <footer class="form-board-footer"><span>SPMB 2027/2028 · TISA Islamic School</span><span>${icon('lock')} Data pendaftar tersimpan aman</span></footer>
     </main>
     <div class="form-board-notice" id="form-notice" role="status" aria-live="polite" hidden>${icon('check')}<span></span></div>
   </div>

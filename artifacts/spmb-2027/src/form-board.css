@@ -57,13 +57,21 @@
 
 .form-board-brand-mark {
   display: grid;
-  width: 40px;
-  height: 40px;
+   width: 42px;
+   height: 42px;
   place-items: center;
-  border: 1px solid #edb84b;
-  border-radius: 13px 13px 5px 13px;
-  color: #edbe52;
-  font: 600 20px "Fraunces", Georgia, serif;
+   overflow: hidden;
+   border: 1px solid #f2d487;
+   border-radius: 11px;
+   background: #fff;
+   box-shadow: 0 3px 10px #061f2026;
+}
+
+.form-board-brand-mark img {
+   display: block;
+   width: 100%;
+   height: 100%;
+   object-fit: contain;
 }
 
 .form-board-brand strong,
@@ -73,14 +81,14 @@
 
 .form-board-brand strong {
   font-size: 13px;
-  letter-spacing: 0.2em;
+   letter-spacing: 0.12em;
 }
 
 .form-board-brand small {
   margin-top: 5px;
   color: #b5cbc3;
   font-size: 10px;
-  letter-spacing: 0.05em;
+   letter-spacing: 0.03em;
 }
 
 .form-board-menu-button {

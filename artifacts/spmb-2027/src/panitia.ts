@@ -1,4 +1,5 @@
 import "./panitia-dashboard.css";
+import schoolLogoUrl from "../../../lib/logo tisa.png";
 
 type ApplicationListItem = {
   id: number;
@@ -82,13 +83,13 @@ function renderLogin(errorMessage = "") {
     <div class="committee-auth-shell">
       <header class="committee-topbar">
         <a class="brand" href="/" aria-label="Kembali ke formulir SPMB">
-          <span class="brand-mark" aria-hidden="true">S</span>
-          <span class="brand-copy"><span class="brand-name">SPMB</span><span class="brand-sub">Panel panitia</span></span>
+          <span class="brand-mark"><img src="${schoolLogoUrl}" alt="Logo TISA Islamic School" /></span>
+          <span class="brand-copy"><span class="brand-name">SPMB TISA</span><span class="brand-sub">Panel panitia</span></span>
         </a>
         <a class="back-link" href="/">Kembali ke formulir</a>
       </header>
       <main class="committee-auth-main">
-        <div class="committee-auth-ornament" aria-hidden="true"><span>SPMB</span><small>2027 / 2028</small></div>
+        <div class="committee-auth-ornament" aria-hidden="true"><img src="${schoolLogoUrl}" alt="" /><small>2027 / 2028</small></div>
         <section class="committee-auth-card">
           <p class="eyebrow">Akses internal · panitia</p>
           <h1>Login <em>panitia.</em></h1>
@@ -140,8 +141,8 @@ function renderLegacyDashboard(user: AuthUser) {
   <div class="committee-shell">
     <header class="committee-topbar">
       <a class="brand" href="/" aria-label="Kembali ke formulir SPMB">
-        <span class="brand-mark" aria-hidden="true">S</span>
-        <span class="brand-copy"><span class="brand-name">SPMB</span><span class="brand-sub">Panel panitia</span></span>
+        <span class="brand-mark"><img src="${schoolLogoUrl}" alt="Logo TISA Islamic School" /></span>
+        <span class="brand-copy"><span class="brand-name">SPMB TISA</span><span class="brand-sub">Panel panitia</span></span>
       </a>
       <div class="committee-topbar-actions">
         <span class="committee-user"><strong>${escapeHtml(user.username)}</strong><small>${escapeHtml(user.label)}</small></span>
@@ -156,7 +157,7 @@ function renderLegacyDashboard(user: AuthUser) {
           <p class="eyebrow">Panel pengelolaan · 2027 / 2028</p>
           <h1>Panel <em>panitia.</em></h1>
         </div>
-        <div class="committee-intro-mark" aria-hidden="true"><span>SPMB</span><small>Internal</small></div>
+        <div class="committee-intro-mark" aria-label="TISA Islamic School"><img src="${schoolLogoUrl}" alt="Logo TISA Islamic School" /><small>Internal</small></div>
       </section>
 
       <section class="committee-stats" aria-label="Ringkasan pendaftaran">
@@ -365,8 +366,8 @@ function renderDashboard(user: AuthUser) {
       <aside class="decision-rail" id="decision-rail">
         <div class="decision-rail-brand">
           <a class="decision-brand" href="/" aria-label="Kembali ke formulir SPMB">
-            <span class="decision-brand-mark" aria-hidden="true">S</span>
-            <span><span class="decision-brand-name">SPMB</span><span class="decision-brand-sub">Panel panitia</span></span>
+            <span class="decision-brand-mark"><img src="${schoolLogoUrl}" alt="Logo TISA Islamic School" /></span>
+            <span><span class="decision-brand-name">SPMB TISA</span><span class="decision-brand-sub">Panel panitia</span></span>
           </a>
           <button class="rail-close-button" id="rail-close-button" type="button" aria-label="Tutup navigasi">×</button>
         </div>
