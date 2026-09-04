@@ -1,5 +1,6 @@
 import { mkdirSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   and,
   desc,
@@ -15,7 +16,10 @@ import {
   type InsertPendaftar,
 } from "@workspace/db";
 
-const packageRoot = path.resolve(process.cwd(), "artifacts/api-server");
+const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
+const packageRoot = path.basename(moduleDirectory) === "lib"
+  ? path.resolve(moduleDirectory, "../..")
+  : path.resolve(moduleDirectory, "..");
 export const uploadsDirectory = path.join(packageRoot, "uploads");
 
 mkdirSync(uploadsDirectory, { recursive: true });

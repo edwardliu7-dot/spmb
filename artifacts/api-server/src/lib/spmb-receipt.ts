@@ -1,6 +1,8 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { createHmac } from "node:crypto";
+import { fileURLToPath } from "node:url";
 import {
   PDFDocument,
   StandardFonts,
@@ -11,16 +13,15 @@ import {
 } from "pdf-lib";
 import type { Pendaftar } from "@workspace/db";
 
-const currentDirectory = process.cwd();
-const packageRoot = path.basename(currentDirectory) === "api-server" && path.basename(path.dirname(currentDirectory)) === "artifacts"
-  ? currentDirectory
-  : path.resolve(currentDirectory, "artifacts/api-server");
-const workspaceRoot = path.basename(currentDirectory) === "api-server" && path.basename(path.dirname(currentDirectory)) === "artifacts"
-  ? path.resolve(currentDirectory, "../..")
-  : currentDirectory;
+const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
+const packageRoot = path.basename(moduleDirectory) === "lib"
+  ? path.resolve(moduleDirectory, "../..")
+  : path.resolve(moduleDirectory, "..");
+const workspaceRoot = path.resolve(packageRoot, "../..");
 const templatePath = path.join(packageRoot, "assets", "bukti-formulir-spmb-template.pdf");
 const schoolLogoPath = path.join(workspaceRoot, "lib", "logo tisa.png");
 const uploadRoot = path.resolve(packageRoot, "uploads");
+const legacyUploadRoot = path.resolve(packageRoot, "artifacts/api-server/uploads");
 
 type TopRect = {
   x: number;
@@ -213,8 +214,10 @@ function drawCenteredText(
 
 function resolveUpload(relativePath: string | null): string | null {
   if (!relativePath) return null;
-  const resolved = path.resolve(packageRoot, relativePath);
-  return resolved.startsWith(`${uploadRoot}${path.sep}`) ? resolved : null;
+  const candidates = [uploadRoot, legacyUploadRoot]
+    .map((root) => path.resolve(path.dirname(root), relativePath))
+    .filter((resolved) => resolved.startsWith(`${uploadRoot}${path.sep}`) || resolved.startsWith(`${legacyUploadRoot}${path.sep}`));
+  return candidates.find((candidate) => existsSync(candidate)) ?? null;
 }
 
 function getReceiptSecret(): string {
@@ -251,32 +254,36 @@ async function drawAttachment(
     return;
   }
 
-  const bytes = await readFile(filePath);
-  const extension = path.extname(filePath).toLowerCase();
-  if (extension === ".jpg" || extension === ".jpeg" || extension === ".png") {
-    const image: PDFImage = extension === ".png"
-      ? await document.embedPng(bytes)
-      : await document.embedJpg(bytes);
-    const pdfBox = toPdfRect(page, attachment.box);
-    const dimensions = image.scaleToFit(pdfBox.width - 8, pdfBox.height - 8);
-    page.drawImage(image, {
-      x: pdfBox.x + (pdfBox.width - dimensions.width) / 2,
-      y: pdfBox.y + (pdfBox.height - dimensions.height) / 2,
-      width: dimensions.width,
-      height: dimensions.height,
-    });
-    return;
+  try {
+    const bytes = await readFile(filePath);
+    const extension = path.extname(filePath).toLowerCase();
+    if (extension === ".jpg" || extension === ".jpeg" || extension === ".png") {
+      const image: PDFImage = extension === ".png"
+        ? await document.embedPng(bytes)
+        : await document.embedJpg(bytes);
+      const pdfBox = toPdfRect(page, attachment.box);
+      const dimensions = image.scaleToFit(pdfBox.width - 8, pdfBox.height - 8);
+      page.drawImage(image, {
+        x: pdfBox.x + (pdfBox.width - dimensions.width) / 2,
+        y: pdfBox.y + (pdfBox.height - dimensions.height) / 2,
+        width: dimensions.width,
+        height: dimensions.height,
+      });
+      return;
+    }
+
+    if (extension === ".pdf") {
+      drawCenteredText(page, `${attachment.label} tersedia pada halaman tambahan`, attachment.box, font, 9);
+      const attachmentDocument = await PDFDocument.load(bytes);
+      const copiedPages = await document.copyPages(attachmentDocument, attachmentDocument.getPageIndices());
+      copiedPages.forEach((copiedPage) => document.addPage(copiedPage));
+      return;
+    }
+  } catch {
+    // Keep the receipt downloadable even when an uploaded attachment is unavailable.
   }
 
-  if (extension === ".pdf") {
-    drawCenteredText(page, `${attachment.label} tersedia pada halaman tambahan`, attachment.box, font, 9);
-    const attachmentDocument = await PDFDocument.load(bytes);
-    const copiedPages = await document.copyPages(attachmentDocument, attachmentDocument.getPageIndices());
-    copiedPages.forEach((copiedPage) => document.addPage(copiedPage));
-    return;
-  }
-
-  drawCenteredText(page, `${attachment.label} tidak dapat ditampilkan`, attachment.box, font, 9);
+  drawCenteredText(page, `${attachment.label} belum tersedia`, attachment.box, font, 9);
 }
 
 export async function createSpmbReceipt(application: Pendaftar): Promise<Uint8Array> {
