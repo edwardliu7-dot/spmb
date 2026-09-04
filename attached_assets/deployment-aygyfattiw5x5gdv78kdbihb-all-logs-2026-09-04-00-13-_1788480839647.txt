@@ -1,0 +1,300 @@
+2026-Sep-02 10:53:51 Docker 29.6.1 with BuildKit and Buildx detected on deployment server (localhost).
+2026-Sep-02 10:53:51 Starting deployment of edwardliu7-dot/spmb:main to localhost.
+2026-Sep-02 10:53:51 Preparing container with helper image: docker.io/coollabsio/coolify-helper:1.0.16
+2026-Sep-02 10:53:52 [DEBUG] [CMD]: docker stop --timeout=30 aygyfattiw5x5gdv78kdbihb
+2026-Sep-02 10:53:52 [DEBUG] Error response from daemon: No such container: aygyfattiw5x5gdv78kdbihb
+2026-Sep-02 10:53:53 [DEBUG] [CMD]: docker run -d --network 'coolify' --name aygyfattiw5x5gdv78kdbihb  --rm -v /root/.docker/buildx:/root/.docker/buildx -v /var/run/docker.sock:/var/run/docker.sock docker.io/coollabsio/coolify-helper:1.0.16
+2026-Sep-02 10:53:53 [DEBUG] 1988481cce656400cea3570ff43c470b832e8a596fe007a93419e936e21b04bb
+2026-Sep-02 10:53:58 [DEBUG] [CMD]: docker exec aygyfattiw5x5gdv78kdbihb bash -c 'GIT_SSH_COMMAND="ssh -o ConnectTimeout=30 -p 22 -o Port=22 -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git ls-remote '\''https://x-access-token:<REDACTED>@github.com/edwardliu7-dot/spmb.git'\'' '\''refs/heads/main'\'''
+2026-Sep-02 10:53:58 [DEBUG] 3995e0b979e5f725936bb88eb15332b7fae1296d	refs/heads/main
+2026-Sep-02 10:53:58 Image not found (5c8i99hcyvaqffvxrntkknib:3995e0b979e5f725936bb88eb15332b7fae1296d). Building new image.
+2026-Sep-02 10:53:58 ----------------------------------------
+2026-Sep-02 10:53:58 Importing edwardliu7-dot/spmb:main (commit sha 3995e0b979e5f725936bb88eb15332b7fae1296d) to /artifacts/aygyfattiw5x5gdv78kdbihb.
+2026-Sep-02 10:53:59 [DEBUG] [CMD]: docker exec aygyfattiw5x5gdv78kdbihb bash -c 'git -c '\''url.https://x-access-token:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 clone --depth=1 --recurse-submodules --shallow-submodules -b '\''main'\'' '\''https:<REDACTED>@github.com/edwardliu7-dot/spmb.git'\'' '\''/artifacts/aygyfattiw5x5gdv78kdbihb'\'' && cd '\''/artifacts/aygyfattiw5x5gdv78kdbihb'\'' && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git -c '\''url.https://x-access-token:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 fetch --depth=1 origin '\''3995e0b979e5f725936bb88eb15332b7fae1296d'\'' && git -c '\''url.https:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 -c advice.detachedHead=false checkout '\''3995e0b979e5f725936bb88eb15332b7fae1296d'\'' >/dev/null 2>&1 && cd '\''/artifacts/aygyfattiw5x5gdv78kdbihb'\'' && if [ -f .gitmodules ]; then git -c '\''url.https:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 submodule sync && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git -c '\''url.https:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 submodule update --init --recursive --depth=1; fi && cd '\''/artifacts/aygyfattiw5x5gdv78kdbihb'\'' && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git -c '\''url.https:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 lfs pull'
+2026-Sep-02 10:<REDACTED>@157.10.161.229:5432/postgres'\'' --env '\''SESSION_SECRET=fXK2f91hBn/pp71ivmcIiMRSM/2u1nq4vRxkVCbyQaD6Z1/KrrBqSRqkD9w1PnLKxGdw9mFVb1dxG5voC4IdsQ=='\'' --env '\''BASE_PATH=/'\'' --env '\''PORT=5000'\'' --env '\''NODE_ENV=production'\'' --env '\''RAILPACK_DEPLOY_APT_PACKAGES=curl wget'\'' --env '\''COOLIFY_URL=https://spmbtisa.157.10.161.229.sslip.io:<REDACTED>@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-02 10:54:22 [DEBUG] #2 resolve ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-02 10:54:23 [DEBUG] #2 resolve ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6 1.3s done
+2026-Sep-02 10:54:23 [DEBUG] #2 DONE 2.1s
+2026-Sep-02 10:54:23 [DEBUG] #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-02 10:54:27 [DEBUG] #2 DONE 6.4s
+2026-Sep-02 10:54:28 [DEBUG] #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-02 10:54:28 [DEBUG] #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 0B / 8.67MB 0.2s
+2026-Sep-02 10:54:28 [DEBUG] #2 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 0B / 3.86MB 0.2s
+2026-Sep-02 10:54:29 [DEBUG] #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 3.15MB / 8.67MB 0.8s
+2026-Sep-02 10:54:29 [DEBUG] #2 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 3.86MB / 3.86MB 0.8s
+2026-Sep-02 10:54:29 [DEBUG] #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 6.29MB / 8.67MB 0.9s
+2026-Sep-02 10:54:29 [DEBUG] #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 7.34MB / 8.67MB 1.1s
+2026-Sep-02 10:54:29 [DEBUG] #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 8.67MB / 8.67MB 1.4s
+2026-Sep-02 10:54:30 [DEBUG] #2 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 3.86MB / 3.86MB 1.1s done
+2026-Sep-02 10:54:31 [DEBUG] #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 8.67MB / 8.67MB 1.8s done
+2026-Sep-02 10:54:31 [DEBUG] #2 DONE 9.3s
+2026-Sep-02 10:54:31 [DEBUG] #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-02 10:54:31 [DEBUG] #2 extracting sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153
+2026-Sep-02 10:54:33 [DEBUG] #2 extracting sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 1.8s done
+2026-Sep-02 10:54:33 [DEBUG] #2 DONE 11.1s
+2026-Sep-02 10:54:33 [DEBUG] #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-02 10:54:33 [DEBUG] #2 extracting sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b
+2026-Sep-02 10:54:33 [DEBUG] #2 extracting sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 0.6s done
+2026-Sep-02 10:54:33 [DEBUG] #2 DONE 11.7s
+2026-Sep-02 10:54:34 [DEBUG] #3 load build definition from railpack-plan.json
+2026-Sep-02 10:54:34 [DEBUG] #3 transferring dockerfile:
+2026-Sep-02 10:54:35 [DEBUG] #3 transferring dockerfile: 4.72kB 0.0s done
+2026-Sep-02 10:54:35 [DEBUG] #3 DONE 0.6s
+2026-Sep-02 10:54:36 [DEBUG] #4 [railpack] secrets hash
+2026-Sep-02 10:54:36 [DEBUG] #4 DONE 0.0s
+2026-Sep-02 10:54:36 [DEBUG] 
+2026-Sep-02 10:54:36 [DEBUG] #5 loading .
+2026-Sep-02 10:54:36 [DEBUG] #5 DONE 0.0s
+2026-Sep-02 10:54:36 [DEBUG] 
+2026-Sep-02 10:54:36 [DEBUG] #6 [railpack] loading secrets
+2026-Sep-02 10:54:36 [DEBUG] #6 resolve docker.io/library/alpine:latest
+2026-Sep-02 10:54:37 [DEBUG] #6 ...
+2026-Sep-02 10:54:37 [DEBUG] 
+2026-Sep-02 10:54:37 [DEBUG] #7 docker-image://ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17
+2026-Sep-02 10:54:37 [DEBUG] #7 resolve ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17 1.3s done
+2026-Sep-02 10:54:37 [DEBUG] #7 DONE 1.4s
+2026-Sep-02 10:54:37 [DEBUG] #7 docker-image://ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17
+2026-Sep-02 10:54:37 [DEBUG] #7 CACHED
+2026-Sep-02 10:54:37 [DEBUG] 
+2026-Sep-02 10:54:37 [DEBUG] #8 install apt packages: curl wget
+2026-Sep-02 10:54:41 [DEBUG] #8 ...
+2026-Sep-02 10:54:41 [DEBUG] 
+2026-Sep-02 10:54:41 [DEBUG] #6 [railpack] loading secrets
+2026-Sep-02 10:54:41 [DEBUG] #6 resolve docker.io/library/alpine:latest 5.0s done
+2026-Sep-02 10:54:41 [DEBUG] #6 DONE 5.0s
+2026-Sep-02 10:54:41 [DEBUG] #6 [railpack] loading secrets
+2026-Sep-02 10:54:42 [DEBUG] #6 DONE 6.8s
+2026-Sep-02 10:54:42 [DEBUG] 
+2026-Sep-02 10:54:42 [DEBUG] #8 install apt packages: curl wget
+2026-Sep-02 10:54:42 [DEBUG] #8 4.098 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+2026-Sep-02 10:<REDACTED>@22.23.2    [1/3] install
+2026-Sep-02 10:56:59 [DEBUG] #15 1.249 mise node@22.23.2    [1/3] download node-v22.23.2-linux-x64.tar.gz
+2026-Sep-02 10:56:59 [DEBUG] #15 1.255 mise pnpm@9.15.9     [1/2] install
+2026-Sep-02 10:57:00 [DEBUG] #15 2.021 mise node@22.23.2    [2/3] generate checksum node-v22.23.2-linux-x64.tar.gz
+2026-Sep-02 10:57:00 [DEBUG] 
+2026-Sep-02 10:57:00 [DEBUG] #15 2.097 mise node@22.23.2    [3/3] extract node-v22.23.2-linux-x64.tar.gz
+2026-Sep-02 10:57:00 [DEBUG] #15 2.437 mise pnpm@9.15.9     [1/2] download pnpm-linux-x64
+2026-Sep-02 10:57:00 [DEBUG] 
+2026-Sep-02 10:57:03 [DEBUG] #15 3.856 mise pnpm@9.15.9     [1/2] generate checksum pnpm-linux-x64
+2026-Sep-02 10:57:03 [DEBUG] #15 3.947 mise pnpm@9.15.9     [1/2] extract pnpm-linux-x64
+2026-Sep-02 10:57:04 [DEBUG] #15 5.830 mise node@22.23.2    [3/3] node -v
+2026-Sep-02 10:57:04 [DEBUG] #15 5.887 mise node@22.23.2    [3/3] v22.23.2
+2026-Sep-02 10:57:04 [DEBUG] #15 5.894 mise node@22.23.2    [3/3] npm -v
+2026-Sep-02 10:57:04 [DEBUG] #15 6.301 mise node@22.23.2    [3/3] 10.9.8
+2026-Sep-02 10:57:07 [DEBUG] #15 8.891 mise pnpm@9.15.9   ✓ installed
+2026-Sep-02 10:57:07 [DEBUG] #15 8.967 mise node@22.23.2  ✓ installed
+2026-Sep-02 10:57:13 [DEBUG] #15 DONE 15.6s
+2026-Sep-02 10:57:14 [DEBUG] #16 copy / /app
+2026-Sep-02 10:57:18 [DEBUG] #16 DONE 4.6s
+2026-Sep-02 10:57:19 [DEBUG] #17 mkdir -p /app/node_modules/.cache
+2026-Sep-02 10:57:24 [DEBUG] #17 ...
+2026-Sep-02 10:57:24 [DEBUG] 
+2026-Sep-02 10:57:24 [DEBUG] #18 copy /mise/shims
+2026-Sep-02 10:57:26 [DEBUG] #18 DONE 1.9s
+2026-Sep-02 10:57:26 [DEBUG] 
+2026-Sep-02 10:57:26 [DEBUG] #17 mkdir -p /app/node_modules/.cache
+2026-Sep-02 10:57:26 [DEBUG] #17 ...
+2026-Sep-02 10:57:26 [DEBUG] 
+2026-Sep-02 10:57:26 [DEBUG] #19 copy /mise/installs
+2026-Sep-02 10:57:28 [DEBUG] #19 ...
+2026-Sep-02 10:57:28 [DEBUG] 
+2026-Sep-02 10:57:28 [DEBUG] #17 mkdir -p /app/node_modules/.cache
+2026-Sep-02 10:57:28 [DEBUG] #17 DONE 8.7s
+2026-Sep-02 10:57:28 [DEBUG] #20 pnpm add -g node-gyp
+2026-Sep-02 10:57:36 [DEBUG] #20 8.649 Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-Sep-02 10:57:37 [DEBUG] #20 9.252 Packages: +20
+2026-Sep-02 10:57:37 [DEBUG] #20 9.252 ++++++++++++++++++++
+2026-Sep-02 10:57:37 [DEBUG] #20 9.653 Progress: resolved 20, reused 0, downloaded 16, added 8
+2026-Sep-02 10:57:38 [DEBUG] #20 9.698 Progress: resolved 20, reused 0, downloaded 20, added 20, done
+2026-Sep-02 10:57:39 [DEBUG] #20 11.48
+2026-Sep-02 10:57:39 [DEBUG] #20 11.48 /pnpm/global/5:
+2026-Sep-02 10:57:39 [DEBUG] #20 11.48 + node-gyp 13.0.2
+2026-Sep-02 10:57:39 [DEBUG] #20 11.48
+2026-Sep-02 10:57:39 [DEBUG] #20 11.71 Done in 4.3s using pnpm v9.15.9
+2026-Sep-02 10:57:44 [DEBUG] #20 ...
+2026-Sep-02 10:57:44 [DEBUG] 
+2026-Sep-02 10:57:44 [DEBUG] #19 copy /mise/installs
+2026-Sep-02 10:57:44 [DEBUG] #19 DONE 18.2s
+2026-Sep-02 10:57:45 [DEBUG] #20 pnpm add -g node-gyp
+2026-Sep-02 10:57:45 [DEBUG] #20 DONE 16.7s
+2026-Sep-02 10:57:45 [DEBUG] 
+2026-Sep-02 10:57:45 [DEBUG] #21 copy /usr/local/bin/mise
+2026-Sep-02 10:57:50 [DEBUG] #21 DONE 5.2s
+2026-Sep-02 10:57:50 [DEBUG] 
+2026-Sep-02 10:57:50 [DEBUG] #22 pnpm install --frozen-lockfile --prefer-offline
+2026-Sep-02 10:57:50 [DEBUG] #22 4.630 Scope: all 9 workspace projects
+2026-Sep-02 10:57:50 [DEBUG] #22 4.810  ERR_PNPM_LOCKFILE_CONFIG_MISMATCH  Cannot proceed with the frozen installation. The current "overrides" configuration doesn't match the value found in the lockfile
+2026-Sep-02 10:57:50 [DEBUG] #22 4.810
+2026-Sep-02 10:57:50 [DEBUG] #22 4.810 Update your lockfile using "pnpm install --no-frozen-lockfile"
+2026-Sep-02 10:57:50 [DEBUG] #22 ERROR: process "pnpm install --frozen-lockfile --prefer-offline" did not complete successfully: exit code: 1
+2026-Sep-02 10:57:50 [DEBUG] 
+2026-Sep-02 10:57:50 [DEBUG] #23 copy /etc/mise/config.toml
+2026-Sep-02 10:57:52 [DEBUG] #23 CANCELED
+2026-Sep-02 10:57:52 [DEBUG] ------
+2026-Sep-02 10:57:52 [DEBUG] > pnpm install --frozen-lockfile --prefer-offline:
+2026-Sep-02 10:57:52 [DEBUG] 4.630 Scope: all 9 workspace projects
+2026-Sep-02 10:57:52 [DEBUG] 4.810  ERR_PNPM_LOCKFILE_CONFIG_MISMATCH  Cannot proceed with the frozen installation. The current "overrides" configuration doesn't match the value found in the lockfile
+2026-Sep-02 10:57:52 [DEBUG] 4.810
+2026-Sep-02 10:57:52 [DEBUG] 4.810 Update your lockfile using "pnpm install --no-frozen-lockfile"
+2026-Sep-02 10:57:52 [DEBUG] ------
+2026-Sep-02 10:57:52 [DEBUG] ERROR: failed to build: failed to solve: process "pnpm install --frozen-lockfile --prefer-offline" did not complete successfully: exit code: 1
+2026-Sep-02 10:57:55 ========================================
+2026-Sep-02 10:57:55 Deployment failed: Command execution failed (exit code 1): docker exec aygyfattiw5x5gdv78kdbihb bash -c 'bash /artifacts/build.sh'
+2026-Sep-02 10:57:55 Error: #0 building with "coolify-railpack" instance using docker-container driver
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #1 resolve image config for docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0
+2026-Sep-02 10:57:55 #1 DONE 4.8s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-02 10:57:55 #2 resolve ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-02 10:57:55 #2 resolve ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6 1.3s done
+2026-Sep-02 10:57:55 #2 DONE 2.1s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-02 10:57:55 #2 DONE 6.4s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-02 10:57:55 #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 0B / 8.67MB 0.2s
+2026-Sep-02 10:57:55 #2 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 0B / 3.86MB 0.2s
+2026-Sep-02 10:57:55 #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 3.15MB / 8.67MB 0.8s
+2026-Sep-02 10:57:55 #2 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 3.86MB / 3.86MB 0.8s
+2026-Sep-02 10:57:55 #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 6.29MB / 8.67MB 0.9s
+2026-Sep-02 10:57:55 #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 7.34MB / 8.67MB 1.1s
+2026-Sep-02 10:57:55 #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 8.67MB / 8.67MB 1.4s
+2026-Sep-02 10:57:55 #2 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 3.86MB / 3.86MB 1.1s done
+2026-Sep-02 10:57:55 #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 8.67MB / 8.67MB 1.8s done
+2026-Sep-02 10:57:55 #2 DONE 9.3s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-02 10:57:55 #2 extracting sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153
+2026-Sep-02 10:57:55 #2 extracting sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 1.8s done
+2026-Sep-02 10:57:55 #2 DONE 11.1s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-02 10:57:55 #2 extracting sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b
+2026-Sep-02 10:57:55 #2 extracting sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 0.6s done
+2026-Sep-02 10:57:55 #2 DONE 11.7s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #3 load build definition from railpack-plan.json
+2026-Sep-02 10:57:55 #3 transferring dockerfile:
+2026-Sep-02 10:57:55 #3 transferring dockerfile: 4.72kB 0.0s done
+2026-Sep-02 10:57:55 #3 DONE 0.6s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #4 [railpack] secrets hash
+2026-Sep-02 10:57:55 #4 DONE 0.0s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #5 loading .
+2026-Sep-02 10:57:55 #5 DONE 0.0s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #6 [railpack] loading secrets
+2026-Sep-02 10:57:55 #6 resolve docker.io/library/alpine:latest
+2026-Sep-02 10:57:55 #6 ...
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #7 docker-image://ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17
+2026-Sep-02 10:57:55 #7 resolve ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17 1.3s done
+2026-Sep-02 10:57:55 #7 DONE 1.4s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #7 docker-image://ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17
+2026-Sep-02 10:57:55 #7 CACHED
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #8 install apt packages: curl wget
+2026-Sep-02 10:57:55 #8 ...
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #6 [railpack] loading secrets
+2026-Sep-02 10:57:55 #6 resolve docker.io/library/alpine:latest 5.0s done
+2026-Sep-02 10:57:55 #6 DONE 5.0s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #6 [railpack] loading secrets
+2026-Sep-02 10:57:55 #6 DONE 6.8s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #8 install apt packages: curl wget
+2026-Sep-02 10:57:55 #8 4.098 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+2026-Sep-02 10:<REDACTED>@22.23.2    [1/3] install
+2026-Sep-02 10:57:55 #15 1.249 mise node@22.23.2    [1/3] download node-v22.23.2-linux-x64.tar.gz
+2026-Sep-02 10:57:55 #15 1.255 mise pnpm@9.15.9     [1/2] install
+2026-Sep-02 10:57:55 #15 2.021 mise node@22.23.2    [2/3] generate checksum node-v22.23.2-linux-x64.tar.gz
+2026-Sep-02 10:57:55 #15 2.097 mise node@22.23.2    [3/3] extract node-v22.23.2-linux-x64.tar.gz
+2026-Sep-02 10:57:55 #15 2.437 mise pnpm@9.15.9     [1/2] download pnpm-linux-x64
+2026-Sep-02 10:57:55 #15 3.856 mise pnpm@9.15.9     [1/2] generate checksum pnpm-linux-x64
+2026-Sep-02 10:57:55 #15 3.947 mise pnpm@9.15.9     [1/2] extract pnpm-linux-x64
+2026-Sep-02 10:57:55 #15 5.830 mise node@22.23.2    [3/3] node -v
+2026-Sep-02 10:57:55 #15 5.887 mise node@22.23.2    [3/3] v22.23.2
+2026-Sep-02 10:57:55 #15 5.894 mise node@22.23.2    [3/3] npm -v
+2026-Sep-02 10:57:55 #15 6.301 mise node@22.23.2    [3/3] 10.9.8
+2026-Sep-02 10:57:55 #15 8.891 mise pnpm@9.15.9   ✓ installed
+2026-Sep-02 10:57:55 #15 8.967 mise node@22.23.2  ✓ installed
+2026-Sep-02 10:57:55 #15 DONE 15.6s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #16 copy / /app
+2026-Sep-02 10:57:55 #16 DONE 4.6s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #17 mkdir -p /app/node_modules/.cache
+2026-Sep-02 10:57:55 #17 ...
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #18 copy /mise/shims
+2026-Sep-02 10:57:55 #18 DONE 1.9s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #17 mkdir -p /app/node_modules/.cache
+2026-Sep-02 10:57:55 #17 ...
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #19 copy /mise/installs
+2026-Sep-02 10:57:55 #19 ...
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #17 mkdir -p /app/node_modules/.cache
+2026-Sep-02 10:57:55 #17 DONE 8.7s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #20 pnpm add -g node-gyp
+2026-Sep-02 10:57:55 #20 8.649 Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-Sep-02 10:57:55 #20 9.252 Packages: +20
+2026-Sep-02 10:57:55 #20 9.252 ++++++++++++++++++++
+2026-Sep-02 10:57:55 #20 9.653 Progress: resolved 20, reused 0, downloaded 16, added 8
+2026-Sep-02 10:57:55 #20 9.698 Progress: resolved 20, reused 0, downloaded 20, added 20, done
+2026-Sep-02 10:57:55 #20 11.48
+2026-Sep-02 10:57:55 #20 11.48 /pnpm/global/5:
+2026-Sep-02 10:57:55 #20 11.48 + node-gyp 13.0.2
+2026-Sep-02 10:57:55 #20 11.48
+2026-Sep-02 10:57:55 #20 11.71 Done in 4.3s using pnpm v9.15.9
+2026-Sep-02 10:57:55 #20 ...
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #19 copy /mise/installs
+2026-Sep-02 10:57:55 #19 DONE 18.2s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #20 pnpm add -g node-gyp
+2026-Sep-02 10:57:55 #20 DONE 16.7s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #21 copy /usr/local/bin/mise
+2026-Sep-02 10:57:55 #21 DONE 5.2s
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #22 pnpm install --frozen-lockfile --prefer-offline
+2026-Sep-02 10:57:55 #22 4.630 Scope: all 9 workspace projects
+2026-Sep-02 10:57:55 #22 4.810  ERR_PNPM_LOCKFILE_CONFIG_MISMATCH  Cannot proceed with the frozen installation. The current "overrides" configuration doesn't match the value found in the lockfile
+2026-Sep-02 10:57:55 #22 4.810
+2026-Sep-02 10:57:55 #22 4.810 Update your lockfile using "pnpm install --no-frozen-lockfile"
+2026-Sep-02 10:57:55 #22 ERROR: process "pnpm install --frozen-lockfile --prefer-offline" did not complete successfully: exit code: 1
+2026-Sep-02 10:57:55 
+2026-Sep-02 10:57:55 #23 copy /etc/mise/config.toml
+2026-Sep-02 10:57:55 #23 CANCELED
+2026-Sep-02 10:57:55 ------
+2026-Sep-02 10:57:55 > pnpm install --frozen-lockfile --prefer-offline:
+2026-Sep-02 10:57:55 4.630 Scope: all 9 workspace projects
+2026-Sep-02 10:57:55 4.810  ERR_PNPM_LOCKFILE_CONFIG_MISMATCH  Cannot proceed with the frozen installation. The current "overrides" configuration doesn't match the value found in the lockfile
+2026-Sep-02 10:57:55 4.810
+2026-Sep-02 10:57:55 4.810 Update your lockfile using "pnpm install --no-frozen-lockfile"
+2026-Sep-02 10:57:55 ------
+2026-Sep-02 10:57:55 ERROR: failed to build: failed to solve: process "pnpm install --frozen-lockfile --prefer-offline" did not complete successfully: exit code: 1
+2026-Sep-02 10:57:55 [DEBUG] Error type: App\Exceptions\DeploymentException
+2026-Sep-02 10:57:55 [DEBUG] Error code: 0
+2026-Sep-02 10:57:55 [DEBUG] Location: /var/www/html/app/Traits/ExecuteRemoteCommand.php:243
+2026-Sep-02 10:57:55 [DEBUG] Stack trace (first 5 lines):
+2026-Sep-02 10:57:55 [DEBUG] #0 /var/www/html/app/Traits/ExecuteRemoteCommand.php(107): App\Jobs\ApplicationDeploymentJob->executeCommandWithProcess()
+2026-Sep-02 10:57:55 [DEBUG] #1 /var/www/html/vendor/laravel/framework/src/Illuminate/Collections/Traits/EnumeratesValues.php(275): App\Jobs\ApplicationDeploymentJob->{closure:App\Traits\ExecuteRemoteCommand::execute_remote_command():72}()
+2026-Sep-02 10:57:55 [DEBUG] #2 /var/www/html/app/Traits/ExecuteRemoteCommand.php(72): Illuminate\Support\Collection->each()
+2026-Sep-02 10:57:56 [DEBUG] #3 /var/www/html/app/Jobs/ApplicationDeploymentJob.php(3023): App\Jobs\ApplicationDeploymentJob->execute_remote_command()
+2026-Sep-02 10:57:56 [DEBUG] #4 /var/www/html/app/Jobs/ApplicationDeploymentJob.php(999): App\Jobs\ApplicationDeploymentJob->build_railpack_image()
+2026-Sep-02 10:57:56 ========================================
+2026-Sep-02 10:57:56 Deployment failed. Removing the new version of your application.
+2026-Sep-02 10:57:56 [DEBUG] [CMD]: bash -c 'if command -v timeout >/dev/null 2>&1; then output=$(timeout -k 10s 60s docker rm -f '\''5c8i99hcyvaqffvxrntkknib-105347857287'\'' 2>&1); exit_code=$?; else output='\'''\''; exit_code=124; fi; if [ "$exit_code" -eq 124 ]; then echo '\''__COOLIFY_CONTAINER_REMOVE_TIMEOUT__'\''; elif [ "$exit_code" -ne 0 ] && printf '\''%s'\'' "$output" | grep -q '\''No such container:'\''; then exit 0; elif [ "$exit_code" -ne 0 ]; then printf '\''%s\n'\'' "$output" >&2; else printf '\''%s\n'\'' "$output"; fi; exit $exit_code'
+2026-Sep-02 10:57:56 [DEBUG] Error response from daemon: No such container: 5c8i99hcyvaqffvxrntkknib-105347857287
+2026-Sep-02 10:57:57 Gracefully shutting down build container: aygyfattiw5x5gdv78kdbihb
+2026-Sep-02 10:58:00 [DEBUG] [CMD]: docker stop --timeout=30 aygyfattiw5x5gdv78kdbihb
+2026-Sep-02 10:58:00 [DEBUG] aygyfattiw5x5gdv78kdbihb
