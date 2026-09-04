@@ -95,24 +95,14 @@ export async function listPendaftar(filters: {
   to?: string;
   allowedJenjang?: readonly string[];
 }) {
-  const conditions = buildApplicationConditions(filters);
-  const where = conditions.length ? and(...conditions) : undefined;
-  const items = await db
-    .select({
-      id: pendaftarTable.id,
-      nis: pendaftarTable.nis,
-      nama_calon: pendaftarTable.nama_calon,
-      jenjang: pendaftarTable.jenjang,
-      nama_sekolah_asal: pendaftarTable.nama_sekolah_asal,
-      email: pendaftarTable.email,
-      status: pendaftarTable.status,
-      created_at: pendaftarTable.created_at,
-    })
-    .from(pendaftarTable)
-    .where(where)
-    .orderBy(desc(pendaftarTable.created_at), desc(pendaftarTable.id));
-
-  return { items: await Promise.all(items.map(ensurePendaftarNis)), total: items.length };
+  try {
+    return await queryApplicationList(filters, true);
+  } catch (error) {
+    // Older external databases may predate the server-generated NIS column.
+    // Keep the read-only list usable until that database can be migrated.
+    if (!isMissingSchemaColumn(error)) throw error;
+    return queryApplicationList(filters, false);
+  }
 }
 
 function buildApplicationConditions(filters: {
@@ -122,20 +112,19 @@ function buildApplicationConditions(filters: {
   from?: string;
   to?: string;
   allowedJenjang?: readonly string[];
-}) {
+}, includeNisSearch = true) {
   const conditions = [];
   const search = filters.search?.trim();
 
   if (search) {
-    conditions.push(
-      or(
-        ilike(pendaftarTable.nama_calon, `%${search}%`),
-        sql`CAST(${pendaftarTable.id} AS TEXT) ILIKE ${`%${search}%`}`,
-        ilike(pendaftarTable.nis, `%${search}%`),
-        ilike(pendaftarTable.nama_sekolah_asal, `%${search}%`),
-        ilike(pendaftarTable.nomor_hp_orangtua, `%${search}%`),
-      ),
-    );
+    const searchConditions = [
+      ilike(pendaftarTable.nama_calon, `%${search}%`),
+      sql`CAST(${pendaftarTable.id} AS TEXT) ILIKE ${`%${search}%`}`,
+      ilike(pendaftarTable.nama_sekolah_asal, `%${search}%`),
+      ilike(pendaftarTable.nomor_hp_orangtua, `%${search}%`),
+    ];
+    if (includeNisSearch) searchConditions.push(ilike(pendaftarTable.nis, `%${search}%`));
+    conditions.push(or(...searchConditions));
   }
 
   if (filters.jenjang && filters.jenjang !== "Semua") {
@@ -158,6 +147,63 @@ function buildApplicationConditions(filters: {
   }
 
   return conditions;
+}
+
+function isMissingSchemaColumn(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /column .* does not exist/i.test(message);
+}
+
+async function queryApplicationList(
+  filters: {
+    search?: string;
+    jenjang?: string;
+    status?: string;
+    from?: string;
+    to?: string;
+    allowedJenjang?: readonly string[];
+  },
+  includeNis: boolean,
+) {
+  const conditions = buildApplicationConditions(filters, includeNis);
+  const where = conditions.length ? and(...conditions) : undefined;
+  if (includeNis) {
+    const items = await db
+      .select({
+        id: pendaftarTable.id,
+        nis: pendaftarTable.nis,
+        nama_calon: pendaftarTable.nama_calon,
+        jenjang: pendaftarTable.jenjang,
+        nama_sekolah_asal: pendaftarTable.nama_sekolah_asal,
+        email: pendaftarTable.email,
+        status: pendaftarTable.status,
+        created_at: pendaftarTable.created_at,
+      })
+      .from(pendaftarTable)
+      .where(where)
+      .orderBy(desc(pendaftarTable.created_at), desc(pendaftarTable.id));
+
+    return { items: await Promise.all(items.map(ensurePendaftarNis)), total: items.length };
+  }
+
+  const items = await db
+    .select({
+      id: pendaftarTable.id,
+      nama_calon: pendaftarTable.nama_calon,
+      jenjang: pendaftarTable.jenjang,
+      nama_sekolah_asal: pendaftarTable.nama_sekolah_asal,
+      email: pendaftarTable.email,
+      status: pendaftarTable.status,
+      created_at: pendaftarTable.created_at,
+    })
+    .from(pendaftarTable)
+    .where(where)
+    .orderBy(desc(pendaftarTable.created_at), desc(pendaftarTable.id));
+
+  return {
+    items: items.map((item) => ({ ...item, nis: null })),
+    total: items.length,
+  };
 }
 
 export async function getPendaftar(id: number) {
