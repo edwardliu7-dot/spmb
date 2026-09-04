@@ -193,7 +193,7 @@ root.innerHTML = `
               <a class="form-board-contact-item" href="tel:+6281299876500"><span class="form-board-contact-label">Telepon</span><span>+62 812 9987 6500</span></a>
               <a class="form-board-contact-item" href="mailto:tsislamics@gmail.com"><span class="form-board-contact-label">Email</span><span>tsislamics@gmail.com</span></a>
               <span class="form-board-contact-item"><span class="form-board-contact-label">Jam layanan</span><span>08:00–14:00 WIB</span></span>
-              <span class="form-board-contact-socials"><span class="form-board-contact-label">Bantuan di</span><a href="https://www.instagram.com/tisa.islamicschool/" target="_blank" rel="noreferrer">@tisa.islamicschool</a><a href="https://www.youtube.com/@TisaIslamicSchool" target="_blank" rel="noreferrer">@TisaIslamicSchool</a><a href="https://www.tiktok.com/@tisaislamic" target="_blank" rel="noreferrer">@tisaislamic</a></span>
+              <span class="form-board-contact-socials"><span class="form-board-contact-label">Bantuan di</span><a href="https://www.instagram.com/tisa.islamicschool/" target="_blank" rel="noreferrer">Instagram @tisa.islamicschool</a><a href="https://www.youtube.com/@TisaIslamicSchool" target="_blank" rel="noreferrer">YouTube @TisaIslamicSchool</a><a href="https://www.tiktok.com/@tisaislamic" target="_blank" rel="noreferrer">TikTok @tisaislamic</a></span>
             </div>
           </div>
         </div>
