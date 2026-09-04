@@ -984,6 +984,10 @@
   border-bottom: 1px solid #dedbd0;
 }
 
+.form-board-section[hidden] {
+  display: none;
+}
+
 .form-board-section-active {
   background: #fbf9f2;
   box-shadow: inset 3px 0 0 #b55341;
@@ -1261,9 +1265,89 @@
   cursor: pointer;
 }
 
+.form-board-step-navigation {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px 28px;
+  border-bottom: 1px solid #dedbd0;
+  background: #fbf9f2;
+}
+
+.form-board-step-navigation-copy {
+  color: #8a9187;
+  font-size: 10px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.form-board-step-button {
+  display: inline-flex;
+  min-width: 96px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 37px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.form-board-step-button svg {
+  width: 13px;
+  height: 13px;
+}
+
+.form-board-step-button-primary {
+  border: 0;
+  background: #1f5a5b;
+  color: #f7f3e9;
+}
+
+.form-board-step-button-primary svg {
+  transform: rotate(-90deg);
+}
+
+.form-board-step-button-secondary {
+  border: 1px solid #a5beb0;
+  background: transparent;
+  color: #3d7068;
+}
+
+.form-board-step-button-secondary svg {
+  transform: rotate(90deg);
+}
+
+.form-board-step-button:hover {
+  transform: translateY(-1px);
+}
+
+.form-board-step-button-primary:hover {
+  background: #164849;
+}
+
+.form-board-step-button-secondary:hover {
+  border-color: #527d75;
+  background: #e8f0e9;
+}
+
+.form-board-step-button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+  transform: none;
+}
+
 .form-board-submit-area {
+  display: none;
   padding: 20px 28px 23px;
   background: #edf2e9;
+}
+
+.form-board-submit-area.is-visible {
+  display: block;
 }
 
 .form-board-consent {
@@ -1515,6 +1599,7 @@
 
   .form-board-form-header,
   .form-board-section,
+  .form-board-step-navigation,
   .form-board-submit-area {
     padding-right: 22px;
     padding-left: 22px;
@@ -1770,6 +1855,16 @@
 
   .form-board-submit-area {
     padding: 20px 17px 23px;
+  }
+
+  .form-board-step-navigation {
+    min-height: 68px;
+    padding: 13px 17px;
+  }
+
+  .form-board-step-navigation-copy {
+    max-width: 130px;
+    font-size: 9px;
   }
 
   .form-board-submit-row {

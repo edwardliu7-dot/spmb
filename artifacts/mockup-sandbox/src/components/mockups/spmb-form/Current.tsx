@@ -57,7 +57,7 @@ const schoolFields: Field[] = [
 
 const parentFields: Field[] = [
   { name: "nomor_kk", label: "Nomor Kartu Keluarga" },
-  { name: "nik_orangtua", label: "NIK orang tua" },
+  { name: "nik_ayah", label: "NIK ayah" },
   { name: "nomor_hp_orangtua", label: "Nomor HP orang tua", hint: "Nomor yang aktif menerima informasi" },
   { name: "email", label: "Email orang tua", kind: "email" },
   { name: "nama_ayah", label: "Nama lengkap ayah" },
@@ -66,6 +66,7 @@ const parentFields: Field[] = [
   { name: "pekerjaan_ayah", label: "Pekerjaan ayah" },
   { name: "penghasilan_ayah", label: "Penghasilan per bulan ayah" },
   { name: "instansi_jabatan_ayah", label: "Instansi atau jabatan ayah" },
+  { name: "nik_ibu", label: "NIK ibu" },
   { name: "nama_ibu", label: "Nama lengkap ibu" },
   { name: "ttl_ibu", label: "Tempat, tanggal lahir ibu" },
   { name: "pendidikan_ibu", label: "Pendidikan terakhir ibu" },

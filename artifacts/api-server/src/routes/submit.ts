@@ -98,7 +98,8 @@ const textFields = [
   "tahun_lulus",
   "alamat_sekolah_asal",
   "nomor_kk",
-  "nik_orangtua",
+  "nik_ayah",
+  "nik_ibu",
   "nomor_hp_orangtua",
   "email",
   "nama_ayah",
@@ -359,12 +360,14 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
   const invalidFormats: string[] = [];
   const nisn = getValue(request, "nisn");
   const nikAnak = getValue(request, "nik_anak");
-  const nikOrangtua = getValue(request, "nik_orangtua");
+  const nikAyah = getValue(request, "nik_ayah");
+  const nikIbu = getValue(request, "nik_ibu");
   const nomorKk = getValue(request, "nomor_kk");
   const nomorHp = getValue(request, "nomor_hp_orangtua");
   if (nisn && !isDigits(nisn, 10)) invalidFormats.push("nisn");
   if (nikAnak && !isDigits(nikAnak, 16)) invalidFormats.push("nik_anak");
-  if (nikOrangtua && !isDigits(nikOrangtua, 16)) invalidFormats.push("nik_orangtua");
+  if (nikAyah && !isDigits(nikAyah, 16)) invalidFormats.push("nik_ayah");
+  if (nikIbu && !isDigits(nikIbu, 16)) invalidFormats.push("nik_ibu");
   if (nomorKk && !isDigits(nomorKk, 16)) invalidFormats.push("nomor_kk");
   if (nomorHp && !isValidPhoneNumber(nomorHp)) invalidFormats.push("nomor_hp_orangtua");
   for (const [field, allowedValues] of Object.entries(validFieldValues)) {
@@ -454,7 +457,8 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
        tahun_lulus: getValue(request, "tahun_lulus") ? Number(getValue(request, "tahun_lulus")) : null,
        alamat_sekolah_asal: getValue(request, "alamat_sekolah_asal") || null,
       nomor_kk: getValue(request, "nomor_kk"),
-      nik_orangtua: getValue(request, "nik_orangtua"),
+       nik_ayah: getValue(request, "nik_ayah"),
+       nik_ibu: getValue(request, "nik_ibu"),
       nomor_hp_orangtua: getValue(request, "nomor_hp_orangtua"),
       email,
       nama_ayah: getValue(request, "nama_ayah"),

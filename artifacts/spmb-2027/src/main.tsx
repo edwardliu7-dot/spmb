@@ -122,7 +122,7 @@ const schoolFields = [
 
 const parentFields = [
   inputField('nomor_kk', 'Nomor Kartu Keluarga'),
-  inputField('nik_orangtua', 'NIK orang tua'),
+  inputField('nik_ayah', 'NIK ayah'),
   inputField('nomor_hp_orangtua', 'Nomor HP orang tua', 'text', [], 'Nomor yang aktif menerima informasi'),
   inputField('email', 'Email orang tua', 'email'),
   inputField('nama_ayah', 'Nama lengkap ayah'),
@@ -131,6 +131,7 @@ const parentFields = [
   inputField('pekerjaan_ayah', 'Pekerjaan ayah'),
   inputField('penghasilan_ayah', 'Penghasilan per bulan ayah'),
   inputField('instansi_jabatan_ayah', 'Instansi atau jabatan ayah'),
+  inputField('nik_ibu', 'NIK ibu'),
   inputField('nama_ibu', 'Nama lengkap ibu'),
   inputField('ttl_ibu', 'Tempat, tanggal lahir ibu'),
   inputField('pendidikan_ibu', 'Pendidikan terakhir ibu'),
@@ -148,6 +149,12 @@ const uploadFields = [
   fileField('ktp_orangtua', 'KTP orang tua', 'Belum ada berkas dipilih'),
   fileField('bukti_bayar', 'Bukti pembayaran', 'Belum ada berkas dipilih'),
 ].join('');
+
+const sectionIds = ['section-student', 'section-school', 'section-parent', 'section-upload'];
+const uploadFieldNames = ['foto_3x4', 'akte_lahir', 'kartu_keluarga', 'ktp_orangtua', 'bukti_bayar'];
+const draftStorageKey = 'spmb-2027-form-draft';
+const draftFilesDatabase = 'spmb-2027-draft-files';
+const draftFilesStore = 'files';
 
 if (window.location.pathname.replace(/\/+$/, '') === '/panitia') {
   void import('./panitia');
@@ -213,7 +220,7 @@ root.innerHTML = `
         <aside class="form-board-sidebar" aria-label="Kemajuan formulir">
           <div class="form-board-sidebar-head">
             <div><div class="form-board-panel-kicker">${icon('file')}Tahapan pendaftaran</div><h2>Formulir<br /><em>pendaftaran.</em></h2></div>
-            <span class="form-board-progress-count">01<span>/04</span></span>
+            <span class="form-board-progress-count"><span id="progress-current">01</span><span>/04</span></span>
           </div>
           <ol class="form-board-step-list">
             <li><button class="form-board-step progress-item form-board-step-active is-active" type="button" data-go-section="section-student" data-testid="button-progress-student"><span class="form-board-step-number">01</span><span><strong>Calon peserta didik</strong><small>Identitas utama</small></span></button></li>
@@ -244,6 +251,11 @@ root.innerHTML = `
                 </div>
                 <div class="form-board-upload-grid">${uploadFields}</div>
               </fieldset>
+              <div class="form-board-step-navigation" id="step-navigation">
+                <button class="form-board-step-button form-board-step-button-secondary" type="button" id="step-back" data-testid="button-step-back">${icon('chevron')}<span>Kembali</span></button>
+                <span class="form-board-step-navigation-copy" id="step-navigation-copy">Lengkapi bagian ini, lalu lanjutkan.</span>
+                <button class="form-board-step-button form-board-step-button-primary" type="button" id="step-next" data-testid="button-step-next"><span>Lanjut</span>${icon('chevron')}</button>
+              </div>
               <div class="form-board-submit-area">
                 <label class="form-board-consent"><input id="consent" name="consent" type="checkbox" required data-testid="input-consent" /><span>Saya memastikan data yang diisi <b>benar dan dapat dipertanggungjawabkan</b>.</span></label>
                 <div class="form-board-submit-row">
@@ -284,6 +296,158 @@ const formNotice = document.getElementById('form-notice') as HTMLDivElement;
 const formNoticeText = formNotice.querySelector('span') as HTMLSpanElement;
 const menuButton = document.querySelector<HTMLButtonElement>('.form-board-menu-button');
 const navigation = document.querySelector<HTMLElement>('.form-board-nav');
+const progressCurrent = document.getElementById('progress-current') as HTMLSpanElement;
+const stepNavigation = document.getElementById('step-navigation') as HTMLDivElement;
+const stepNavigationCopy = document.getElementById('step-navigation-copy') as HTMLSpanElement;
+const stepBack = document.getElementById('step-back') as HTMLButtonElement;
+const stepNext = document.getElementById('step-next') as HTMLButtonElement;
+const submitArea = document.querySelector<HTMLElement>('.form-board-submit-area');
+
+type CachedFileMetadata = {
+  name: string;
+  size: number;
+  type: string;
+  lastModified: number;
+};
+
+type DraftState = {
+  fields: Record<string, string | boolean>;
+  files: Record<string, CachedFileMetadata>;
+  currentSection: number;
+};
+
+let activeSectionIndex = 0;
+let cachedFileMetadata: Record<string, CachedFileMetadata> = {};
+
+function readDraft(): DraftState | null {
+  try {
+    const stored = localStorage.getItem(draftStorageKey);
+    if (!stored) return null;
+    const draft = JSON.parse(stored) as Partial<DraftState>;
+    return {
+      fields: draft.fields && typeof draft.fields === 'object' ? draft.fields : {},
+      files: draft.files && typeof draft.files === 'object' ? draft.files : {},
+      currentSection: typeof draft.currentSection === 'number' ? draft.currentSection : 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function saveDraft(): void {
+  try {
+    const fields: Record<string, string | boolean> = {};
+    form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('input, select, textarea').forEach((control) => {
+      if (control.type === 'file') return;
+      fields[control.name] = control instanceof HTMLInputElement && control.type === 'checkbox'
+        ? control.checked
+        : control.value;
+    });
+    localStorage.setItem(draftStorageKey, JSON.stringify({
+      fields,
+      files: cachedFileMetadata,
+      currentSection: activeSectionIndex,
+    } satisfies DraftState));
+  } catch {
+    // Form submission remains available if browser storage is unavailable.
+  }
+}
+
+function openDraftFilesDatabase(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) {
+      reject(new Error('Penyimpanan berkas lokal tidak tersedia.'));
+      return;
+    }
+    const request = window.indexedDB.open(draftFilesDatabase, 1);
+    request.onupgradeneeded = () => {
+      request.result.createObjectStore(draftFilesStore);
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error('Penyimpanan berkas lokal gagal dibuka.'));
+  });
+}
+
+async function cacheDraftFile(name: string, file: File): Promise<void> {
+  const database = await openDraftFilesDatabase();
+  await new Promise<void>((resolve, reject) => {
+    const transaction = database.transaction(draftFilesStore, 'readwrite');
+    transaction.objectStore(draftFilesStore).put(file, name);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error || new Error('Berkas tidak dapat disimpan sementara.'));
+  }).finally(() => database.close());
+}
+
+async function getCachedDraftFile(name: string): Promise<File | null> {
+  try {
+    const database = await openDraftFilesDatabase();
+    return await new Promise<File | null>((resolve, reject) => {
+      const request = database.transaction(draftFilesStore, 'readonly').objectStore(draftFilesStore).get(name);
+      request.onsuccess = () => resolve(request.result instanceof File ? request.result : null);
+      request.onerror = () => reject(request.error || new Error('Berkas sementara tidak dapat dibaca.'));
+    }).finally(() => database.close());
+  } catch {
+    return null;
+  }
+}
+
+async function removeCachedDraftFile(name: string): Promise<void> {
+  try {
+    const database = await openDraftFilesDatabase();
+    await new Promise<void>((resolve, reject) => {
+      const transaction = database.transaction(draftFilesStore, 'readwrite');
+      transaction.objectStore(draftFilesStore).delete(name);
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error || new Error('Berkas sementara tidak dapat dihapus.'));
+    }).finally(() => database.close());
+  } catch {
+    // A missing local cache should not block a new file selection.
+  }
+}
+
+async function clearCachedDraftFiles(): Promise<void> {
+  try {
+    const database = await openDraftFilesDatabase();
+    await new Promise<void>((resolve, reject) => {
+      const transaction = database.transaction(draftFilesStore, 'readwrite');
+      transaction.objectStore(draftFilesStore).clear();
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error || new Error('Berkas sementara tidak dapat dihapus.'));
+    }).finally(() => database.close());
+  } catch {
+    // The text draft can still be cleared independently.
+  }
+}
+
+function clearDraft(): void {
+  cachedFileMetadata = {};
+  try {
+    localStorage.removeItem(draftStorageKey);
+  } catch {
+    // Ignore unavailable browser storage.
+  }
+  void clearCachedDraftFiles();
+}
+
+function restoreDraft(): void {
+  const draft = readDraft();
+  if (!draft) return;
+  cachedFileMetadata = draft.files;
+  activeSectionIndex = Math.min(Math.max(draft.currentSection, 0), sectionIds.length - 1);
+  Object.entries(draft.fields).forEach(([name, value]) => {
+    const control = getFieldControl(name) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
+    if (!control) return;
+    if (control instanceof HTMLInputElement && control.type === 'checkbox') {
+      control.checked = value === true;
+    } else if (typeof value === 'string') {
+      control.value = value;
+    }
+  });
+  Object.entries(cachedFileMetadata).forEach(([name, file]) => {
+    const label = document.querySelector<HTMLElement>(`[data-file-name="${name}"]`);
+    if (label) label.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB`;
+  });
+}
 
 function setError(field: HTMLElement, message: string): void {
   const wrapper = field.closest<HTMLElement>('[data-field]');
@@ -341,7 +505,8 @@ function updateSchoolFieldsRequirement(): void {
 const digitRules: Record<string, number> = {
   nisn: 10,
   nik_anak: 16,
-  nik_orangtua: 16,
+  nik_ayah: 16,
+  nik_ibu: 16,
   nomor_kk: 16,
 };
 
@@ -358,7 +523,7 @@ function isValidPhone(value: string): boolean {
   return /^(?:\+62|62|0)8\d{8,12}$/.test(value.replace(/[^\d+]/g, ''));
 }
 
-function validateForm(): boolean {
+async function validateForm(scope: ParentNode = form): Promise<boolean> {
   let firstInvalid: HTMLElement | null = null;
   const invalidNames = new Set<string>();
   const markInvalid = (control: HTMLElement, message: string) => {
@@ -366,10 +531,15 @@ function validateForm(): boolean {
     invalidNames.add(control.id);
     if (!firstInvalid) firstInvalid = control;
   };
-  const controls = Array.from(form.querySelectorAll<HTMLElement>('input, select, textarea'));
-  controls.forEach((control) => {
+  const controls = Array.from(scope.querySelectorAll<HTMLElement>('input, select, textarea'));
+  for (const control of controls) {
     clearError(control);
     const input = control as HTMLInputElement;
+    if (input.type === 'file') {
+      const hasFile = Boolean(input.files?.[0]) || Boolean(await getCachedDraftFile(input.name));
+      if (!hasFile && input.required) markInvalid(control, 'Berkas ini wajib diunggah.');
+      continue;
+    }
     const empty = input.type === 'checkbox' ? !input.checked : !input.value.trim();
     if (empty) {
       if (input.required) {
@@ -404,18 +574,27 @@ function validateForm(): boolean {
         }
       }
     }
-  });
+  }
 
-  const guardianName = document.getElementById('nama_wali') as HTMLInputElement | null;
-  const guardianRelation = document.getElementById('hubungan_wali') as HTMLInputElement | null;
+  const guardianName = scope.querySelector<HTMLInputElement>('#nama_wali');
+  const guardianRelation = scope.querySelector<HTMLInputElement>('#hubungan_wali');
   if (guardianName?.value.trim() && !guardianRelation?.value.trim()) {
     markInvalid(guardianRelation || guardianName, 'Isi hubungan dengan wali.');
   } else if (guardianRelation?.value.trim() && !guardianName?.value.trim()) {
     markInvalid(guardianName || guardianRelation, 'Isi nama wali.');
   }
 
-  if (firstInvalid) {
-    (firstInvalid as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).focus();
+  const invalidControl = firstInvalid as HTMLElement | null;
+  if (invalidControl) {
+    if (scope === form) {
+      const invalidSection = invalidControl.closest<HTMLElement>('[data-section]');
+      const invalidSectionIndex = invalidSection ? sectionIds.indexOf(invalidSection.id) : -1;
+      if (invalidSectionIndex >= 0 && invalidSectionIndex !== activeSectionIndex) {
+        activeSectionIndex = invalidSectionIndex;
+        updateProgress();
+      }
+    }
+    (invalidControl as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).focus();
     const labels = [...invalidNames].map(getFieldLabel);
     errorAlert.textContent = labels.length === 1
       ? `Periksa kolom ${labels[0]}.`
@@ -427,20 +606,30 @@ function validateForm(): boolean {
   return true;
 }
 
+function goToSection(index: number, shouldScroll = true): void {
+  activeSectionIndex = Math.min(Math.max(index, 0), sectionIds.length - 1);
+  updateProgress();
+  saveDraft();
+  if (shouldScroll) {
+    document.getElementById(sectionIds[activeSectionIndex])?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 function updateProgress(): void {
   const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-section]'));
-  const marker = window.scrollY + 165;
-  let activeIndex = 0;
+  const activeIndex = Math.min(activeSectionIndex, sections.length - 1);
+  activeSectionIndex = activeIndex;
   sections.forEach((sectionElement, index) => {
-    const active = sectionElement.offsetTop <= marker;
-    if (active) activeIndex = index;
     const required = Array.from(sectionElement.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('[required]'));
     const complete = required.length > 0 && required.every((control) =>
       control instanceof HTMLInputElement && control.type === 'checkbox'
         ? control.checked
-        : Boolean(control.value.trim()),
+        : control instanceof HTMLInputElement && control.type === 'file'
+          ? Boolean(control.files?.[0]) || Boolean(cachedFileMetadata[control.name])
+          : Boolean(control.value.trim()),
     );
-    const isCurrent = sectionElement.offsetTop <= marker && (index === sections.length - 1 || sections[index + 1].offsetTop > marker);
+    const isCurrent = index === activeIndex;
+    sectionElement.hidden = !isCurrent;
     sectionElement.classList.toggle('form-board-section-active', isCurrent);
     const kicker = sectionElement.querySelector<HTMLElement>('.form-board-section-kicker span');
     if (kicker) kicker.textContent = isCurrent ? 'Sedang diisi' : 'Belum diisi';
@@ -453,6 +642,14 @@ function updateProgress(): void {
     item.classList.toggle('is-active', index === activeIndex);
     item.classList.toggle('form-board-step-active', index === activeIndex);
   });
+  progressCurrent.textContent = String(activeIndex + 1).padStart(2, '0');
+  stepBack.hidden = activeIndex === 0;
+  stepNext.hidden = activeIndex === sections.length - 1;
+  stepNavigation.classList.toggle('is-final', activeIndex === sections.length - 1);
+  submitArea?.classList.toggle('is-visible', activeIndex === sections.length - 1);
+  stepNavigationCopy.textContent = activeIndex === sections.length - 1
+    ? 'Periksa kembali semua berkas sebelum mengirim pengajuan.'
+    : 'Lengkapi bagian ini, lalu lanjutkan.';
 }
 
 function showNotice(message: string): void {
@@ -476,16 +673,27 @@ document.querySelectorAll<HTMLButtonElement>('[data-notice]').forEach((button) =
 
 document.querySelectorAll<HTMLElement>('[data-go-section]').forEach((button) => {
   button.addEventListener('click', () => {
-    document.getElementById(button.dataset.goSection || '')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const index = sectionIds.indexOf(button.dataset.goSection || '');
+    if (index >= 0) goToSection(index);
   });
 });
 
 form.querySelectorAll<HTMLElement>('input, select, textarea').forEach((control) => {
-  control.addEventListener('input', () => clearError(control));
-  control.addEventListener('change', () => clearError(control));
+  control.addEventListener('input', () => {
+    clearError(control);
+    saveDraft();
+  });
+  control.addEventListener('change', () => {
+    clearError(control);
+    saveDraft();
+  });
 });
 
-getFieldControl('jenjang')?.addEventListener('change', updateSchoolFieldsRequirement);
+getFieldControl('jenjang')?.addEventListener('change', () => {
+  updateSchoolFieldsRequirement();
+  saveDraft();
+});
+restoreDraft();
 updateSchoolFieldsRequirement();
 
 document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((input) => {
@@ -503,16 +711,41 @@ document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((input
     if (error) error.textContent = '';
     if (file && (invalidType || invalidSize)) {
       input.value = '';
+      delete cachedFileMetadata[input.name];
+      void removeCachedDraftFile(input.name);
       if (label) label.textContent = 'Belum ada berkas dipilih';
       if (error) error.textContent = invalidSize ? 'Ukuran maksimal 5 MB.' : 'Format harus PDF, JPG, atau PNG.';
       upload?.classList.add('is-invalid');
+      saveDraft();
       updateProgress();
       return;
     }
     if (label) label.textContent = file ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB` : 'Belum ada berkas dipilih';
-    if (file) showNotice(`${input.closest<HTMLElement>('[data-upload]')?.querySelector('strong')?.textContent?.replace(' *', '') || 'Berkas'} berhasil dipilih.`);
+    if (file) {
+      cachedFileMetadata[input.name] = {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified,
+      };
+      void cacheDraftFile(input.name, file).catch(() => undefined);
+      showNotice(`${input.closest<HTMLElement>('[data-upload]')?.querySelector('strong')?.textContent?.replace(' *', '') || 'Berkas'} berhasil dipilih.`);
+    } else {
+      delete cachedFileMetadata[input.name];
+      void removeCachedDraftFile(input.name);
+    }
+    saveDraft();
     updateProgress();
   });
+});
+
+stepBack.addEventListener('click', () => goToSection(activeSectionIndex - 1));
+stepNext.addEventListener('click', async () => {
+  stepNext.disabled = true;
+  const currentSection = document.getElementById(sectionIds[activeSectionIndex]);
+  const valid = currentSection ? await validateForm(currentSection) : true;
+  stepNext.disabled = false;
+  if (valid) goToSection(activeSectionIndex + 1);
 });
 
 function showSubmissionError(error: unknown): void {
@@ -541,7 +774,11 @@ function showSubmissionError(error: unknown): void {
   if (normalizedFields.length) {
     const labels = normalizedFields.map(getFieldLabel);
     errorAlert.textContent = `Data belum dapat dikirim. Periksa: ${labels.slice(0, 4).join(', ')}${labels.length > 4 ? ', dan lainnya' : ''}.`;
-    getFieldControl(normalizedFields[0])?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const firstField = getFieldControl(normalizedFields[0]);
+    const invalidSection = firstField?.closest<HTMLElement>('[data-section]');
+    const invalidSectionIndex = invalidSection ? sectionIds.indexOf(invalidSection.id) : -1;
+    if (invalidSectionIndex >= 0) goToSection(invalidSectionIndex);
+    firstField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   } else {
     errorAlert.textContent = typeof data?.error === 'string'
       ? data.error
@@ -554,19 +791,26 @@ function showSubmissionError(error: unknown): void {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (!validateForm()) return;
+  if (!(await validateForm())) return;
   submitButton.disabled = true;
   submitButton.classList.add('is-loading');
   submitButton.querySelector('.submit-label')!.textContent = 'Mengirim pengajuan';
   errorAlert.className = 'form-alert error';
   try {
     const formData = new FormData(form);
+    for (const name of uploadFieldNames) {
+      const input = getFieldControl(name) as HTMLInputElement | null;
+      if (input?.files?.[0]) continue;
+      const cachedFile = await getCachedDraftFile(name);
+      if (cachedFile) formData.set(name, cachedFile, cachedFile.name);
+    }
     const payload: Record<string, string | File> = {};
     formData.forEach((value, key) => {
       if (key !== 'consent' && (typeof value === 'string' ? value : value.name)) payload[key] = value;
     });
     const result = await submitApplication(payload as unknown as Parameters<typeof submitApplication>[0]);
     form.reset();
+    clearDraft();
     document.querySelectorAll<HTMLElement>('[data-file-name]').forEach((label) => { label.textContent = 'Belum ada berkas dipilih'; });
     document.querySelectorAll<HTMLElement>('[data-field]').forEach((field) => field.classList.remove('field-error'));
     submissionId.textContent = `Nomor pengajuan: SPMB-${String(result.id).padStart(6, '0')}`;
@@ -585,6 +829,7 @@ form.addEventListener('submit', async (event) => {
 });
 
 resetButton.addEventListener('click', () => {
+  clearDraft();
   successView.classList.remove('is-visible');
   receiptDownload.hidden = true;
   receiptDownload.removeAttribute('href');
@@ -592,11 +837,11 @@ resetButton.addEventListener('click', () => {
   submitButton.disabled = false;
   submitButton.classList.remove('is-loading');
   submitButton.querySelector('.submit-label')!.textContent = 'Kirim pengajuan';
+  activeSectionIndex = 0;
   updateProgress();
   form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
-window.addEventListener('scroll', updateProgress, { passive: true });
 updateProgress();
 
 healthCheck()

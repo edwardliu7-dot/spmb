@@ -118,7 +118,13 @@ export interface StudentApplicationInput {
      * @maxLength 16
      * @pattern ^[0-9]{16}$
      */
-  nik_orangtua: string;
+  nik_ayah: string;
+  /**
+     * @minLength 16
+     * @maxLength 16
+     * @pattern ^[0-9]{16}$
+     */
+  nik_ibu: string | null;
   /**
      * @minLength 10
      * @maxLength 16

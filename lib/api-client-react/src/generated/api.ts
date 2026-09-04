@@ -187,7 +187,10 @@ if(studentApplicationInput.alamat_sekolah_asal !== undefined && studentApplicati
  formData.append(`alamat_sekolah_asal`, studentApplicationInput.alamat_sekolah_asal);
  }
 formData.append(`nomor_kk`, studentApplicationInput.nomor_kk);
-formData.append(`nik_orangtua`, studentApplicationInput.nik_orangtua);
+formData.append(`nik_ayah`, studentApplicationInput.nik_ayah);
+if(studentApplicationInput.nik_ibu !== null) {
+ formData.append(`nik_ibu`, studentApplicationInput.nik_ibu);
+ }
 formData.append(`nomor_hp_orangtua`, studentApplicationInput.nomor_hp_orangtua);
 formData.append(`email`, studentApplicationInput.email);
 formData.append(`nama_ayah`, studentApplicationInput.nama_ayah);

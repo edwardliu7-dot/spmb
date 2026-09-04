@@ -303,7 +303,8 @@ components:
         - transportasi
         - jarak_sekolah
         - nomor_kk
-        - nik_orangtua
+        - nik_ayah
+        - nik_ibu
         - nomor_hp_orangtua
         - email
         - nama_ayah
@@ -347,7 +348,8 @@ components:
         tahun_lulus: { type: string, pattern: "^[0-9]{4}$", nullable: true, description: "Graduation year, 1900 or later; required for SD and SMP" }
         alamat_sekolah_asal: { type: string, minLength: 1, maxLength: 1000, nullable: true, description: "Required for SD and SMP; not required for Playgroup, Daycare, TK-A, or TK-B" }
         nomor_kk: { type: string, pattern: "^[0-9]{16}$", minLength: 16, maxLength: 16 }
-        nik_orangtua: { type: string, pattern: "^[0-9]{16}$", minLength: 16, maxLength: 16 }
+        nik_ayah: { type: string, pattern: "^[0-9]{16}$", minLength: 16, maxLength: 16 }
+        nik_ibu: { type: string, pattern: "^[0-9]{16}$", minLength: 16, maxLength: 16, nullable: true }
         nomor_hp_orangtua: { type: string, minLength: 10, maxLength: 16 }
         email: { type: string, pattern: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", maxLength: 254 }
         nama_ayah: { type: string, minLength: 1, maxLength: 100 }

@@ -26,3 +26,9 @@ The external Coolify release process does not run the Replit post-merge hook aut
 **Why:** A basic `select 1 from pendaftar` health check can still pass while an insert fails because one of the newer application or upload columns is absent.
 
 **How to apply:** Include the database schema synchronization command in the Coolify release procedure, with the production `DATABASE_URL` available, before restarting the application.
+
+When the parent identity field changed, existing `nik_orangtua` values were preserved as `nik_ayah`; existing records may have no `nik_ibu`, while new submissions still require it.
+
+**Why:** A mother's NIK cannot be safely inferred from existing data, but discarding the old parent NIK would lose useful information.
+
+**How to apply:** Keep `nik_ibu` nullable for legacy detail responses and do not backfill it with a guessed value; enforce it at the new-submission form and endpoint boundary.

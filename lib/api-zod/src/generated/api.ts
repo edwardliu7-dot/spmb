@@ -66,11 +66,16 @@ export const submitApplicationBodyNomorKkMax = 16;
 
 
 export const submitApplicationBodyNomorKkRegExp = new RegExp('^[0-9]{16}$');
-export const submitApplicationBodyNikOrangtuaMin = 16;
-export const submitApplicationBodyNikOrangtuaMax = 16;
+export const submitApplicationBodyNikAyahMin = 16;
+export const submitApplicationBodyNikAyahMax = 16;
 
 
-export const submitApplicationBodyNikOrangtuaRegExp = new RegExp('^[0-9]{16}$');
+export const submitApplicationBodyNikAyahRegExp = new RegExp('^[0-9]{16}$');
+export const submitApplicationBodyNikIbuMin = 16;
+export const submitApplicationBodyNikIbuMax = 16;
+
+
+export const submitApplicationBodyNikIbuRegExp = new RegExp('^[0-9]{16}$');
 export const submitApplicationBodyNomorHpOrangtuaMin = 10;
 export const submitApplicationBodyNomorHpOrangtuaMax = 16;
 
@@ -132,7 +137,8 @@ export const SubmitApplicationBody = zod.object({
   "tahun_lulus": zod.string().regex(submitApplicationBodyTahunLulusRegExp).nullish().describe('Graduation year, 1900 or later; required for SD and SMP'),
   "alamat_sekolah_asal": zod.string().min(1).max(submitApplicationBodyAlamatSekolahAsalMax).nullish().describe('Required for SD and SMP; not required for Playgroup, Daycare, TK-A, or TK-B'),
   "nomor_kk": zod.string().min(submitApplicationBodyNomorKkMin).max(submitApplicationBodyNomorKkMax).regex(submitApplicationBodyNomorKkRegExp),
-  "nik_orangtua": zod.string().min(submitApplicationBodyNikOrangtuaMin).max(submitApplicationBodyNikOrangtuaMax).regex(submitApplicationBodyNikOrangtuaRegExp),
+  "nik_ayah": zod.string().min(submitApplicationBodyNikAyahMin).max(submitApplicationBodyNikAyahMax).regex(submitApplicationBodyNikAyahRegExp),
+  "nik_ibu": zod.string().min(submitApplicationBodyNikIbuMin).max(submitApplicationBodyNikIbuMax).regex(submitApplicationBodyNikIbuRegExp).nullable(),
   "nomor_hp_orangtua": zod.string().min(submitApplicationBodyNomorHpOrangtuaMin).max(submitApplicationBodyNomorHpOrangtuaMax),
   "email": zod.string().max(submitApplicationBodyEmailMax).regex(submitApplicationBodyEmailRegExp),
   "nama_ayah": zod.string().min(1).max(submitApplicationBodyNamaAyahMax),
@@ -287,11 +293,16 @@ export const getApplicationResponseTwoNomorKkMax = 16;
 
 
 export const getApplicationResponseTwoNomorKkRegExp = new RegExp('^[0-9]{16}$');
-export const getApplicationResponseTwoNikOrangtuaMin = 16;
-export const getApplicationResponseTwoNikOrangtuaMax = 16;
+export const getApplicationResponseTwoNikAyahMin = 16;
+export const getApplicationResponseTwoNikAyahMax = 16;
 
 
-export const getApplicationResponseTwoNikOrangtuaRegExp = new RegExp('^[0-9]{16}$');
+export const getApplicationResponseTwoNikAyahRegExp = new RegExp('^[0-9]{16}$');
+export const getApplicationResponseTwoNikIbuMin = 16;
+export const getApplicationResponseTwoNikIbuMax = 16;
+
+
+export const getApplicationResponseTwoNikIbuRegExp = new RegExp('^[0-9]{16}$');
 export const getApplicationResponseTwoNomorHpOrangtuaMin = 10;
 export const getApplicationResponseTwoNomorHpOrangtuaMax = 16;
 
@@ -361,7 +372,8 @@ export const GetApplicationResponse = zod.object({
   "tahun_lulus": zod.string().regex(getApplicationResponseTwoTahunLulusRegExp).nullish().describe('Graduation year, 1900 or later; required for SD and SMP'),
   "alamat_sekolah_asal": zod.string().min(1).max(getApplicationResponseTwoAlamatSekolahAsalMax).nullish().describe('Required for SD and SMP; not required for Playgroup, Daycare, TK-A, or TK-B'),
   "nomor_kk": zod.string().min(getApplicationResponseTwoNomorKkMin).max(getApplicationResponseTwoNomorKkMax).regex(getApplicationResponseTwoNomorKkRegExp),
-  "nik_orangtua": zod.string().min(getApplicationResponseTwoNikOrangtuaMin).max(getApplicationResponseTwoNikOrangtuaMax).regex(getApplicationResponseTwoNikOrangtuaRegExp),
+  "nik_ayah": zod.string().min(getApplicationResponseTwoNikAyahMin).max(getApplicationResponseTwoNikAyahMax).regex(getApplicationResponseTwoNikAyahRegExp),
+  "nik_ibu": zod.string().min(getApplicationResponseTwoNikIbuMin).max(getApplicationResponseTwoNikIbuMax).regex(getApplicationResponseTwoNikIbuRegExp).nullable(),
   "nomor_hp_orangtua": zod.string().min(getApplicationResponseTwoNomorHpOrangtuaMin).max(getApplicationResponseTwoNomorHpOrangtuaMax),
   "email": zod.string().max(getApplicationResponseTwoEmailMax).regex(getApplicationResponseTwoEmailRegExp),
   "nama_ayah": zod.string().min(1).max(getApplicationResponseTwoNamaAyahMax),
