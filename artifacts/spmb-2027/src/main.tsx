@@ -186,7 +186,7 @@ root.innerHTML = `
           <div class="form-board-header-notice" aria-label="Informasi pendaftaran dan kontak">
             <div class="form-board-header-notice-lead">
               <strong>Pendaftaran dibuka 5 September 2026</strong>
-              <span>Hubungi admin → lakukan pembayaran dan konfirmasi → terima link pendaftaran → isi formulir → cek notifikasi di Gmail.</span>
+              <span>Hubungi admin → lakukan pembayaran dan konfirmasi → terima link pendaftaran → isi formulir → unduh bukti pendaftaran → gabung grup WhatsApp → tunggu info selanjutnya.</span>
             </div>
             <div class="form-board-contact-details">
               <span class="form-board-contact-item"><span class="form-board-contact-label">Kantor</span><span>Kp. Cimahi RT.07/04, Sukamahi, Kec. Cikarang Pusat, Kab. Bekasi, Jawa Barat</span></span>
