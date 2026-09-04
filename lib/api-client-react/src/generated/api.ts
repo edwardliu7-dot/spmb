@@ -94,7 +94,7 @@ export const getHealthCheckQueryKey = () => {
     }
 
 
-export const getHealthCheckQueryOptions = <TData = Awaited<ReturnType<typeof healthCheck>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getHealthCheckQueryOptions = <TData = Awaited<ReturnType<typeof healthCheck>>, TError = ErrorType<HealthStatus>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -113,14 +113,14 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type HealthCheckQueryResult = NonNullable<Awaited<ReturnType<typeof healthCheck>>>
-export type HealthCheckQueryError = ErrorType<unknown>
+export type HealthCheckQueryError = ErrorType<HealthStatus>
 
 
 /**
  * @summary Health check
  */
 
-export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, TError = ErrorType<unknown>>(
+export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, TError = ErrorType<HealthStatus>>(
   options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
@@ -158,7 +158,7 @@ formData.append(`nama_panggilan`, studentApplicationInput.nama_panggilan);
 formData.append(`jenis_kelamin`, studentApplicationInput.jenis_kelamin);
 formData.append(`tempat_lahir`, studentApplicationInput.tempat_lahir);
 formData.append(`tanggal_lahir`, studentApplicationInput.tanggal_lahir);
-if(studentApplicationInput.nisn !== undefined) {
+if(studentApplicationInput.nisn !== undefined && studentApplicationInput.nisn !== null) {
  formData.append(`nisn`, studentApplicationInput.nisn);
  }
 formData.append(`nik_anak`, studentApplicationInput.nik_anak);
@@ -170,7 +170,7 @@ formData.append(`agama`, studentApplicationInput.agama);
 formData.append(`warga_negara`, studentApplicationInput.warga_negara);
 formData.append(`tinggi_badan`, studentApplicationInput.tinggi_badan);
 formData.append(`berat_badan`, studentApplicationInput.berat_badan);
-if(studentApplicationInput.riwayat_penyakit !== undefined) {
+if(studentApplicationInput.riwayat_penyakit !== undefined && studentApplicationInput.riwayat_penyakit !== null) {
  formData.append(`riwayat_penyakit`, studentApplicationInput.riwayat_penyakit);
  }
 formData.append(`transportasi`, studentApplicationInput.transportasi);
@@ -194,27 +194,17 @@ formData.append(`pendidikan_ibu`, studentApplicationInput.pendidikan_ibu);
 formData.append(`pekerjaan_ibu`, studentApplicationInput.pekerjaan_ibu);
 formData.append(`penghasilan_ibu`, studentApplicationInput.penghasilan_ibu);
 formData.append(`instansi_jabatan_ibu`, studentApplicationInput.instansi_jabatan_ibu);
-if(studentApplicationInput.nama_wali !== undefined) {
+if(studentApplicationInput.nama_wali !== undefined && studentApplicationInput.nama_wali !== null) {
  formData.append(`nama_wali`, studentApplicationInput.nama_wali);
  }
-if(studentApplicationInput.hubungan_wali !== undefined) {
+if(studentApplicationInput.hubungan_wali !== undefined && studentApplicationInput.hubungan_wali !== null) {
  formData.append(`hubungan_wali`, studentApplicationInput.hubungan_wali);
  }
-if(studentApplicationInput.foto_3x4 !== undefined) {
- formData.append(`foto_3x4`, studentApplicationInput.foto_3x4);
- }
-if(studentApplicationInput.akte_lahir !== undefined) {
- formData.append(`akte_lahir`, studentApplicationInput.akte_lahir);
- }
-if(studentApplicationInput.kartu_keluarga !== undefined) {
- formData.append(`kartu_keluarga`, studentApplicationInput.kartu_keluarga);
- }
-if(studentApplicationInput.ktp_orangtua !== undefined) {
- formData.append(`ktp_orangtua`, studentApplicationInput.ktp_orangtua);
- }
-if(studentApplicationInput.bukti_bayar !== undefined) {
- formData.append(`bukti_bayar`, studentApplicationInput.bukti_bayar);
- }
+formData.append(`foto_3x4`, studentApplicationInput.foto_3x4);
+formData.append(`akte_lahir`, studentApplicationInput.akte_lahir);
+formData.append(`kartu_keluarga`, studentApplicationInput.kartu_keluarga);
+formData.append(`ktp_orangtua`, studentApplicationInput.ktp_orangtua);
+formData.append(`bukti_bayar`, studentApplicationInput.bukti_bayar);
 
   return customFetch<SubmissionResult>(getSubmitApplicationUrl(),
   {

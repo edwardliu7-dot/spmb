@@ -26,6 +26,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+        "503":
+          description: Database unavailable or schema is not ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
   /submit:
     post:
       operationId: submitApplication
@@ -47,6 +53,18 @@ paths:
                 $ref: "#/components/schemas/SubmissionResult"
         "400":
           description: Invalid form data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "413":
+          description: Request or uploaded file is too large
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Too many submissions from the same network
           content:
             application/json:
               schema:
@@ -260,52 +278,57 @@ components:
         - pekerjaan_ibu
         - penghasilan_ibu
         - instansi_jabatan_ibu
+        - foto_3x4
+        - akte_lahir
+        - kartu_keluarga
+        - ktp_orangtua
+        - bukti_bayar
       properties:
         jenjang: { type: string, enum: [Playgroup, Daycare, TK-A, TK-B, SD, SMP] }
-        nama_calon: { type: string, minLength: 2 }
-        nama_panggilan: { type: string, minLength: 1 }
+        nama_calon: { type: string, minLength: 2, maxLength: 100 }
+        nama_panggilan: { type: string, minLength: 1, maxLength: 100 }
         jenis_kelamin: { type: string, enum: [Laki-laki, Perempuan] }
-        tempat_lahir: { type: string }
+        tempat_lahir: { type: string, minLength: 1, maxLength: 100 }
         tanggal_lahir: { type: string, format: date }
-        nisn: { type: string }
-        nik_anak: { type: string }
-        alamat_domisili: { type: string }
-        anak_ke: { type: string, description: "Integer greater than or equal to 1" }
-        jumlah_saudara: { type: string, description: "Integer greater than or equal to 0" }
-        status_anak: { type: string }
-        agama: { type: string }
-        warga_negara: { type: string }
-        tinggi_badan: { type: string, description: "Height in centimeters" }
-        berat_badan: { type: string, description: "Weight in kilograms" }
-        riwayat_penyakit: { type: string }
-        transportasi: { type: string }
-        jarak_sekolah: { type: string }
-        nama_sekolah_asal: { type: string }
-        tahun_lulus: { type: string, description: "Graduation year, 1900 or later" }
-        alamat_sekolah_asal: { type: string }
-        nomor_kk: { type: string }
-        nik_orangtua: { type: string }
-        nomor_hp_orangtua: { type: string }
-        email: { type: string }
-        nama_ayah: { type: string }
-        ttl_ayah: { type: string }
-        pendidikan_ayah: { type: string }
-        pekerjaan_ayah: { type: string }
-        penghasilan_ayah: { type: string }
-        instansi_jabatan_ayah: { type: string }
-        nama_ibu: { type: string }
-        ttl_ibu: { type: string }
-        pendidikan_ibu: { type: string }
-        pekerjaan_ibu: { type: string }
-        penghasilan_ibu: { type: string }
-        instansi_jabatan_ibu: { type: string }
-        nama_wali: { type: string }
-        hubungan_wali: { type: string }
-        foto_3x4: { type: string, description: "Uploaded file" }
-        akte_lahir: { type: string, description: "Uploaded file" }
-        kartu_keluarga: { type: string, description: "Uploaded file" }
-        ktp_orangtua: { type: string, description: "Uploaded file" }
-        bukti_bayar: { type: string, description: "Uploaded file" }
+        nisn: { type: string, pattern: "^[0-9]{10}$", maxLength: 10, nullable: true }
+        nik_anak: { type: string, pattern: "^[0-9]{16}$", minLength: 16, maxLength: 16 }
+        alamat_domisili: { type: string, minLength: 1, maxLength: 1000 }
+        anak_ke: { type: string, pattern: "^[0-9]+$", description: "Integer from 1 to 20" }
+        jumlah_saudara: { type: string, pattern: "^[0-9]+$", description: "Integer from 0 to 50" }
+        status_anak: { type: string, minLength: 1, maxLength: 50 }
+        agama: { type: string, minLength: 1, maxLength: 50 }
+        warga_negara: { type: string, minLength: 1, maxLength: 50 }
+        tinggi_badan: { type: string, pattern: "^[0-9]+([.][0-9]+)?$", description: "Height in centimeters" }
+        berat_badan: { type: string, pattern: "^[0-9]+([.][0-9]+)?$", description: "Weight in kilograms" }
+        riwayat_penyakit: { type: string, maxLength: 1000, nullable: true }
+        transportasi: { type: string, minLength: 1, maxLength: 50 }
+        jarak_sekolah: { type: string, minLength: 1, maxLength: 100 }
+        nama_sekolah_asal: { type: string, minLength: 1, maxLength: 255 }
+        tahun_lulus: { type: string, pattern: "^[0-9]{4}$", description: "Graduation year, 1900 or later" }
+        alamat_sekolah_asal: { type: string, minLength: 1, maxLength: 1000 }
+        nomor_kk: { type: string, pattern: "^[0-9]{16}$", minLength: 16, maxLength: 16 }
+        nik_orangtua: { type: string, pattern: "^[0-9]{16}$", minLength: 16, maxLength: 16 }
+        nomor_hp_orangtua: { type: string, minLength: 10, maxLength: 16 }
+        email: { type: string, pattern: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", maxLength: 254 }
+        nama_ayah: { type: string, minLength: 1, maxLength: 100 }
+        ttl_ayah: { type: string, minLength: 1, maxLength: 150 }
+        pendidikan_ayah: { type: string, minLength: 1, maxLength: 100 }
+        pekerjaan_ayah: { type: string, minLength: 1, maxLength: 100 }
+        penghasilan_ayah: { type: string, minLength: 1, maxLength: 100 }
+        instansi_jabatan_ayah: { type: string, minLength: 1, maxLength: 150 }
+        nama_ibu: { type: string, minLength: 1, maxLength: 100 }
+        ttl_ibu: { type: string, minLength: 1, maxLength: 150 }
+        pendidikan_ibu: { type: string, minLength: 1, maxLength: 100 }
+        pekerjaan_ibu: { type: string, minLength: 1, maxLength: 100 }
+        penghasilan_ibu: { type: string, minLength: 1, maxLength: 100 }
+        instansi_jabatan_ibu: { type: string, minLength: 1, maxLength: 150 }
+        nama_wali: { type: string, maxLength: 100, nullable: true }
+        hubungan_wali: { type: string, maxLength: 100, nullable: true }
+        foto_3x4: { type: string, description: "Uploaded JPG or PNG file, maximum 5 MB" }
+        akte_lahir: { type: string, description: "Uploaded PDF, JPG, or PNG file, maximum 5 MB" }
+        kartu_keluarga: { type: string, description: "Uploaded PDF, JPG, or PNG file, maximum 5 MB" }
+        ktp_orangtua: { type: string, description: "Uploaded PDF, JPG, or PNG file, maximum 5 MB" }
+        bukti_bayar: { type: string, description: "Uploaded PDF, JPG, or PNG file, maximum 5 MB" }
     SubmissionResult:
       type: object
       properties:
@@ -388,5 +411,8 @@ components:
       type: object
       properties:
         error: { type: string }
+        fields:
+          type: array
+          items: { type: string }
       required: [error]
 

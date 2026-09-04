@@ -8,4 +8,5 @@
 
 export interface ErrorResponse {
   error: string;
+  fields?: string[];
 }

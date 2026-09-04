@@ -387,7 +387,7 @@ export async function createSpmbReceipt(application: Pendaftar): Promise<Uint8Ar
 
   const guardianRelationRect = { x: 286.5, top: 37.5, width: 270, height: 12 };
   clearRect(page2, guardianRelationRect);
-  drawTextInRect(page2, application.hubungan_wali, guardianRelationRect, regularFont);
+  drawTextInRect(page2, textValue(application.hubungan_wali), guardianRelationRect, regularFont);
   clearRect(page2, { x: 320, top: 76, width: 240, height: 18 });
   drawCenteredText(page2, `Bekasi, ${formatPdfDate(application.created_at)}`, { x: 320, top: 76, width: 240, height: 18 }, regularFont, 10);
   clearRect(page2, { x: 320, top: 185, width: 240, height: 21 });

@@ -214,7 +214,7 @@ root.innerHTML = `
 
         <section class="form-board-form-panel" aria-label="Formulir pendaftaran SPMB">
           <div class="form-board-form-header">
-            <div><div class="form-board-panel-kicker">${icon('file-check')}Formulir pengajuan</div><h2>Data calon peserta didik</h2><p>Mohon isi sesuai dokumen resmi yang Anda miliki.</p></div>
+             <div><div class="form-board-panel-kicker">${icon('file-check')}Formulir pengajuan</div><h2>Data calon peserta didik</h2><p><b>*</b> wajib diisi · label <span class="form-board-optional">opsional</span> boleh dikosongkan.</p></div>
             <span class="form-board-draft-badge"><i></i>Draft baru</span>
           </div>
           <div class="form-body" id="form-body">
@@ -307,7 +307,7 @@ function validateForm(): boolean {
   });
   if (firstInvalid) {
     (firstInvalid as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).focus();
-    errorAlert.textContent = 'Masih ada data yang perlu dilengkapi. Silakan ikuti penanda pada formulir.';
+     errorAlert.textContent = 'Masih ada data yang perlu dilengkapi. Kolom bertanda * wajib diisi.';
     errorAlert.className = 'form-alert error is-visible';
     return false;
   }

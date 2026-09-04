@@ -7,7 +7,9 @@ const router: IRouter = Router();
 
 router.get("/healthz", async (request, response): Promise<void> => {
   try {
-    await db.execute(sql`select 1`);
+    // Query the application table, not only the TCP connection. This catches
+    // an unavailable database and a schema that has not been applied yet.
+    await db.execute(sql`select 1 from pendaftar limit 1`);
     const data = HealthCheckResponse.parse({ status: "ok", database: "ok" });
     response.json(data);
   } catch (error) {

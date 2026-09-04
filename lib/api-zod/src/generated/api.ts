@@ -23,56 +23,137 @@ export const HealthCheckResponse = zod.object({
  * @summary Submit a new SPMB application
  */
 export const submitApplicationBodyNamaCalonMin = 2;
+export const submitApplicationBodyNamaCalonMax = 100;
 
+export const submitApplicationBodyNamaPanggilanMax = 100;
+
+export const submitApplicationBodyTempatLahirMax = 100;
+
+export const submitApplicationBodyNisnMax = 10;
+
+
+export const submitApplicationBodyNisnRegExp = new RegExp('^[0-9]{10}$');
+export const submitApplicationBodyNikAnakMin = 16;
+export const submitApplicationBodyNikAnakMax = 16;
+
+
+export const submitApplicationBodyNikAnakRegExp = new RegExp('^[0-9]{16}$');
+export const submitApplicationBodyAlamatDomisiliMax = 1000;
+
+export const submitApplicationBodyAnakKeRegExp = new RegExp('^[0-9]+$');
+export const submitApplicationBodyJumlahSaudaraRegExp = new RegExp('^[0-9]+$');
+export const submitApplicationBodyStatusAnakMax = 50;
+
+export const submitApplicationBodyAgamaMax = 50;
+
+export const submitApplicationBodyWargaNegaraMax = 50;
+
+export const submitApplicationBodyTinggiBadanRegExp = new RegExp('^[0-9]+([.][0-9]+)?$');
+export const submitApplicationBodyBeratBadanRegExp = new RegExp('^[0-9]+([.][0-9]+)?$');
+export const submitApplicationBodyRiwayatPenyakitMax = 1000;
+
+export const submitApplicationBodyTransportasiMax = 50;
+
+export const submitApplicationBodyJarakSekolahMax = 100;
+
+export const submitApplicationBodyNamaSekolahAsalMax = 255;
+
+export const submitApplicationBodyTahunLulusRegExp = new RegExp('^[0-9]{4}$');
+export const submitApplicationBodyAlamatSekolahAsalMax = 1000;
+
+export const submitApplicationBodyNomorKkMin = 16;
+export const submitApplicationBodyNomorKkMax = 16;
+
+
+export const submitApplicationBodyNomorKkRegExp = new RegExp('^[0-9]{16}$');
+export const submitApplicationBodyNikOrangtuaMin = 16;
+export const submitApplicationBodyNikOrangtuaMax = 16;
+
+
+export const submitApplicationBodyNikOrangtuaRegExp = new RegExp('^[0-9]{16}$');
+export const submitApplicationBodyNomorHpOrangtuaMin = 10;
+export const submitApplicationBodyNomorHpOrangtuaMax = 16;
+
+export const submitApplicationBodyEmailMax = 254;
+
+
+export const submitApplicationBodyEmailRegExp = new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+export const submitApplicationBodyNamaAyahMax = 100;
+
+export const submitApplicationBodyTtlAyahMax = 150;
+
+export const submitApplicationBodyPendidikanAyahMax = 100;
+
+export const submitApplicationBodyPekerjaanAyahMax = 100;
+
+export const submitApplicationBodyPenghasilanAyahMax = 100;
+
+export const submitApplicationBodyInstansiJabatanAyahMax = 150;
+
+export const submitApplicationBodyNamaIbuMax = 100;
+
+export const submitApplicationBodyTtlIbuMax = 150;
+
+export const submitApplicationBodyPendidikanIbuMax = 100;
+
+export const submitApplicationBodyPekerjaanIbuMax = 100;
+
+export const submitApplicationBodyPenghasilanIbuMax = 100;
+
+export const submitApplicationBodyInstansiJabatanIbuMax = 150;
+
+export const submitApplicationBodyNamaWaliMax = 100;
+
+export const submitApplicationBodyHubunganWaliMax = 100;
 
 
 
 export const SubmitApplicationBody = zod.object({
   "jenjang": zod.enum(['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']),
-  "nama_calon": zod.string().min(submitApplicationBodyNamaCalonMin),
-  "nama_panggilan": zod.string().min(1),
+  "nama_calon": zod.string().min(submitApplicationBodyNamaCalonMin).max(submitApplicationBodyNamaCalonMax),
+  "nama_panggilan": zod.string().min(1).max(submitApplicationBodyNamaPanggilanMax),
   "jenis_kelamin": zod.enum(['Laki-laki', 'Perempuan']),
-  "tempat_lahir": zod.string(),
+  "tempat_lahir": zod.string().min(1).max(submitApplicationBodyTempatLahirMax),
   "tanggal_lahir": zod.coerce.date(),
-  "nisn": zod.string().optional(),
-  "nik_anak": zod.string(),
-  "alamat_domisili": zod.string(),
-  "anak_ke": zod.string().describe('Integer greater than or equal to 1'),
-  "jumlah_saudara": zod.string().describe('Integer greater than or equal to 0'),
-  "status_anak": zod.string(),
-  "agama": zod.string(),
-  "warga_negara": zod.string(),
-  "tinggi_badan": zod.string().describe('Height in centimeters'),
-  "berat_badan": zod.string().describe('Weight in kilograms'),
-  "riwayat_penyakit": zod.string().optional(),
-  "transportasi": zod.string(),
-  "jarak_sekolah": zod.string(),
-  "nama_sekolah_asal": zod.string(),
-  "tahun_lulus": zod.string().describe('Graduation year, 1900 or later'),
-  "alamat_sekolah_asal": zod.string(),
-  "nomor_kk": zod.string(),
-  "nik_orangtua": zod.string(),
-  "nomor_hp_orangtua": zod.string(),
-  "email": zod.string(),
-  "nama_ayah": zod.string(),
-  "ttl_ayah": zod.string(),
-  "pendidikan_ayah": zod.string(),
-  "pekerjaan_ayah": zod.string(),
-  "penghasilan_ayah": zod.string(),
-  "instansi_jabatan_ayah": zod.string(),
-  "nama_ibu": zod.string(),
-  "ttl_ibu": zod.string(),
-  "pendidikan_ibu": zod.string(),
-  "pekerjaan_ibu": zod.string(),
-  "penghasilan_ibu": zod.string(),
-  "instansi_jabatan_ibu": zod.string(),
-  "nama_wali": zod.string().optional(),
-  "hubungan_wali": zod.string().optional(),
-  "foto_3x4": zod.string().optional().describe('Uploaded file'),
-  "akte_lahir": zod.string().optional().describe('Uploaded file'),
-  "kartu_keluarga": zod.string().optional().describe('Uploaded file'),
-  "ktp_orangtua": zod.string().optional().describe('Uploaded file'),
-  "bukti_bayar": zod.string().optional().describe('Uploaded file')
+  "nisn": zod.string().max(submitApplicationBodyNisnMax).regex(submitApplicationBodyNisnRegExp).nullish(),
+  "nik_anak": zod.string().min(submitApplicationBodyNikAnakMin).max(submitApplicationBodyNikAnakMax).regex(submitApplicationBodyNikAnakRegExp),
+  "alamat_domisili": zod.string().min(1).max(submitApplicationBodyAlamatDomisiliMax),
+  "anak_ke": zod.string().regex(submitApplicationBodyAnakKeRegExp).describe('Integer from 1 to 20'),
+  "jumlah_saudara": zod.string().regex(submitApplicationBodyJumlahSaudaraRegExp).describe('Integer from 0 to 50'),
+  "status_anak": zod.string().min(1).max(submitApplicationBodyStatusAnakMax),
+  "agama": zod.string().min(1).max(submitApplicationBodyAgamaMax),
+  "warga_negara": zod.string().min(1).max(submitApplicationBodyWargaNegaraMax),
+  "tinggi_badan": zod.string().regex(submitApplicationBodyTinggiBadanRegExp).describe('Height in centimeters'),
+  "berat_badan": zod.string().regex(submitApplicationBodyBeratBadanRegExp).describe('Weight in kilograms'),
+  "riwayat_penyakit": zod.string().max(submitApplicationBodyRiwayatPenyakitMax).nullish(),
+  "transportasi": zod.string().min(1).max(submitApplicationBodyTransportasiMax),
+  "jarak_sekolah": zod.string().min(1).max(submitApplicationBodyJarakSekolahMax),
+  "nama_sekolah_asal": zod.string().min(1).max(submitApplicationBodyNamaSekolahAsalMax),
+  "tahun_lulus": zod.string().regex(submitApplicationBodyTahunLulusRegExp).describe('Graduation year, 1900 or later'),
+  "alamat_sekolah_asal": zod.string().min(1).max(submitApplicationBodyAlamatSekolahAsalMax),
+  "nomor_kk": zod.string().min(submitApplicationBodyNomorKkMin).max(submitApplicationBodyNomorKkMax).regex(submitApplicationBodyNomorKkRegExp),
+  "nik_orangtua": zod.string().min(submitApplicationBodyNikOrangtuaMin).max(submitApplicationBodyNikOrangtuaMax).regex(submitApplicationBodyNikOrangtuaRegExp),
+  "nomor_hp_orangtua": zod.string().min(submitApplicationBodyNomorHpOrangtuaMin).max(submitApplicationBodyNomorHpOrangtuaMax),
+  "email": zod.string().max(submitApplicationBodyEmailMax).regex(submitApplicationBodyEmailRegExp),
+  "nama_ayah": zod.string().min(1).max(submitApplicationBodyNamaAyahMax),
+  "ttl_ayah": zod.string().min(1).max(submitApplicationBodyTtlAyahMax),
+  "pendidikan_ayah": zod.string().min(1).max(submitApplicationBodyPendidikanAyahMax),
+  "pekerjaan_ayah": zod.string().min(1).max(submitApplicationBodyPekerjaanAyahMax),
+  "penghasilan_ayah": zod.string().min(1).max(submitApplicationBodyPenghasilanAyahMax),
+  "instansi_jabatan_ayah": zod.string().min(1).max(submitApplicationBodyInstansiJabatanAyahMax),
+  "nama_ibu": zod.string().min(1).max(submitApplicationBodyNamaIbuMax),
+  "ttl_ibu": zod.string().min(1).max(submitApplicationBodyTtlIbuMax),
+  "pendidikan_ibu": zod.string().min(1).max(submitApplicationBodyPendidikanIbuMax),
+  "pekerjaan_ibu": zod.string().min(1).max(submitApplicationBodyPekerjaanIbuMax),
+  "penghasilan_ibu": zod.string().min(1).max(submitApplicationBodyPenghasilanIbuMax),
+  "instansi_jabatan_ibu": zod.string().min(1).max(submitApplicationBodyInstansiJabatanIbuMax),
+  "nama_wali": zod.string().max(submitApplicationBodyNamaWaliMax).nullish(),
+  "hubungan_wali": zod.string().max(submitApplicationBodyHubunganWaliMax).nullish(),
+  "foto_3x4": zod.string().describe('Uploaded JPG or PNG file, maximum 5 MB'),
+  "akte_lahir": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "kartu_keluarga": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "ktp_orangtua": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB')
 })
 
 export const SubmitApplicationResponse = zod.object({
@@ -135,7 +216,88 @@ export const GetApplicationParams = zod.object({
 })
 
 export const getApplicationResponseTwoNamaCalonMin = 2;
+export const getApplicationResponseTwoNamaCalonMax = 100;
 
+export const getApplicationResponseTwoNamaPanggilanMax = 100;
+
+export const getApplicationResponseTwoTempatLahirMax = 100;
+
+export const getApplicationResponseTwoNisnMax = 10;
+
+
+export const getApplicationResponseTwoNisnRegExp = new RegExp('^[0-9]{10}$');
+export const getApplicationResponseTwoNikAnakMin = 16;
+export const getApplicationResponseTwoNikAnakMax = 16;
+
+
+export const getApplicationResponseTwoNikAnakRegExp = new RegExp('^[0-9]{16}$');
+export const getApplicationResponseTwoAlamatDomisiliMax = 1000;
+
+export const getApplicationResponseTwoAnakKeRegExp = new RegExp('^[0-9]+$');
+export const getApplicationResponseTwoJumlahSaudaraRegExp = new RegExp('^[0-9]+$');
+export const getApplicationResponseTwoStatusAnakMax = 50;
+
+export const getApplicationResponseTwoAgamaMax = 50;
+
+export const getApplicationResponseTwoWargaNegaraMax = 50;
+
+export const getApplicationResponseTwoTinggiBadanRegExp = new RegExp('^[0-9]+([.][0-9]+)?$');
+export const getApplicationResponseTwoBeratBadanRegExp = new RegExp('^[0-9]+([.][0-9]+)?$');
+export const getApplicationResponseTwoRiwayatPenyakitMax = 1000;
+
+export const getApplicationResponseTwoTransportasiMax = 50;
+
+export const getApplicationResponseTwoJarakSekolahMax = 100;
+
+export const getApplicationResponseTwoNamaSekolahAsalMax = 255;
+
+export const getApplicationResponseTwoTahunLulusRegExp = new RegExp('^[0-9]{4}$');
+export const getApplicationResponseTwoAlamatSekolahAsalMax = 1000;
+
+export const getApplicationResponseTwoNomorKkMin = 16;
+export const getApplicationResponseTwoNomorKkMax = 16;
+
+
+export const getApplicationResponseTwoNomorKkRegExp = new RegExp('^[0-9]{16}$');
+export const getApplicationResponseTwoNikOrangtuaMin = 16;
+export const getApplicationResponseTwoNikOrangtuaMax = 16;
+
+
+export const getApplicationResponseTwoNikOrangtuaRegExp = new RegExp('^[0-9]{16}$');
+export const getApplicationResponseTwoNomorHpOrangtuaMin = 10;
+export const getApplicationResponseTwoNomorHpOrangtuaMax = 16;
+
+export const getApplicationResponseTwoEmailMax = 254;
+
+
+export const getApplicationResponseTwoEmailRegExp = new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+export const getApplicationResponseTwoNamaAyahMax = 100;
+
+export const getApplicationResponseTwoTtlAyahMax = 150;
+
+export const getApplicationResponseTwoPendidikanAyahMax = 100;
+
+export const getApplicationResponseTwoPekerjaanAyahMax = 100;
+
+export const getApplicationResponseTwoPenghasilanAyahMax = 100;
+
+export const getApplicationResponseTwoInstansiJabatanAyahMax = 150;
+
+export const getApplicationResponseTwoNamaIbuMax = 100;
+
+export const getApplicationResponseTwoTtlIbuMax = 150;
+
+export const getApplicationResponseTwoPendidikanIbuMax = 100;
+
+export const getApplicationResponseTwoPekerjaanIbuMax = 100;
+
+export const getApplicationResponseTwoPenghasilanIbuMax = 100;
+
+export const getApplicationResponseTwoInstansiJabatanIbuMax = 150;
+
+export const getApplicationResponseTwoNamaWaliMax = 100;
+
+export const getApplicationResponseTwoHubunganWaliMax = 100;
 
 
 
@@ -149,50 +311,50 @@ export const GetApplicationResponse = zod.object({
   "created_at": zod.string()
 }).and(zod.object({
   "jenjang": zod.enum(['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']),
-  "nama_calon": zod.string().min(getApplicationResponseTwoNamaCalonMin),
-  "nama_panggilan": zod.string().min(1),
+  "nama_calon": zod.string().min(getApplicationResponseTwoNamaCalonMin).max(getApplicationResponseTwoNamaCalonMax),
+  "nama_panggilan": zod.string().min(1).max(getApplicationResponseTwoNamaPanggilanMax),
   "jenis_kelamin": zod.enum(['Laki-laki', 'Perempuan']),
-  "tempat_lahir": zod.string(),
+  "tempat_lahir": zod.string().min(1).max(getApplicationResponseTwoTempatLahirMax),
   "tanggal_lahir": zod.coerce.date(),
-  "nisn": zod.string().optional(),
-  "nik_anak": zod.string(),
-  "alamat_domisili": zod.string(),
-  "anak_ke": zod.string().describe('Integer greater than or equal to 1'),
-  "jumlah_saudara": zod.string().describe('Integer greater than or equal to 0'),
-  "status_anak": zod.string(),
-  "agama": zod.string(),
-  "warga_negara": zod.string(),
-  "tinggi_badan": zod.string().describe('Height in centimeters'),
-  "berat_badan": zod.string().describe('Weight in kilograms'),
-  "riwayat_penyakit": zod.string().optional(),
-  "transportasi": zod.string(),
-  "jarak_sekolah": zod.string(),
-  "nama_sekolah_asal": zod.string(),
-  "tahun_lulus": zod.string().describe('Graduation year, 1900 or later'),
-  "alamat_sekolah_asal": zod.string(),
-  "nomor_kk": zod.string(),
-  "nik_orangtua": zod.string(),
-  "nomor_hp_orangtua": zod.string(),
-  "email": zod.string(),
-  "nama_ayah": zod.string(),
-  "ttl_ayah": zod.string(),
-  "pendidikan_ayah": zod.string(),
-  "pekerjaan_ayah": zod.string(),
-  "penghasilan_ayah": zod.string(),
-  "instansi_jabatan_ayah": zod.string(),
-  "nama_ibu": zod.string(),
-  "ttl_ibu": zod.string(),
-  "pendidikan_ibu": zod.string(),
-  "pekerjaan_ibu": zod.string(),
-  "penghasilan_ibu": zod.string(),
-  "instansi_jabatan_ibu": zod.string(),
-  "nama_wali": zod.string().optional(),
-  "hubungan_wali": zod.string().optional(),
-  "foto_3x4": zod.string().optional().describe('Uploaded file'),
-  "akte_lahir": zod.string().optional().describe('Uploaded file'),
-  "kartu_keluarga": zod.string().optional().describe('Uploaded file'),
-  "ktp_orangtua": zod.string().optional().describe('Uploaded file'),
-  "bukti_bayar": zod.string().optional().describe('Uploaded file')
+  "nisn": zod.string().max(getApplicationResponseTwoNisnMax).regex(getApplicationResponseTwoNisnRegExp).nullish(),
+  "nik_anak": zod.string().min(getApplicationResponseTwoNikAnakMin).max(getApplicationResponseTwoNikAnakMax).regex(getApplicationResponseTwoNikAnakRegExp),
+  "alamat_domisili": zod.string().min(1).max(getApplicationResponseTwoAlamatDomisiliMax),
+  "anak_ke": zod.string().regex(getApplicationResponseTwoAnakKeRegExp).describe('Integer from 1 to 20'),
+  "jumlah_saudara": zod.string().regex(getApplicationResponseTwoJumlahSaudaraRegExp).describe('Integer from 0 to 50'),
+  "status_anak": zod.string().min(1).max(getApplicationResponseTwoStatusAnakMax),
+  "agama": zod.string().min(1).max(getApplicationResponseTwoAgamaMax),
+  "warga_negara": zod.string().min(1).max(getApplicationResponseTwoWargaNegaraMax),
+  "tinggi_badan": zod.string().regex(getApplicationResponseTwoTinggiBadanRegExp).describe('Height in centimeters'),
+  "berat_badan": zod.string().regex(getApplicationResponseTwoBeratBadanRegExp).describe('Weight in kilograms'),
+  "riwayat_penyakit": zod.string().max(getApplicationResponseTwoRiwayatPenyakitMax).nullish(),
+  "transportasi": zod.string().min(1).max(getApplicationResponseTwoTransportasiMax),
+  "jarak_sekolah": zod.string().min(1).max(getApplicationResponseTwoJarakSekolahMax),
+  "nama_sekolah_asal": zod.string().min(1).max(getApplicationResponseTwoNamaSekolahAsalMax),
+  "tahun_lulus": zod.string().regex(getApplicationResponseTwoTahunLulusRegExp).describe('Graduation year, 1900 or later'),
+  "alamat_sekolah_asal": zod.string().min(1).max(getApplicationResponseTwoAlamatSekolahAsalMax),
+  "nomor_kk": zod.string().min(getApplicationResponseTwoNomorKkMin).max(getApplicationResponseTwoNomorKkMax).regex(getApplicationResponseTwoNomorKkRegExp),
+  "nik_orangtua": zod.string().min(getApplicationResponseTwoNikOrangtuaMin).max(getApplicationResponseTwoNikOrangtuaMax).regex(getApplicationResponseTwoNikOrangtuaRegExp),
+  "nomor_hp_orangtua": zod.string().min(getApplicationResponseTwoNomorHpOrangtuaMin).max(getApplicationResponseTwoNomorHpOrangtuaMax),
+  "email": zod.string().max(getApplicationResponseTwoEmailMax).regex(getApplicationResponseTwoEmailRegExp),
+  "nama_ayah": zod.string().min(1).max(getApplicationResponseTwoNamaAyahMax),
+  "ttl_ayah": zod.string().min(1).max(getApplicationResponseTwoTtlAyahMax),
+  "pendidikan_ayah": zod.string().min(1).max(getApplicationResponseTwoPendidikanAyahMax),
+  "pekerjaan_ayah": zod.string().min(1).max(getApplicationResponseTwoPekerjaanAyahMax),
+  "penghasilan_ayah": zod.string().min(1).max(getApplicationResponseTwoPenghasilanAyahMax),
+  "instansi_jabatan_ayah": zod.string().min(1).max(getApplicationResponseTwoInstansiJabatanAyahMax),
+  "nama_ibu": zod.string().min(1).max(getApplicationResponseTwoNamaIbuMax),
+  "ttl_ibu": zod.string().min(1).max(getApplicationResponseTwoTtlIbuMax),
+  "pendidikan_ibu": zod.string().min(1).max(getApplicationResponseTwoPendidikanIbuMax),
+  "pekerjaan_ibu": zod.string().min(1).max(getApplicationResponseTwoPekerjaanIbuMax),
+  "penghasilan_ibu": zod.string().min(1).max(getApplicationResponseTwoPenghasilanIbuMax),
+  "instansi_jabatan_ibu": zod.string().min(1).max(getApplicationResponseTwoInstansiJabatanIbuMax),
+  "nama_wali": zod.string().max(getApplicationResponseTwoNamaWaliMax).nullish(),
+  "hubungan_wali": zod.string().max(getApplicationResponseTwoHubunganWaliMax).nullish(),
+  "foto_3x4": zod.string().describe('Uploaded JPG or PNG file, maximum 5 MB'),
+  "akte_lahir": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "kartu_keluarga": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "ktp_orangtua": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB')
 })).and(zod.object({
   "files": zod.array(zod.object({
   "field": zod.string(),

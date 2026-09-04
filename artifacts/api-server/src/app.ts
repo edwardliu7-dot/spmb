@@ -31,12 +31,19 @@ if (!process.env.SESSION_SECRET) {
 }
 app.use(cookieParser(process.env.SESSION_SECRET));
 app.use(express.json({ limit: "1mb" }));
-app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb", parameterLimit: 100 }));
 
 app.use("/api", router);
 
 const errorHandler: ErrorRequestHandler = (error, request, response, _next) => {
   if (response.headersSent) return;
+
+  if (error?.type === "entity.too.large") {
+    response.status(413).json({
+      error: "Data yang dikirim terlalu besar. Kurangi ukuran isian atau berkas.",
+    });
+    return;
+  }
 
   const status =
     typeof error === "object" &&

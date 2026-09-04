@@ -10,60 +10,195 @@ import type { StudentApplicationInputJenjang } from './studentApplicationInputJe
 
 export interface StudentApplicationInput {
   jenjang: StudentApplicationInputJenjang;
-  /** @minLength 2 */
+  /**
+     * @minLength 2
+     * @maxLength 100
+     */
   nama_calon: string;
-  /** @minLength 1 */
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
   nama_panggilan: string;
   jenis_kelamin: StudentApplicationInputJenisKelamin;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
   tempat_lahir: string;
   tanggal_lahir: Date;
-  nisn?: string;
+  /**
+     * @maxLength 10
+     * @pattern ^[0-9]{10}$
+     */
+  nisn?: string | null;
+  /**
+     * @minLength 16
+     * @maxLength 16
+     * @pattern ^[0-9]{16}$
+     */
   nik_anak: string;
+  /**
+     * @minLength 1
+     * @maxLength 1000
+     */
   alamat_domisili: string;
-  /** Integer greater than or equal to 1 */
+  /**
+     * Integer from 1 to 20
+     * @pattern ^[0-9]+$
+     */
   anak_ke: string;
-  /** Integer greater than or equal to 0 */
+  /**
+     * Integer from 0 to 50
+     * @pattern ^[0-9]+$
+     */
   jumlah_saudara: string;
+  /**
+     * @minLength 1
+     * @maxLength 50
+     */
   status_anak: string;
+  /**
+     * @minLength 1
+     * @maxLength 50
+     */
   agama: string;
+  /**
+     * @minLength 1
+     * @maxLength 50
+     */
   warga_negara: string;
-  /** Height in centimeters */
+  /**
+     * Height in centimeters
+     * @pattern ^[0-9]+([.][0-9]+)?$
+     */
   tinggi_badan: string;
-  /** Weight in kilograms */
+  /**
+     * Weight in kilograms
+     * @pattern ^[0-9]+([.][0-9]+)?$
+     */
   berat_badan: string;
-  riwayat_penyakit?: string;
+  /** @maxLength 1000 */
+  riwayat_penyakit?: string | null;
+  /**
+     * @minLength 1
+     * @maxLength 50
+     */
   transportasi: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
   jarak_sekolah: string;
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
   nama_sekolah_asal: string;
-  /** Graduation year, 1900 or later */
+  /**
+     * Graduation year, 1900 or later
+     * @pattern ^[0-9]{4}$
+     */
   tahun_lulus: string;
+  /**
+     * @minLength 1
+     * @maxLength 1000
+     */
   alamat_sekolah_asal: string;
+  /**
+     * @minLength 16
+     * @maxLength 16
+     * @pattern ^[0-9]{16}$
+     */
   nomor_kk: string;
+  /**
+     * @minLength 16
+     * @maxLength 16
+     * @pattern ^[0-9]{16}$
+     */
   nik_orangtua: string;
+  /**
+     * @minLength 10
+     * @maxLength 16
+     */
   nomor_hp_orangtua: string;
+  /**
+     * @maxLength 254
+     * @pattern ^[^\s@]+@[^\s@]+\.[^\s@]+$
+     */
   email: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
   nama_ayah: string;
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
   ttl_ayah: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
   pendidikan_ayah: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
   pekerjaan_ayah: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
   penghasilan_ayah: string;
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
   instansi_jabatan_ayah: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
   nama_ibu: string;
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
   ttl_ibu: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
   pendidikan_ibu: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
   pekerjaan_ibu: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
   penghasilan_ibu: string;
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
   instansi_jabatan_ibu: string;
-  nama_wali?: string;
-  hubungan_wali?: string;
-  /** Uploaded file */
-  foto_3x4?: string;
-  /** Uploaded file */
-  akte_lahir?: string;
-  /** Uploaded file */
-  kartu_keluarga?: string;
-  /** Uploaded file */
-  ktp_orangtua?: string;
-  /** Uploaded file */
-  bukti_bayar?: string;
+  /** @maxLength 100 */
+  nama_wali?: string | null;
+  /** @maxLength 100 */
+  hubungan_wali?: string | null;
+  /** Uploaded JPG or PNG file, maximum 5 MB */
+  foto_3x4: string;
+  /** Uploaded PDF, JPG, or PNG file, maximum 5 MB */
+  akte_lahir: string;
+  /** Uploaded PDF, JPG, or PNG file, maximum 5 MB */
+  kartu_keluarga: string;
+  /** Uploaded PDF, JPG, or PNG file, maximum 5 MB */
+  ktp_orangtua: string;
+  /** Uploaded PDF, JPG, or PNG file, maximum 5 MB */
+  bukti_bayar: string;
 }
