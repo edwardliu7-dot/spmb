@@ -20,3 +20,9 @@ Project artifact services should not override workspace secrets with TOML values
 **Why:** An artifact-level `$SECRET_NAME` override was passed through as a literal value, causing an otherwise valid Groq request to be rejected until the override was removed.
 
 **How to apply:** When adding a project secret, verify it is available through the runtime environment after a service restart; do not place secret values or interpolation-looking placeholders in artifact configuration.
+
+The external Coolify release process does not run the Replit post-merge hook automatically, so its PostgreSQL schema must be synchronized separately before serving a build that adds columns.
+
+**Why:** A basic `select 1 from pendaftar` health check can still pass while an insert fails because one of the newer application or upload columns is absent.
+
+**How to apply:** Include the database schema synchronization command in the Coolify release procedure, with the production `DATABASE_URL` available, before restarting the application.

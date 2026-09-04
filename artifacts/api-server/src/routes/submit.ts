@@ -141,8 +141,25 @@ function parseId(value: string): number | null {
 }
 
 function getValue(request: Request, field: TextField): string {
-  const value = request.body[field];
+  const value = request.body?.[field];
   return typeof value === "string" ? value.trim() : "";
+}
+
+function getErrorCode(error: unknown): string | null {
+  if (!error || typeof error !== "object") return null;
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" ? code : null;
+}
+
+function getSubmissionFailureMessage(error: unknown): string {
+  const code = getErrorCode(error);
+  if (code === "42P01" || code === "42703") {
+    return "Struktur database pendaftaran belum sinkron. Jalankan migrasi database lalu coba lagi.";
+  }
+  if (code === "08001" || code === "08003" || code === "08006" || code === "57P01") {
+    return "Layanan database sedang tidak tersedia. Silakan coba lagi beberapa saat.";
+  }
+  return "Pendaftaran belum dapat disimpan. Silakan coba lagi.";
 }
 
 function getUploadedFile(
@@ -458,10 +475,10 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
     });
     return;
   } catch (error) {
-    request.log.error({ err: error }, "Failed to save SPMB application");
+    request.log.error({ err: error, errorCode: getErrorCode(error) }, "Failed to save SPMB application");
     await removeUploadedFiles(request);
     response.status(500).json({
-      error: "Pendaftaran belum dapat disimpan. Silakan coba lagi.",
+      error: getSubmissionFailureMessage(error),
     });
     return;
   }
