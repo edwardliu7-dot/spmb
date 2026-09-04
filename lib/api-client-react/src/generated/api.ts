@@ -158,7 +158,9 @@ formData.append(`nama_panggilan`, studentApplicationInput.nama_panggilan);
 formData.append(`jenis_kelamin`, studentApplicationInput.jenis_kelamin);
 formData.append(`tempat_lahir`, studentApplicationInput.tempat_lahir);
 formData.append(`tanggal_lahir`, studentApplicationInput.tanggal_lahir);
-formData.append(`nisn`, studentApplicationInput.nisn);
+if(studentApplicationInput.nisn !== undefined) {
+ formData.append(`nisn`, studentApplicationInput.nisn);
+ }
 formData.append(`nik_anak`, studentApplicationInput.nik_anak);
 formData.append(`alamat_domisili`, studentApplicationInput.alamat_domisili);
 formData.append(`anak_ke`, studentApplicationInput.anak_ke);
@@ -168,7 +170,9 @@ formData.append(`agama`, studentApplicationInput.agama);
 formData.append(`warga_negara`, studentApplicationInput.warga_negara);
 formData.append(`tinggi_badan`, studentApplicationInput.tinggi_badan);
 formData.append(`berat_badan`, studentApplicationInput.berat_badan);
-formData.append(`riwayat_penyakit`, studentApplicationInput.riwayat_penyakit);
+if(studentApplicationInput.riwayat_penyakit !== undefined) {
+ formData.append(`riwayat_penyakit`, studentApplicationInput.riwayat_penyakit);
+ }
 formData.append(`transportasi`, studentApplicationInput.transportasi);
 formData.append(`jarak_sekolah`, studentApplicationInput.jarak_sekolah);
 formData.append(`nama_sekolah_asal`, studentApplicationInput.nama_sekolah_asal);
@@ -190,8 +194,12 @@ formData.append(`pendidikan_ibu`, studentApplicationInput.pendidikan_ibu);
 formData.append(`pekerjaan_ibu`, studentApplicationInput.pekerjaan_ibu);
 formData.append(`penghasilan_ibu`, studentApplicationInput.penghasilan_ibu);
 formData.append(`instansi_jabatan_ibu`, studentApplicationInput.instansi_jabatan_ibu);
-formData.append(`nama_wali`, studentApplicationInput.nama_wali);
-formData.append(`hubungan_wali`, studentApplicationInput.hubungan_wali);
+if(studentApplicationInput.nama_wali !== undefined) {
+ formData.append(`nama_wali`, studentApplicationInput.nama_wali);
+ }
+if(studentApplicationInput.hubungan_wali !== undefined) {
+ formData.append(`hubungan_wali`, studentApplicationInput.hubungan_wali);
+ }
 if(studentApplicationInput.foto_3x4 !== undefined) {
  formData.append(`foto_3x4`, studentApplicationInput.foto_3x4);
  }

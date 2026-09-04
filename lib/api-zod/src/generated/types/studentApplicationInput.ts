@@ -17,7 +17,7 @@ export interface StudentApplicationInput {
   jenis_kelamin: StudentApplicationInputJenisKelamin;
   tempat_lahir: string;
   tanggal_lahir: Date;
-  nisn: string;
+  nisn?: string;
   nik_anak: string;
   alamat_domisili: string;
   /** Integer greater than or equal to 1 */
@@ -31,7 +31,7 @@ export interface StudentApplicationInput {
   tinggi_badan: string;
   /** Weight in kilograms */
   berat_badan: string;
-  riwayat_penyakit: string;
+  riwayat_penyakit?: string;
   transportasi: string;
   jarak_sekolah: string;
   nama_sekolah_asal: string;
@@ -54,8 +54,8 @@ export interface StudentApplicationInput {
   pekerjaan_ibu: string;
   penghasilan_ibu: string;
   instansi_jabatan_ibu: string;
-  nama_wali: string;
-  hubungan_wali: string;
+  nama_wali?: string;
+  hubungan_wali?: string;
   /** Uploaded file */
   foto_3x4?: string;
   /** Uploaded file */

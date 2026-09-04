@@ -12,6 +12,10 @@ paths = ["/api"]
 [services.development]
 run = "pnpm --filter @workspace/api-server run dev"
 
+[services.development.env]
+DATABASE_URL = "$DATABASE_URL"
+SESSION_SECRET = "$SESSION_SECRET"
+
 [services.production]
 
 [services.production.build]

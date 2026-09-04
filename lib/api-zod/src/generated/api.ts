@@ -13,7 +13,8 @@ import * as zod from 'zod';
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
-  "status": zod.string()
+  "status": zod.string(),
+  "database": zod.string()
 })
 
 
@@ -33,7 +34,7 @@ export const SubmitApplicationBody = zod.object({
   "jenis_kelamin": zod.enum(['Laki-laki', 'Perempuan']),
   "tempat_lahir": zod.string(),
   "tanggal_lahir": zod.coerce.date(),
-  "nisn": zod.string(),
+  "nisn": zod.string().optional(),
   "nik_anak": zod.string(),
   "alamat_domisili": zod.string(),
   "anak_ke": zod.string().describe('Integer greater than or equal to 1'),
@@ -43,7 +44,7 @@ export const SubmitApplicationBody = zod.object({
   "warga_negara": zod.string(),
   "tinggi_badan": zod.string().describe('Height in centimeters'),
   "berat_badan": zod.string().describe('Weight in kilograms'),
-  "riwayat_penyakit": zod.string(),
+  "riwayat_penyakit": zod.string().optional(),
   "transportasi": zod.string(),
   "jarak_sekolah": zod.string(),
   "nama_sekolah_asal": zod.string(),
@@ -65,8 +66,8 @@ export const SubmitApplicationBody = zod.object({
   "pekerjaan_ibu": zod.string(),
   "penghasilan_ibu": zod.string(),
   "instansi_jabatan_ibu": zod.string(),
-  "nama_wali": zod.string(),
-  "hubungan_wali": zod.string(),
+  "nama_wali": zod.string().optional(),
+  "hubungan_wali": zod.string().optional(),
   "foto_3x4": zod.string().optional().describe('Uploaded file'),
   "akte_lahir": zod.string().optional().describe('Uploaded file'),
   "kartu_keluarga": zod.string().optional().describe('Uploaded file'),
@@ -153,7 +154,7 @@ export const GetApplicationResponse = zod.object({
   "jenis_kelamin": zod.enum(['Laki-laki', 'Perempuan']),
   "tempat_lahir": zod.string(),
   "tanggal_lahir": zod.coerce.date(),
-  "nisn": zod.string(),
+  "nisn": zod.string().optional(),
   "nik_anak": zod.string(),
   "alamat_domisili": zod.string(),
   "anak_ke": zod.string().describe('Integer greater than or equal to 1'),
@@ -163,7 +164,7 @@ export const GetApplicationResponse = zod.object({
   "warga_negara": zod.string(),
   "tinggi_badan": zod.string().describe('Height in centimeters'),
   "berat_badan": zod.string().describe('Weight in kilograms'),
-  "riwayat_penyakit": zod.string(),
+  "riwayat_penyakit": zod.string().optional(),
   "transportasi": zod.string(),
   "jarak_sekolah": zod.string(),
   "nama_sekolah_asal": zod.string(),
@@ -185,8 +186,8 @@ export const GetApplicationResponse = zod.object({
   "pekerjaan_ibu": zod.string(),
   "penghasilan_ibu": zod.string(),
   "instansi_jabatan_ibu": zod.string(),
-  "nama_wali": zod.string(),
-  "hubungan_wali": zod.string(),
+  "nama_wali": zod.string().optional(),
+  "hubungan_wali": zod.string().optional(),
   "foto_3x4": zod.string().optional().describe('Uploaded file'),
   "akte_lahir": zod.string().optional().describe('Uploaded file'),
   "kartu_keluarga": zod.string().optional().describe('Uploaded file'),

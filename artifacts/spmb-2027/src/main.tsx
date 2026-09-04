@@ -36,14 +36,18 @@ function inputField(
   options: string[] = [],
   hint = '',
   span = false,
+  required = true,
 ): string {
-  const required = `required aria-required="true"`;
+  const requiredAttribute = required ? 'required aria-required="true"' : '';
+  const requirementLabel = required
+    ? requiredMark
+    : '<span class="form-board-optional">opsional</span>';
   const hintMarkup = hint ? `<span class="hint">${hint}</span>` : '';
   let control = '';
   if (kind === 'textarea') {
-    control = `<textarea id="${name}" name="${name}" ${required} placeholder="Tulis ${label.toLowerCase()}"></textarea>`;
+    control = `<textarea id="${name}" name="${name}" ${requiredAttribute} placeholder="Tulis ${label.toLowerCase()}"></textarea>`;
   } else if (kind === 'select') {
-    control = `<span class="form-board-select-wrap"><select id="${name}" name="${name}" ${required} data-testid="select-${name}">
+    control = `<span class="form-board-select-wrap"><select id="${name}" name="${name}" ${requiredAttribute} data-testid="select-${name}">
       <option value="">Pilih ${label.toLowerCase()}</option>
       ${options.map((option) => `<option value="${option}">${option}</option>`).join('')}
     </select>${icon('chevron')}</span>`;
@@ -51,10 +55,10 @@ function inputField(
     const inputMode = ['number'].includes(kind) ? ' inputmode="numeric"' : '';
     const placeholder =
       kind === 'date' ? '' : ` placeholder="Tulis ${label.toLowerCase()}"`;
-    control = `<input id="${name}" name="${name}" type="${kind}" ${required}${inputMode}${placeholder} data-testid="input-${name}" />`;
+    control = `<input id="${name}" name="${name}" type="${kind}" ${requiredAttribute}${inputMode}${placeholder} data-testid="input-${name}" />`;
   }
   return `<div class="form-board-field${span ? ' form-board-field-span' : ''}" data-field="${name}">
-    <label for="${name}">${label} ${requiredMark} ${hintMarkup}</label>
+    <label for="${name}">${label} ${requirementLabel} ${hintMarkup}</label>
     ${control}
     <span class="error-message" aria-live="polite"></span>
   </div>`;
@@ -84,6 +88,7 @@ function fileField(name: string, label: string, detail: string): string {
      <label class="form-board-upload-button" for="${name}">Pilih berkas
        <input id="${name}" name="${name}" type="file" accept=".pdf,.jpg,.jpeg,.png" required aria-required="true" data-testid="input-file-${name}" />
      </label>
+     <span class="form-board-upload-error" data-file-error="${name}" role="alert"></span>
   </div>`;
 }
 
@@ -94,7 +99,7 @@ const studentFields = [
   inputField('jenis_kelamin', 'Jenis kelamin', 'select', ['Laki-laki', 'Perempuan']),
   inputField('tempat_lahir', 'Tempat lahir'),
   inputField('tanggal_lahir', 'Tanggal lahir', 'date'),
-  inputField('nisn', 'NISN', 'text', [], '10 digit bila sudah memiliki'),
+  inputField('nisn', 'NISN', 'text', [], '10 digit bila sudah memiliki', false, false),
   inputField('nik_anak', 'NIK anak'),
   inputField('alamat_domisili', 'Alamat domisili saat ini', 'textarea', [], '', true),
   inputField('anak_ke', 'Anak ke-', 'number'),
@@ -104,7 +109,7 @@ const studentFields = [
   inputField('warga_negara', 'Kewarganegaraan'),
   inputField('tinggi_badan', 'Tinggi badan', 'number', [], 'dalam cm'),
   inputField('berat_badan', 'Berat badan', 'number', [], 'dalam kg'),
-  inputField('riwayat_penyakit', 'Riwayat penyakit yang perlu diketahui', 'textarea', [], 'Tulis “Tidak ada” bila tidak memiliki riwayat', true),
+  inputField('riwayat_penyakit', 'Riwayat penyakit yang perlu diketahui', 'textarea', [], 'Tulis “Tidak ada” bila tidak memiliki riwayat', true, false),
   inputField('transportasi', 'Transportasi ke sekolah', 'select', ['Jalan kaki', 'Kendaraan pribadi', 'Kendaraan umum', 'Antar-jemput']),
   inputField('jarak_sekolah', 'Perkiraan jarak ke sekolah', 'text', [], 'Contoh: 2 km'),
 ].join('');
@@ -132,8 +137,8 @@ const parentFields = [
   inputField('pekerjaan_ibu', 'Pekerjaan ibu'),
   inputField('penghasilan_ibu', 'Penghasilan per bulan ibu'),
   inputField('instansi_jabatan_ibu', 'Instansi atau jabatan ibu'),
-  inputField('nama_wali', 'Nama lengkap wali'),
-  inputField('hubungan_wali', 'Hubungan dengan calon peserta didik'),
+  inputField('nama_wali', 'Nama lengkap wali', 'text', [], '', false, false),
+  inputField('hubungan_wali', 'Hubungan dengan calon peserta didik', 'text', [], '', false, false),
 ].join('');
 
 const uploadFields = [
@@ -372,6 +377,23 @@ document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((input
   input.addEventListener('change', () => {
     const file = input.files?.[0];
     const label = document.querySelector<HTMLElement>(`[data-file-name="${input.name}"]`);
+    const upload = input.closest<HTMLElement>('[data-upload]');
+    const error = document.querySelector<HTMLElement>(`[data-file-error="${input.name}"]`);
+    const extension = file?.name.toLowerCase().match(/\.[^.]+$/)?.[0];
+    const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png'];
+    const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    const invalidType = Boolean(file && (!extension || !allowedExtensions.includes(extension) || (file.type && !allowedMimeTypes.includes(file.type))));
+    const invalidSize = Boolean(file && file.size > 5 * 1024 * 1024);
+    upload?.classList.remove('is-invalid');
+    if (error) error.textContent = '';
+    if (file && (invalidType || invalidSize)) {
+      input.value = '';
+      if (label) label.textContent = 'Belum ada berkas dipilih';
+      if (error) error.textContent = invalidSize ? 'Ukuran maksimal 5 MB.' : 'Format harus PDF, JPG, atau PNG.';
+      upload?.classList.add('is-invalid');
+      updateProgress();
+      return;
+    }
     if (label) label.textContent = file ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB` : 'Belum ada berkas dipilih';
     if (file) showNotice(`${input.closest<HTMLElement>('[data-upload]')?.querySelector('strong')?.textContent?.replace(' *', '') || 'Berkas'} berhasil dipilih.`);
     updateProgress();
@@ -428,6 +450,7 @@ updateProgress();
 
 healthCheck()
   .then((status) => {
+    healthDot.style.backgroundColor = status.database === 'ok' ? 'hsl(153 52% 42%)' : 'hsl(10 60% 54%)';
     healthStatus.textContent = status.status === 'ok' ? 'Layanan siap menerima pengajuan' : 'Layanan sedang diperiksa';
   })
   .catch(() => {

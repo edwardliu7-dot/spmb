@@ -216,8 +216,11 @@ components:
       properties:
         status:
           type: string
+        database:
+          type: string
       required:
         - status
+        - database
     StudentApplicationInput:
       type: object
       required:
@@ -227,7 +230,6 @@ components:
         - jenis_kelamin
         - tempat_lahir
         - tanggal_lahir
-        - nisn
         - nik_anak
         - alamat_domisili
         - anak_ke
@@ -237,7 +239,6 @@ components:
         - warga_negara
         - tinggi_badan
         - berat_badan
-        - riwayat_penyakit
         - transportasi
         - jarak_sekolah
         - nama_sekolah_asal
@@ -259,8 +260,6 @@ components:
         - pekerjaan_ibu
         - penghasilan_ibu
         - instansi_jabatan_ibu
-        - nama_wali
-        - hubungan_wali
       properties:
         jenjang: { type: string, enum: [Playgroup, Daycare, TK-A, TK-B, SD, SMP] }
         nama_calon: { type: string, minLength: 2 }

@@ -566,6 +566,13 @@
   color: #b55341;
 }
 
+.form-board-optional {
+  color: #999a90;
+  font-size: 9px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
 .form-board-form-header {
   display: flex;
   align-items: flex-start;
@@ -801,6 +808,21 @@
   border: 1px dashed #cbcfc2;
   border-radius: 10px;
   background: #f5f3eb;
+}
+
+.form-board-upload-error {
+  flex: 0 0 100%;
+  color: #b55341;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.form-board-upload-error:empty {
+  display: none;
+}
+
+.form-board-upload.is-invalid {
+  border-color: #b55341;
 }
 
 .form-board-upload-icon {
