@@ -197,7 +197,6 @@ root.innerHTML = `
           <button type="button" data-page-view="guide">Panduan</button>
         </nav>
         <div class="form-board-topbar-actions">
-          <button type="button" class="form-board-icon-button" aria-label="Notifikasi" data-notice="Tidak ada notifikasi baru.">${icon('bell')}<span></span></button>
           <span class="form-board-service-status"><i id="health-dot"></i><span id="health-status" data-testid="status-health">Memeriksa layanan</span></span>
         </div>
       </div>
