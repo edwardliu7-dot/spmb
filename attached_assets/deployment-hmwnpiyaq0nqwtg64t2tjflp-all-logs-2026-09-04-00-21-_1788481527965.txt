@@ -1,0 +1,521 @@
+2026-Sep-04 00:14:37 Docker 29.6.1 with BuildKit and Buildx detected on deployment server (localhost).
+2026-Sep-04 00:14:37 Starting deployment of edwardliu7-dot/spmb:main to localhost.
+2026-Sep-04 00:14:37 Preparing container with helper image: docker.io/coollabsio/coolify-helper:1.0.16
+2026-Sep-04 00:14:37 [DEBUG] [CMD]: docker stop --timeout=30 hmwnpiyaq0nqwtg64t2tjflp
+2026-Sep-04 00:14:37 [DEBUG] Error response from daemon: No such container: hmwnpiyaq0nqwtg64t2tjflp
+2026-Sep-04 00:14:38 [DEBUG] [CMD]: docker run -d --network 'coolify' --name hmwnpiyaq0nqwtg64t2tjflp  --rm -v /root/.docker/buildx:/root/.docker/buildx -v /var/run/docker.sock:/var/run/docker.sock docker.io/coollabsio/coolify-helper:1.0.16
+2026-Sep-04 00:14:38 [DEBUG] d476a9a6aa1affb586caf37fc835e86a996657c1f07636b554f8981cc36f96d3
+2026-Sep-04 00:14:44 [DEBUG] [CMD]: docker exec hmwnpiyaq0nqwtg64t2tjflp bash -c 'GIT_SSH_COMMAND="ssh -o ConnectTimeout=30 -p 22 -o Port=22 -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git ls-remote '\''https://x-access-token:<REDACTED>@github.com/edwardliu7-dot/spmb.git'\'' '\''refs/heads/main'\'''
+2026-Sep-04 00:14:44 [DEBUG] 1c846d364131fde3a32fec0e2795d8ca923cd053	refs/heads/main
+2026-Sep-04 00:14:45 Image not found (5c8i99hcyvaqffvxrntkknib:1c846d364131fde3a32fec0e2795d8ca923cd053). Building new image.
+2026-Sep-04 00:14:46 ----------------------------------------
+2026-Sep-04 00:14:46 Importing edwardliu7-dot/spmb:main (commit sha 1c846d364131fde3a32fec0e2795d8ca923cd053) to /artifacts/hmwnpiyaq0nqwtg64t2tjflp.
+2026-Sep-04 00:14:46 [DEBUG] [CMD]: docker exec hmwnpiyaq0nqwtg64t2tjflp bash -c 'git -c '\''url.https://x-access-token:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 clone --depth=1 --recurse-submodules --shallow-submodules -b '\''main'\'' '\''https:<REDACTED>@github.com/edwardliu7-dot/spmb.git'\'' '\''/artifacts/hmwnpiyaq0nqwtg64t2tjflp'\'' && cd '\''/artifacts/hmwnpiyaq0nqwtg64t2tjflp'\'' && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git -c '\''url.https://x-access-token:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 fetch --depth=1 origin '\''1c846d364131fde3a32fec0e2795d8ca923cd053'\'' && git -c '\''url.https:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 -c advice.detachedHead=false checkout '\''1c846d364131fde3a32fec0e2795d8ca923cd053'\'' >/dev/null 2>&1 && cd '\''/artifacts/hmwnpiyaq0nqwtg64t2tjflp'\'' && if [ -f .gitmodules ]; then git -c '\''url.https:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 submodule sync && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git -c '\''url.https:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 submodule update --init --recursive --depth=1; fi && cd '\''/artifacts/hmwnpiyaq0nqwtg64t2tjflp'\'' && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git -c '\''url.https:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 lfs pull'
+2026-Sep-04 00:<REDACTED>@157.10.161.229:5432/postgres'\'' --env '\''SESSION_SECRET=fXK2f91hBn/pp71ivmcIiMRSM/2u1nq4vRxkVCbyQaD6Z1/KrrBqSRqkD9w1PnLKxGdw9mFVb1dxG5voC4IdsQ=='\'' --env '\''BASE_PATH=/'\'' --env '\''PORT=5000'\'' --env '\''NODE_ENV=production'\'' --env '\''RAILPACK_DEPLOY_APT_PACKAGES=curl wget'\'' --env '\''COOLIFY_URL=https://spmbtisa.157.10.161.229.sslip.io:<REDACTED>@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-04 00:15:08 [DEBUG] #2 resolve ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-04 00:15:09 [DEBUG] #2 resolve ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6 0.4s done
+2026-Sep-04 00:15:10 [DEBUG] #2 DONE 1.9s
+2026-Sep-04 00:15:10 [DEBUG] #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-04 00:15:10 [DEBUG] #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 0B / 8.67MB 0.2s
+2026-Sep-04 00:15:10 [DEBUG] #2 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 0B / 3.86MB 0.2s
+2026-Sep-04 00:15:11 [DEBUG] #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 4.19MB / 8.67MB 0.8s
+2026-Sep-04 00:15:11 [DEBUG] #2 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 3.86MB / 3.86MB 0.8s
+2026-Sep-04 00:15:11 [DEBUG] #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 8.67MB / 8.67MB 1.1s
+2026-Sep-04 00:15:11 [DEBUG] #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 8.67MB / 8.67MB 1.1s done
+2026-Sep-04 00:15:11 [DEBUG] #2 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 3.86MB / 3.86MB 0.9s done
+2026-Sep-04 00:15:14 [DEBUG] #2 DONE 5.5s
+2026-Sep-04 00:15:14 [DEBUG] #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-04 00:15:14 [DEBUG] #2 extracting sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153
+2026-Sep-04 00:15:15 [DEBUG] #2 extracting sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 1.5s done
+2026-Sep-04 00:15:15 [DEBUG] #2 DONE 7.0s
+2026-Sep-04 00:15:16 [DEBUG] #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-04 00:15:16 [DEBUG] #2 extracting sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b
+2026-Sep-04 00:15:17 [DEBUG] #2 extracting sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 2.0s done
+2026-Sep-04 00:15:18 [DEBUG] #2 DONE 8.9s
+2026-Sep-04 00:15:19 [DEBUG] #3 load build definition from railpack-plan.json
+2026-Sep-04 00:15:19 [DEBUG] #3 transferring dockerfile:
+2026-Sep-04 00:15:19 [DEBUG] #3 transferring dockerfile: 4.72kB 0.0s done
+2026-Sep-04 00:15:19 [DEBUG] #3 DONE 0.8s
+2026-Sep-04 00:15:21 [DEBUG] #4 [railpack] secrets hash
+2026-Sep-04 00:15:21 [DEBUG] #4 DONE 0.0s
+2026-Sep-04 00:15:21 [DEBUG] 
+2026-Sep-04 00:15:21 [DEBUG] #5 loading .
+2026-Sep-04 00:15:21 [DEBUG] #5 DONE 0.0s
+2026-Sep-04 00:15:21 [DEBUG] 
+2026-Sep-04 00:15:21 [DEBUG] #6 docker-image://ghcr.io/railwayapp/railpack-builder:mise-2026.3.17
+2026-Sep-04 00:15:21 [DEBUG] #6 resolve ghcr.io/railwayapp/railpack-builder:mise-2026.3.17
+2026-Sep-04 00:15:25 [DEBUG] #6 ...
+2026-Sep-04 00:15:25 [DEBUG] 
+2026-Sep-04 00:15:25 [DEBUG] #7 docker-image://ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17
+2026-Sep-04 00:15:25 [DEBUG] #7 resolve ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17 4.3s done
+2026-Sep-04 00:15:25 [DEBUG] #7 CACHED
+2026-Sep-04 00:15:25 [DEBUG] #8 install apt packages: curl wget
+2026-Sep-04 00:15:30 [DEBUG] #8 ...
+2026-Sep-04 00:15:30 [DEBUG] 
+2026-Sep-04 00:15:30 [DEBUG] #9 [railpack] loading secrets
+2026-Sep-04 00:15:30 [DEBUG] #9 resolve docker.io/library/alpine:latest 8.0s done
+2026-Sep-04 00:15:30 [DEBUG] #9 DONE 9.5s
+2026-Sep-04 00:15:30 [DEBUG] 
+2026-Sep-04 00:15:30 [DEBUG] #5 loading .
+2026-Sep-04 00:15:30 [DEBUG] #5 transferring context: 24.15kB 0.1s
+2026-Sep-04 00:15:31 [DEBUG] #5 transferring context: 1.03MB 0.7s done
+2026-Sep-04 00:15:32 [DEBUG] #5 DONE 4.6s
+2026-Sep-04 00:15:32 [DEBUG] 
+2026-Sep-04 00:15:32 [DEBUG] #9 [railpack] loading secrets
+2026-Sep-04 00:15:32 [DEBUG] #9 sha256:55afa1ecc21d2bb5e5045f32dafee56272ffd89860bac26f6c32123439af26a4 3.85MB / 3.85MB 0.6s done
+2026-Sep-04 00:15:32 [DEBUG] #9 DONE 11.3s
+2026-Sep-04 00:15:32 [DEBUG] 
+2026-Sep-04 00:15:32 [DEBUG] #6 docker-image://ghcr.io/railwayapp/railpack-builder:mise-2026.3.17
+2026-Sep-04 00:15:32 [DEBUG] #6 resolve ghcr.io/railwayapp/railpack-builder:mise-2026.3.17 7.1s done
+2026-Sep-04 00:15:32 [DEBUG] #6 ...
+2026-Sep-04 00:15:32 [DEBUG] 
+2026-Sep-04 00:15:32 [DEBUG] #4 [railpack] secrets hash
+2026-Sep-04 00:15:32 [DEBUG] #4 DONE 4.7s
+2026-Sep-04 00:15:33 [DEBUG] #9 [railpack] loading secrets
+2026-Sep-04 00:15:33 [DEBUG] #9 extracting sha256:55afa1ecc21d2bb5e5045f32dafee56272ffd89860bac26f6c32123439af26a4
+2026-Sep-04 00:15:38 [DEBUG] #9 ...
+2026-Sep-04 00:15:38 [DEBUG] 
+2026-Sep-04 00:15:38 [DEBUG] #8 install apt packages: curl wget
+2026-Sep-04 00:15:38 [DEBUG] #8 7.940 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+2026-Sep-04 00:<REDACTED>@22.23.2    [1/3] install
+2026-Sep-04 00:18:08 [DEBUG] #15 3.075 mise node@22.23.2    [1/3] download node-v22.23.2-linux-x64.tar.gz
+2026-Sep-04 00:18:08 [DEBUG] #15 3.141 mise pnpm@9.15.9     [1/2] install
+2026-Sep-04 00:18:09 [DEBUG] #15 3.702 mise node@22.23.2    [2/3] generate checksum node-v22.23.2-linux-x64.tar.gz
+2026-Sep-04 00:18:09 [DEBUG] #15 3.752 mise node@22.23.2    [3/3] extract node-v22.23.2-linux-x64.tar.gz
+2026-Sep-04 00:18:09 [DEBUG] #15 4.164 mise pnpm@9.15.9     [1/2] download pnpm-linux-x64
+2026-Sep-04 00:18:11 [DEBUG] #15 5.534 mise node@22.23.2    [3/3] node -v
+2026-Sep-04 00:18:11 [DEBUG] #15 5.575 mise node@22.23.2    [3/3] v22.23.2
+2026-Sep-04 00:18:11 [DEBUG] #15 5.583 mise node@22.23.2    [3/3] npm -v
+2026-Sep-04 00:18:11 [DEBUG] #15 6.082 mise node@22.23.2    [3/3] 10.9.8
+2026-Sep-04 00:18:13 [DEBUG] #15 7.750 mise node@22.23.2  ✓ installed
+2026-Sep-04 00:18:17 [DEBUG] #15 12.02 mise pnpm@9.15.9     [1/2] generate checksum pnpm-linux-x64
+2026-Sep-04 00:18:18 [DEBUG] #15 12.09 mise pnpm@9.15.9     [1/2] extract pnpm-linux-x64
+2026-Sep-04 00:18:18 [DEBUG] #15 13.13 mise pnpm@9.15.9   ✓ installed
+2026-Sep-04 00:18:20 [DEBUG] #15 DONE 14.7s
+2026-Sep-04 00:18:20 [DEBUG] #16 copy / /app
+2026-Sep-04 00:18:22 [DEBUG] #16 ...
+2026-Sep-04 00:18:22 [DEBUG] 
+2026-Sep-04 00:18:22 [DEBUG] #17 copy /mise/shims
+2026-Sep-04 00:18:22 [DEBUG] #17 DONE 0.7s
+2026-Sep-04 00:18:22 [DEBUG] #16 copy / /app
+2026-Sep-04 00:18:22 [DEBUG] #16 DONE 2.1s
+2026-Sep-04 00:18:23 [DEBUG] #18 mkdir -p /app/node_modules/.cache
+2026-Sep-04 00:18:28 [DEBUG] #18 DONE 5.0s
+2026-Sep-04 00:18:28 [DEBUG] 
+2026-Sep-04 00:18:28 [DEBUG] #19 copy /mise/installs
+2026-Sep-04 00:18:34 [DEBUG] #19 ...
+2026-Sep-04 00:18:34 [DEBUG] 
+2026-Sep-04 00:18:34 [DEBUG] #20 pnpm add -g node-gyp
+2026-Sep-04 00:18:34 [DEBUG] #20 6.025 Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-Sep-04 00:18:34 [DEBUG] #20 6.597 Packages: +20
+2026-Sep-04 00:18:34 [DEBUG] #20 6.597 ++++++++++++++++++++
+2026-Sep-04 00:18:36 [DEBUG] #20 6.945 Progress: resolved 20, reused 0, downloaded 20, added 20, done
+2026-Sep-04 00:18:36 [DEBUG] #20 8.619
+2026-Sep-04 00:18:36 [DEBUG] #20 8.619 /pnpm/global/5:
+2026-Sep-04 00:18:36 [DEBUG] #20 8.619 + node-gyp 13.0.2
+2026-Sep-04 00:18:36 [DEBUG] #20 8.619
+2026-Sep-04 00:18:37 [DEBUG] #20 9.001 Done in 3.7s using pnpm v9.15.9
+2026-Sep-04 00:18:43 [DEBUG] #20 DONE 15.1s
+2026-Sep-04 00:18:43 [DEBUG] 
+2026-Sep-04 00:18:43 [DEBUG] #19 copy /mise/installs
+2026-Sep-04 00:18:43 [DEBUG] #19 ...
+2026-Sep-04 00:18:43 [DEBUG] 
+2026-Sep-04 00:18:43 [DEBUG] #21 pnpm install --frozen-lockfile --prefer-offline
+2026-Sep-04 00:18:51 [DEBUG] #21 ...
+2026-Sep-04 00:18:51 [DEBUG] 
+2026-Sep-04 00:18:51 [DEBUG] #19 copy /mise/installs
+2026-Sep-04 00:18:51 [DEBUG] #19 DONE 25.5s
+2026-Sep-04 00:18:51 [DEBUG] #22 copy /usr/local/bin/mise
+2026-Sep-04 00:18:57 [DEBUG] #22 ...
+2026-Sep-04 00:18:57 [DEBUG] 
+2026-Sep-04 00:18:57 [DEBUG] #21 pnpm install --frozen-lockfile --prefer-offline
+2026-Sep-04 00:18:57 [DEBUG] #21 8.553 Scope: all 9 workspace projects
+2026-Sep-04 00:18:57 [DEBUG] #21 8.741 Lockfile is up to date, resolution step is skipped
+2026-Sep-04 00:18:57 [DEBUG] #21 9.054 Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-Sep-04 00:18:57 [DEBUG] #21 9.320 Packages: +501
+2026-Sep-04 00:18:57 [DEBUG] #21 9.320 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2026-Sep-04 00:18:57 [DEBUG] #21 10.06 Progress: resolved 501, reused 0, downloaded 0, added 0
+2026-Sep-04 00:18:57 [DEBUG] #21 11.06 Progress: resolved 501, reused 3, downloaded 14, added 0
+2026-Sep-04 00:18:57 [DEBUG] #21 12.06 Progress: resolved 501, reused 3, downloaded 16, added 0
+2026-Sep-04 00:18:58 [DEBUG] #21 ...
+2026-Sep-04 00:18:58 [DEBUG] 
+2026-Sep-04 00:18:58 [DEBUG] #22 copy /usr/local/bin/mise
+2026-Sep-04 00:18:58 [DEBUG] #22 DONE 6.9s
+2026-Sep-04 00:18:58 [DEBUG] #23 copy /etc/mise/config.toml
+2026-Sep-04 00:18:59 [DEBUG] #23 DONE 1.0s
+2026-Sep-04 00:18:59 [DEBUG] 
+2026-Sep-04 00:18:59 [DEBUG] #21 pnpm install --frozen-lockfile --prefer-offline
+2026-Sep-04 00:18:59 [DEBUG] #21 15.38 Progress: resolved 501, reused 3, downloaded 16, added 1
+2026-Sep-04 00:18:59 [DEBUG] #21 16.39 Progress: resolved 501, reused 3, downloaded 18, added 6
+2026-Sep-04 00:19:00 [DEBUG] #21 17.50 Progress: resolved 501, reused 3, downloaded 19, added 6
+2026-Sep-04 00:19:02 [DEBUG] #21 ...
+2026-Sep-04 00:19:02 [DEBUG] #24 copy /root/.local/state/mise
+2026-Sep-04 00:19:02 [DEBUG] #24 DONE 2.9s
+2026-Sep-04 00:19:02 [DEBUG] #21 pnpm install --frozen-lockfile --prefer-offline
+2026-Sep-04 00:19:04 [DEBUG] #21 21.33 Progress: resolved 501, reused 3, downloaded 19, added 7
+2026-Sep-04 00:19:05 [DEBUG] #21 22.33 Progress: resolved 501, reused 3, downloaded 95, added 86
+2026-Sep-04 00:19:06 [DEBUG] #21 23.33 Progress: resolved 501, reused 3, downloaded 139, added 127
+2026-Sep-04 00:19:07 [DEBUG] #21 24.33 Progress: resolved 501, reused 3, downloaded 177, added 180
+2026-Sep-04 00:19:09 [DEBUG] #21 26.15 Progress: resolved 501, reused 3, downloaded 229, added 223
+2026-Sep-04 00:19:10 [DEBUG] #21 27.15 Progress: resolved 501, reused 3, downloaded 234, added 226
+2026-Sep-04 00:19:12 [DEBUG] #21 28.15 Progress: resolved 501, reused 3, downloaded 251, added 239
+2026-Sep-04 00:19:12 [DEBUG] #21 29.15 Progress: resolved 501, reused 3, downloaded 257, added 244
+2026-Sep-04 00:19:16 [DEBUG] #21 33.29 Progress: resolved 501, reused 3, downloaded 257, added 245
+2026-Sep-04 00:19:17 [DEBUG] #21 34.30 Progress: resolved 501, reused 3, downloaded 287, added 283
+2026-Sep-04 00:19:21 [DEBUG] #21 35.29 Progress: resolved 501, reused 3, downloaded 303, added 290
+2026-Sep-04 00:19:21 [DEBUG] #21 36.30 Progress: resolved 501, reused 3, downloaded 310, added 299
+2026-Sep-04 00:19:21 [DEBUG] #21 37.37 Progress: resolved 501, reused 3, downloaded 311, added 299
+2026-Sep-04 00:19:21 [DEBUG] #21 38.37 Progress: resolved 501, reused 3, downloaded 312, added 305
+2026-Sep-04 00:19:23 [DEBUG] #21 39.37 Progress: resolved 501, reused 3, downloaded 316, added 306
+2026-Sep-04 00:19:23 [DEBUG] #21 40.37 Progress: resolved 501, reused 3, downloaded 332, added 319
+2026-Sep-04 00:19:24 [DEBUG] #21 41.37 Progress: resolved 501, reused 3, downloaded 356, added 346
+2026-Sep-04 00:19:25 [DEBUG] #21 42.70 Progress: resolved 501, reused 3, downloaded 357, added 346
+2026-Sep-04 00:19:26 [DEBUG] #21 43.71 Progress: resolved 501, reused 3, downloaded 363, added 356
+2026-Sep-04 00:19:30 [DEBUG] #21 47.29 Progress: resolved 501, reused 3, downloaded 364, added 356
+2026-Sep-04 00:19:31 [DEBUG] #21 48.30 Progress: resolved 501, reused 3, downloaded 378, added 366
+2026-Sep-04 00:19:32 [DEBUG] #21 49.30 Progress: resolved 501, reused 3, downloaded 398, added 386
+2026-Sep-04 00:19:33 [DEBUG] #21 50.49 Progress: resolved 501, reused 3, downloaded 399, added 386
+2026-Sep-04 00:19:35 [DEBUG] #21 51.49 Progress: resolved 501, reused 3, downloaded 439, added 427
+2026-Sep-04 00:19:35 [DEBUG] #21 52.50 Progress: resolved 501, reused 3, downloaded 459, added 451
+2026-Sep-04 00:19:37 [DEBUG] #21 53.50 Progress: resolved 501, reused 3, downloaded 465, added 456
+2026-Sep-04 00:19:37 [DEBUG] #21 54.50 Progress: resolved 501, reused 3, downloaded 478, added 465
+2026-Sep-04 00:19:38 [DEBUG] #21 55.13 Progress: resolved 501, reused 3, downloaded 498, added 501, done
+2026-Sep-04 00:19:39 [DEBUG] #21 55.73 .../esbuild@0.18.20/node_modules/esbuild postinstall$ node install.js
+2026-Sep-04 00:19:39 [DEBUG] #21 55.73 .../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+2026-Sep-04 00:19:39 [DEBUG] #21 55.73 .../esbuild@0.28.2/node_modules/esbuild postinstall$ node install.js
+2026-Sep-04 00:19:39 [DEBUG] #21 55.84 .../esbuild@0.27.3/node_modules/esbuild postinstall$ node install.js
+2026-Sep-04 00:19:40 [DEBUG] #21 57.06 .../esbuild@0.28.2/node_modules/esbuild postinstall: Done
+2026-Sep-04 00:19:41 [DEBUG] #21 57.06 .../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+2026-Sep-04 00:19:41 [DEBUG] #21 57.06 .../esbuild@0.18.20/node_modules/esbuild postinstall: Done
+2026-Sep-04 00:19:41 [DEBUG] #21 57.06 .../esbuild@0.27.3/node_modules/esbuild postinstall: Done
+2026-Sep-04 00:19:42 [DEBUG] #21 59.30
+2026-Sep-04 00:19:42 [DEBUG] #21 59.30 dependencies:
+2026-Sep-04 00:19:42 [DEBUG] #21 59.30 + @replit/connectors-sdk 0.4.1
+2026-Sep-04 00:19:42 [DEBUG] #21 59.30
+2026-Sep-04 00:19:42 [DEBUG] #21 59.30 devDependencies:
+2026-Sep-04 00:19:42 [DEBUG] #21 59.30 + prettier 3.9.6
+2026-Sep-04 00:19:42 [DEBUG] #21 59.30 + typescript 5.9.3
+2026-Sep-04 00:19:42 [DEBUG] #21 59.30
+2026-Sep-04 00:19:42 [DEBUG] #21 59.43 . preinstall$ sh -c 'rm -f package-lock.json yarn.lock; case "$npm_config_user_agent" in pnpm/*) ;; *) echo "Use pnpm instead" >&2; exit 1 ;; esac'
+2026-Sep-04 00:19:42 [DEBUG] #21 59.47 . preinstall: Done
+2026-Sep-04 00:19:43 [DEBUG] #21 59.79 Done in 51.5s using pnpm v9.15.9
+2026-Sep-04 00:19:46 [DEBUG] #21 DONE 63.3s
+2026-Sep-04 00:19:46 [DEBUG] 
+2026-Sep-04 00:19:46 [DEBUG] #25 copy / /app
+2026-Sep-04 00:19:52 [DEBUG] #25 DONE 5.5s
+2026-Sep-04 00:19:52 [DEBUG] #26 pnpm run build
+2026-Sep-04 00:19:56 [DEBUG] #26 3.770
+2026-Sep-04 00:19:56 [DEBUG] #26 3.770 > workspace@0.0.0 build /app
+2026-Sep-04 00:19:56 [DEBUG] #26 3.770 > pnpm run typecheck && pnpm -r --if-present run build
+2026-Sep-04 00:19:56 [DEBUG] #26 3.770
+2026-Sep-04 00:19:56 [DEBUG] #26 4.219
+2026-Sep-04 00:19:56 [DEBUG] #26 4.219 > workspace@0.0.0 typecheck /app
+2026-Sep-04 00:19:56 [DEBUG] #26 4.219 > pnpm run typecheck:libs && pnpm -r --filter "./artifacts/**" --filter "./scripts" --if-present run typecheck
+2026-Sep-04 00:19:56 [DEBUG] #26 4.219
+2026-Sep-04 00:19:57 [DEBUG] #26 4.656
+2026-Sep-04 00:19:57 [DEBUG] #26 4.656 > workspace@0.0.0 typecheck:libs /app
+2026-Sep-04 00:19:57 [DEBUG] #26 4.656 > tsc --build
+2026-Sep-04 00:19:57 [DEBUG] #26 4.656
+2026-Sep-04 00:20:10 [DEBUG] #26 18.41 Scope: 4 of 9 workspace projects
+2026-Sep-04 00:20:11 [DEBUG] #26 18.42 artifacts/api-server typecheck$ tsc -p tsconfig.json --noEmit
+2026-Sep-04 00:20:11 [DEBUG] #26 18.42 artifacts/mockup-sandbox typecheck$ tsc -p tsconfig.json --noEmit
+2026-Sep-04 00:20:11 [DEBUG] #26 18.42 artifacts/spmb-2027 typecheck$ tsc -p tsconfig.json --noEmit
+2026-Sep-04 00:20:11 [DEBUG] #26 18.42 scripts typecheck$ tsc -p tsconfig.json --noEmit
+2026-Sep-04 00:20:18 [DEBUG] #26 25.54 scripts typecheck: Done
+2026-Sep-04 00:20:27 [DEBUG] #26 35.34 artifacts/api-server typecheck: Done
+2026-Sep-04 00:20:43 [DEBUG] #26 51.47 artifacts/spmb-2027 typecheck: Done
+2026-Sep-04 00:20:49 [DEBUG] #26 57.24 artifacts/mockup-sandbox typecheck: src/components/mockups/spmb-committee/CommitteeDashboardQueueVariant.tsx(276,62): error TS2367: This comparison appears to be unintentional because the types '"Siap diputuskan" | "Tersimpan"' and '"Perlu dicek"' have no overlap.
+2026-Sep-04 00:20:49 [DEBUG] #26 57.34 artifacts/mockup-sandbox typecheck: Failed
+2026-Sep-04 00:20:49 [DEBUG] #26 57.34 /app/artifacts/mockup-sandbox:
+2026-Sep-04 00:20:49 [DEBUG] #26 57.34  ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/mockup-sandbox@2.0.0 typecheck: `tsc -p tsconfig.json --noEmit`
+2026-Sep-04 00:20:49 [DEBUG] #26 57.34 Exit status 2
+2026-Sep-04 00:20:50 [DEBUG] #26 57.50  ELIFECYCLE  Command failed with exit code 2.
+2026-Sep-04 00:20:50 [DEBUG] #26 57.53  ELIFECYCLE  Command failed with exit code 2.
+2026-Sep-04 00:20:53 [DEBUG] #26 ERROR: process "pnpm run build" did not complete successfully: exit code: 2
+2026-Sep-04 00:20:56 [DEBUG] ------
+2026-Sep-04 00:20:56 [DEBUG] > pnpm run build:
+2026-Sep-04 00:20:56 [DEBUG] 25.54 scripts typecheck: Done
+2026-Sep-04 00:20:56 [DEBUG] 35.34 artifacts/api-server typecheck: Done
+2026-Sep-04 00:20:56 [DEBUG] 51.47 artifacts/spmb-2027 typecheck: Done
+2026-Sep-04 00:20:56 [DEBUG] 57.24 artifacts/mockup-sandbox typecheck: src/components/mockups/spmb-committee/CommitteeDashboardQueueVariant.tsx(276,62): error TS2367: This comparison appears to be unintentional because the types '"Siap diputuskan" | "Tersimpan"' and '"Perlu dicek"' have no overlap.
+2026-Sep-04 00:20:56 [DEBUG] 57.34 artifacts/mockup-sandbox typecheck: Failed
+2026-Sep-04 00:20:56 [DEBUG] 57.34 /app/artifacts/mockup-sandbox:
+2026-Sep-04 00:20:56 [DEBUG] 57.34  ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/mockup-sandbox@2.0.0 typecheck: `tsc -p tsconfig.json --noEmit`
+2026-Sep-04 00:20:56 [DEBUG] 57.34 Exit status 2
+2026-Sep-04 00:20:56 [DEBUG] 57.50  ELIFECYCLE  Command failed with exit code 2.
+2026-Sep-04 00:20:56 [DEBUG] 57.53  ELIFECYCLE  Command failed with exit code 2.
+2026-Sep-04 00:20:56 [DEBUG] ------
+2026-Sep-04 00:20:56 [DEBUG] ERROR: failed to build: failed to solve: process "pnpm run build" did not complete successfully: exit code: 2
+2026-Sep-04 00:21:07 ========================================
+2026-Sep-04 00:21:07 Deployment failed: Command execution failed (exit code 1): docker exec hmwnpiyaq0nqwtg64t2tjflp bash -c 'bash /artifacts/build.sh'
+2026-Sep-04 00:21:07 Error: #0 building with "coolify-railpack" instance using docker-container driver
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #1 resolve image config for docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0
+2026-Sep-04 00:21:07 #1 DONE 5.8s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-04 00:21:07 #2 resolve ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-04 00:21:07 #2 resolve ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6 0.4s done
+2026-Sep-04 00:21:07 #2 DONE 1.9s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-04 00:21:07 #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 0B / 8.67MB 0.2s
+2026-Sep-04 00:21:07 #2 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 0B / 3.86MB 0.2s
+2026-Sep-04 00:21:07 #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 4.19MB / 8.67MB 0.8s
+2026-Sep-04 00:21:07 #2 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 3.86MB / 3.86MB 0.8s
+2026-Sep-04 00:21:07 #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 8.67MB / 8.67MB 1.1s
+2026-Sep-04 00:21:07 #2 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 8.67MB / 8.67MB 1.1s done
+2026-Sep-04 00:21:07 #2 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 3.86MB / 3.86MB 0.9s done
+2026-Sep-04 00:21:07 #2 DONE 5.5s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-04 00:21:07 #2 extracting sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153
+2026-Sep-04 00:21:07 #2 extracting sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 1.5s done
+2026-Sep-04 00:21:07 #2 DONE 7.0s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-04 00:21:07 #2 extracting sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b
+2026-Sep-04 00:21:07 #2 extracting sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 2.0s done
+2026-Sep-04 00:21:07 #2 DONE 8.9s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #3 load build definition from railpack-plan.json
+2026-Sep-04 00:21:07 #3 transferring dockerfile:
+2026-Sep-04 00:21:07 #3 transferring dockerfile: 4.72kB 0.0s done
+2026-Sep-04 00:21:07 #3 DONE 0.8s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #4 [railpack] secrets hash
+2026-Sep-04 00:21:07 #4 DONE 0.0s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #5 loading .
+2026-Sep-04 00:21:07 #5 DONE 0.0s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #6 docker-image://ghcr.io/railwayapp/railpack-builder:mise-2026.3.17
+2026-Sep-04 00:21:07 #6 resolve ghcr.io/railwayapp/railpack-builder:mise-2026.3.17
+2026-Sep-04 00:21:07 #6 ...
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #7 docker-image://ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17
+2026-Sep-04 00:21:07 #7 resolve ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17 4.3s done
+2026-Sep-04 00:21:07 #7 CACHED
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #8 install apt packages: curl wget
+2026-Sep-04 00:21:07 #8 ...
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #9 [railpack] loading secrets
+2026-Sep-04 00:21:07 #9 resolve docker.io/library/alpine:latest 8.0s done
+2026-Sep-04 00:21:07 #9 DONE 9.5s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #5 loading .
+2026-Sep-04 00:21:07 #5 transferring context: 24.15kB 0.1s
+2026-Sep-04 00:21:07 #5 transferring context: 1.03MB 0.7s done
+2026-Sep-04 00:21:07 #5 DONE 4.6s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #9 [railpack] loading secrets
+2026-Sep-04 00:21:07 #9 sha256:55afa1ecc21d2bb5e5045f32dafee56272ffd89860bac26f6c32123439af26a4 3.85MB / 3.85MB 0.6s done
+2026-Sep-04 00:21:07 #9 DONE 11.3s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #6 docker-image://ghcr.io/railwayapp/railpack-builder:mise-2026.3.17
+2026-Sep-04 00:21:07 #6 resolve ghcr.io/railwayapp/railpack-builder:mise-2026.3.17 7.1s done
+2026-Sep-04 00:21:07 #6 ...
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #4 [railpack] secrets hash
+2026-Sep-04 00:21:07 #4 DONE 4.7s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #9 [railpack] loading secrets
+2026-Sep-04 00:21:07 #9 extracting sha256:55afa1ecc21d2bb5e5045f32dafee56272ffd89860bac26f6c32123439af26a4
+2026-Sep-04 00:21:07 #9 ...
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #8 install apt packages: curl wget
+2026-Sep-04 00:21:07 #8 7.940 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+2026-Sep-04 00:<REDACTED>@22.23.2    [1/3] install
+2026-Sep-04 00:21:07 #15 3.075 mise node@22.23.2    [1/3] download node-v22.23.2-linux-x64.tar.gz
+2026-Sep-04 00:21:07 #15 3.141 mise pnpm@9.15.9     [1/2] install
+2026-Sep-04 00:21:07 #15 3.702 mise node@22.23.2    [2/3] generate checksum node-v22.23.2-linux-x64.tar.gz
+2026-Sep-04 00:21:07 #15 3.752 mise node@22.23.2    [3/3] extract node-v22.23.2-linux-x64.tar.gz
+2026-Sep-04 00:21:07 #15 4.164 mise pnpm@9.15.9     [1/2] download pnpm-linux-x64
+2026-Sep-04 00:21:07 #15 5.534 mise node@22.23.2    [3/3] node -v
+2026-Sep-04 00:21:07 #15 5.575 mise node@22.23.2    [3/3] v22.23.2
+2026-Sep-04 00:21:07 #15 5.583 mise node@22.23.2    [3/3] npm -v
+2026-Sep-04 00:21:07 #15 6.082 mise node@22.23.2    [3/3] 10.9.8
+2026-Sep-04 00:21:07 #15 7.750 mise node@22.23.2  ✓ installed
+2026-Sep-04 00:21:07 #15 12.02 mise pnpm@9.15.9     [1/2] generate checksum pnpm-linux-x64
+2026-Sep-04 00:21:07 #15 12.09 mise pnpm@9.15.9     [1/2] extract pnpm-linux-x64
+2026-Sep-04 00:21:07 #15 13.13 mise pnpm@9.15.9   ✓ installed
+2026-Sep-04 00:21:07 #15 DONE 14.7s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #16 copy / /app
+2026-Sep-04 00:21:07 #16 ...
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #17 copy /mise/shims
+2026-Sep-04 00:21:07 #17 DONE 0.7s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #16 copy / /app
+2026-Sep-04 00:21:07 #16 DONE 2.1s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #18 mkdir -p /app/node_modules/.cache
+2026-Sep-04 00:21:07 #18 DONE 5.0s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #19 copy /mise/installs
+2026-Sep-04 00:21:07 #19 ...
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #20 pnpm add -g node-gyp
+2026-Sep-04 00:21:07 #20 6.025 Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-Sep-04 00:21:07 #20 6.597 Packages: +20
+2026-Sep-04 00:21:07 #20 6.597 ++++++++++++++++++++
+2026-Sep-04 00:21:07 #20 6.945 Progress: resolved 20, reused 0, downloaded 20, added 20, done
+2026-Sep-04 00:21:07 #20 8.619
+2026-Sep-04 00:21:07 #20 8.619 /pnpm/global/5:
+2026-Sep-04 00:21:07 #20 8.619 + node-gyp 13.0.2
+2026-Sep-04 00:21:07 #20 8.619
+2026-Sep-04 00:21:07 #20 9.001 Done in 3.7s using pnpm v9.15.9
+2026-Sep-04 00:21:07 #20 DONE 15.1s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #19 copy /mise/installs
+2026-Sep-04 00:21:07 #19 ...
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #21 pnpm install --frozen-lockfile --prefer-offline
+2026-Sep-04 00:21:07 #21 ...
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #19 copy /mise/installs
+2026-Sep-04 00:21:07 #19 DONE 25.5s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #22 copy /usr/local/bin/mise
+2026-Sep-04 00:21:07 #22 ...
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #21 pnpm install --frozen-lockfile --prefer-offline
+2026-Sep-04 00:21:07 #21 8.553 Scope: all 9 workspace projects
+2026-Sep-04 00:21:07 #21 8.741 Lockfile is up to date, resolution step is skipped
+2026-Sep-04 00:21:07 #21 9.054 Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-Sep-04 00:21:07 #21 9.320 Packages: +501
+2026-Sep-04 00:21:07 #21 9.320 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2026-Sep-04 00:21:07 #21 10.06 Progress: resolved 501, reused 0, downloaded 0, added 0
+2026-Sep-04 00:21:07 #21 11.06 Progress: resolved 501, reused 3, downloaded 14, added 0
+2026-Sep-04 00:21:07 #21 12.06 Progress: resolved 501, reused 3, downloaded 16, added 0
+2026-Sep-04 00:21:07 #21 ...
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #22 copy /usr/local/bin/mise
+2026-Sep-04 00:21:07 #22 DONE 6.9s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #23 copy /etc/mise/config.toml
+2026-Sep-04 00:21:07 #23 DONE 1.0s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #21 pnpm install --frozen-lockfile --prefer-offline
+2026-Sep-04 00:21:07 #21 15.38 Progress: resolved 501, reused 3, downloaded 16, added 1
+2026-Sep-04 00:21:07 #21 16.39 Progress: resolved 501, reused 3, downloaded 18, added 6
+2026-Sep-04 00:21:07 #21 17.50 Progress: resolved 501, reused 3, downloaded 19, added 6
+2026-Sep-04 00:21:07 #21 ...
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #24 copy /root/.local/state/mise
+2026-Sep-04 00:21:07 #24 DONE 2.9s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #21 pnpm install --frozen-lockfile --prefer-offline
+2026-Sep-04 00:21:07 #21 21.33 Progress: resolved 501, reused 3, downloaded 19, added 7
+2026-Sep-04 00:21:07 #21 22.33 Progress: resolved 501, reused 3, downloaded 95, added 86
+2026-Sep-04 00:21:07 #21 23.33 Progress: resolved 501, reused 3, downloaded 139, added 127
+2026-Sep-04 00:21:07 #21 24.33 Progress: resolved 501, reused 3, downloaded 177, added 180
+2026-Sep-04 00:21:07 #21 26.15 Progress: resolved 501, reused 3, downloaded 229, added 223
+2026-Sep-04 00:21:07 #21 27.15 Progress: resolved 501, reused 3, downloaded 234, added 226
+2026-Sep-04 00:21:07 #21 28.15 Progress: resolved 501, reused 3, downloaded 251, added 239
+2026-Sep-04 00:21:07 #21 29.15 Progress: resolved 501, reused 3, downloaded 257, added 244
+2026-Sep-04 00:21:07 #21 33.29 Progress: resolved 501, reused 3, downloaded 257, added 245
+2026-Sep-04 00:21:07 #21 34.30 Progress: resolved 501, reused 3, downloaded 287, added 283
+2026-Sep-04 00:21:07 #21 35.29 Progress: resolved 501, reused 3, downloaded 303, added 290
+2026-Sep-04 00:21:07 #21 36.30 Progress: resolved 501, reused 3, downloaded 310, added 299
+2026-Sep-04 00:21:07 #21 37.37 Progress: resolved 501, reused 3, downloaded 311, added 299
+2026-Sep-04 00:21:07 #21 38.37 Progress: resolved 501, reused 3, downloaded 312, added 305
+2026-Sep-04 00:21:07 #21 39.37 Progress: resolved 501, reused 3, downloaded 316, added 306
+2026-Sep-04 00:21:07 #21 40.37 Progress: resolved 501, reused 3, downloaded 332, added 319
+2026-Sep-04 00:21:07 #21 41.37 Progress: resolved 501, reused 3, downloaded 356, added 346
+2026-Sep-04 00:21:07 #21 42.70 Progress: resolved 501, reused 3, downloaded 357, added 346
+2026-Sep-04 00:21:07 #21 43.71 Progress: resolved 501, reused 3, downloaded 363, added 356
+2026-Sep-04 00:21:07 #21 47.29 Progress: resolved 501, reused 3, downloaded 364, added 356
+2026-Sep-04 00:21:07 #21 48.30 Progress: resolved 501, reused 3, downloaded 378, added 366
+2026-Sep-04 00:21:07 #21 49.30 Progress: resolved 501, reused 3, downloaded 398, added 386
+2026-Sep-04 00:21:07 #21 50.49 Progress: resolved 501, reused 3, downloaded 399, added 386
+2026-Sep-04 00:21:07 #21 51.49 Progress: resolved 501, reused 3, downloaded 439, added 427
+2026-Sep-04 00:21:07 #21 52.50 Progress: resolved 501, reused 3, downloaded 459, added 451
+2026-Sep-04 00:21:07 #21 53.50 Progress: resolved 501, reused 3, downloaded 465, added 456
+2026-Sep-04 00:21:07 #21 54.50 Progress: resolved 501, reused 3, downloaded 478, added 465
+2026-Sep-04 00:21:07 #21 55.13 Progress: resolved 501, reused 3, downloaded 498, added 501, done
+2026-Sep-04 00:21:07 #21 55.73 .../esbuild@0.18.20/node_modules/esbuild postinstall$ node install.js
+2026-Sep-04 00:21:07 #21 55.73 .../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+2026-Sep-04 00:21:07 #21 55.73 .../esbuild@0.28.2/node_modules/esbuild postinstall$ node install.js
+2026-Sep-04 00:21:07 #21 55.84 .../esbuild@0.27.3/node_modules/esbuild postinstall$ node install.js
+2026-Sep-04 00:21:07 #21 57.06 .../esbuild@0.28.2/node_modules/esbuild postinstall: Done
+2026-Sep-04 00:21:07 #21 57.06 .../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+2026-Sep-04 00:21:07 #21 57.06 .../esbuild@0.18.20/node_modules/esbuild postinstall: Done
+2026-Sep-04 00:21:07 #21 57.06 .../esbuild@0.27.3/node_modules/esbuild postinstall: Done
+2026-Sep-04 00:21:07 #21 59.30
+2026-Sep-04 00:21:07 #21 59.30 dependencies:
+2026-Sep-04 00:21:07 #21 59.30 + @replit/connectors-sdk 0.4.1
+2026-Sep-04 00:21:07 #21 59.30
+2026-Sep-04 00:21:07 #21 59.30 devDependencies:
+2026-Sep-04 00:21:07 #21 59.30 + prettier 3.9.6
+2026-Sep-04 00:21:07 #21 59.30 + typescript 5.9.3
+2026-Sep-04 00:21:07 #21 59.30
+2026-Sep-04 00:21:07 #21 59.43 . preinstall$ sh -c 'rm -f package-lock.json yarn.lock; case "$npm_config_user_agent" in pnpm/*) ;; *) echo "Use pnpm instead" >&2; exit 1 ;; esac'
+2026-Sep-04 00:21:07 #21 59.47 . preinstall: Done
+2026-Sep-04 00:21:07 #21 59.79 Done in 51.5s using pnpm v9.15.9
+2026-Sep-04 00:21:07 #21 DONE 63.3s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #25 copy / /app
+2026-Sep-04 00:21:07 #25 DONE 5.5s
+2026-Sep-04 00:21:07 
+2026-Sep-04 00:21:07 #26 pnpm run build
+2026-Sep-04 00:21:07 #26 3.770
+2026-Sep-04 00:21:07 #26 3.770 > workspace@0.0.0 build /app
+2026-Sep-04 00:21:07 #26 3.770 > pnpm run typecheck && pnpm -r --if-present run build
+2026-Sep-04 00:21:07 #26 3.770
+2026-Sep-04 00:21:07 #26 4.219
+2026-Sep-04 00:21:07 #26 4.219 > workspace@0.0.0 typecheck /app
+2026-Sep-04 00:21:07 #26 4.219 > pnpm run typecheck:libs && pnpm -r --filter "./artifacts/**" --filter "./scripts" --if-present run typecheck
+2026-Sep-04 00:21:07 #26 4.219
+2026-Sep-04 00:21:07 #26 4.656
+2026-Sep-04 00:21:07 #26 4.656 > workspace@0.0.0 typecheck:libs /app
+2026-Sep-04 00:21:07 #26 4.656 > tsc --build
+2026-Sep-04 00:21:07 #26 4.656
+2026-Sep-04 00:21:07 #26 18.41 Scope: 4 of 9 workspace projects
+2026-Sep-04 00:21:07 #26 18.42 artifacts/api-server typecheck$ tsc -p tsconfig.json --noEmit
+2026-Sep-04 00:21:07 #26 18.42 artifacts/mockup-sandbox typecheck$ tsc -p tsconfig.json --noEmit
+2026-Sep-04 00:21:07 #26 18.42 artifacts/spmb-2027 typecheck$ tsc -p tsconfig.json --noEmit
+2026-Sep-04 00:21:07 #26 18.42 scripts typecheck$ tsc -p tsconfig.json --noEmit
+2026-Sep-04 00:21:07 #26 25.54 scripts typecheck: Done
+2026-Sep-04 00:21:07 #26 35.34 artifacts/api-server typecheck: Done
+2026-Sep-04 00:21:07 #26 51.47 artifacts/spmb-2027 typecheck: Done
+2026-Sep-04 00:21:07 #26 57.24 artifacts/mockup-sandbox typecheck: src/components/mockups/spmb-committee/CommitteeDashboardQueueVariant.tsx(276,62): error TS2367: This comparison appears to be unintentional because the types '"Siap diputuskan" | "Tersimpan"' and '"Perlu dicek"' have no overlap.
+2026-Sep-04 00:21:07 #26 57.34 artifacts/mockup-sandbox typecheck: Failed
+2026-Sep-04 00:21:07 #26 57.34 /app/artifacts/mockup-sandbox:
+2026-Sep-04 00:21:07 #26 57.34  ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/mockup-sandbox@2.0.0 typecheck: `tsc -p tsconfig.json --noEmit`
+2026-Sep-04 00:21:07 #26 57.34 Exit status 2
+2026-Sep-04 00:21:07 #26 57.50  ELIFECYCLE  Command failed with exit code 2.
+2026-Sep-04 00:21:07 #26 57.53  ELIFECYCLE  Command failed with exit code 2.
+2026-Sep-04 00:21:07 #26 ERROR: process "pnpm run build" did not complete successfully: exit code: 2
+2026-Sep-04 00:21:07 ------
+2026-Sep-04 00:21:07 > pnpm run build:
+2026-Sep-04 00:21:07 25.54 scripts typecheck: Done
+2026-Sep-04 00:21:07 35.34 artifacts/api-server typecheck: Done
+2026-Sep-04 00:21:07 51.47 artifacts/spmb-2027 typecheck: Done
+2026-Sep-04 00:21:07 57.24 artifacts/mockup-sandbox typecheck: src/components/mockups/spmb-committee/CommitteeDashboardQueueVariant.tsx(276,62): error TS2367: This comparison appears to be unintentional because the types '"Siap diputuskan" | "Tersimpan"' and '"Perlu dicek"' have no overlap.
+2026-Sep-04 00:21:07 57.34 artifacts/mockup-sandbox typecheck: Failed
+2026-Sep-04 00:21:07 57.34 /app/artifacts/mockup-sandbox:
+2026-Sep-04 00:21:07 57.34  ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/mockup-sandbox@2.0.0 typecheck: `tsc -p tsconfig.json --noEmit`
+2026-Sep-04 00:21:07 57.34 Exit status 2
+2026-Sep-04 00:21:07 57.50  ELIFECYCLE  Command failed with exit code 2.
+2026-Sep-04 00:21:07 57.53  ELIFECYCLE  Command failed with exit code 2.
+2026-Sep-04 00:21:07 ------
+2026-Sep-04 00:21:07 ERROR: failed to build: failed to solve: process "pnpm run build" did not complete successfully: exit code: 2
+2026-Sep-04 00:21:07 [DEBUG] Error type: App\Exceptions\DeploymentException
+2026-Sep-04 00:21:07 [DEBUG] Error code: 0
+2026-Sep-04 00:21:07 [DEBUG] Location: /var/www/html/app/Traits/ExecuteRemoteCommand.php:243
+2026-Sep-04 00:21:08 [DEBUG] Stack trace (first 5 lines):
+2026-Sep-04 00:21:08 [DEBUG] #0 /var/www/html/app/Traits/ExecuteRemoteCommand.php(107): App\Jobs\ApplicationDeploymentJob->executeCommandWithProcess()
+2026-Sep-04 00:21:08 [DEBUG] #1 /var/www/html/vendor/laravel/framework/src/Illuminate/Collections/Traits/EnumeratesValues.php(275): App\Jobs\ApplicationDeploymentJob->{closure:App\Traits\ExecuteRemoteCommand::execute_remote_command():72}()
+2026-Sep-04 00:21:08 [DEBUG] #2 /var/www/html/app/Traits/ExecuteRemoteCommand.php(72): Illuminate\Support\Collection->each()
+2026-Sep-04 00:21:08 [DEBUG] #3 /var/www/html/app/Jobs/ApplicationDeploymentJob.php(3023): App\Jobs\ApplicationDeploymentJob->execute_remote_command()
+2026-Sep-04 00:21:08 [DEBUG] #4 /var/www/html/app/Jobs/ApplicationDeploymentJob.php(999): App\Jobs\ApplicationDeploymentJob->build_railpack_image()
+2026-Sep-04 00:21:08 ========================================
+2026-Sep-04 00:21:08 Deployment failed. Removing the new version of your application.
+2026-Sep-04 00:21:09 [DEBUG] [CMD]: bash -c 'if command -v timeout >/dev/null 2>&1; then output=$(timeout -k 10s 60s docker rm -f '\''5c8i99hcyvaqffvxrntkknib-001433727584'\'' 2>&1); exit_code=$?; else output='\'''\''; exit_code=124; fi; if [ "$exit_code" -eq 124 ]; then echo '\''__COOLIFY_CONTAINER_REMOVE_TIMEOUT__'\''; elif [ "$exit_code" -ne 0 ] && printf '\''%s'\'' "$output" | grep -q '\''No such container:'\''; then exit 0; elif [ "$exit_code" -ne 0 ]; then printf '\''%s\n'\'' "$output" >&2; else printf '\''%s\n'\'' "$output"; fi; exit $exit_code'
+2026-Sep-04 00:21:09 [DEBUG] Error response from daemon: No such container: 5c8i99hcyvaqffvxrntkknib-001433727584
+2026-Sep-04 00:21:10 Gracefully shutting down build container: hmwnpiyaq0nqwtg64t2tjflp
+2026-Sep-04 00:21:14 [DEBUG] [CMD]: docker stop --timeout=30 hmwnpiyaq0nqwtg64t2tjflp
+2026-Sep-04 00:21:14 [DEBUG] hmwnpiyaq0nqwtg64t2tjflp
