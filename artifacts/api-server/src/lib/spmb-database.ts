@@ -18,6 +18,7 @@ import {
   committeeNotificationTable,
   pendaftarTable,
   type InsertPendaftar,
+  type Pendaftar,
 } from "@workspace/db";
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -37,6 +38,39 @@ const nisLevelCode: Record<string, string> = {
   SMP: "SMP",
 };
 
+type SchemaMetadata = {
+  pendaftarColumns: Set<string>;
+  tables: Set<string>;
+};
+
+let schemaMetadataPromise: Promise<SchemaMetadata> | undefined;
+
+async function getSchemaMetadata(): Promise<SchemaMetadata> {
+  if (!schemaMetadataPromise) {
+    schemaMetadataPromise = (async () => {
+      const [columnResult, tableResult] = await Promise.all([
+        db.execute(sql`
+          SELECT column_name
+          FROM information_schema.columns
+          WHERE table_schema = 'public' AND table_name = 'pendaftar'
+        `),
+        db.execute(sql`
+          SELECT table_name
+          FROM information_schema.tables
+          WHERE table_schema = 'public'
+        `),
+      ]);
+      const columns = columnResult.rows as Array<{ column_name: string }>;
+      const tables = tableResult.rows as Array<{ table_name: string }>;
+      return {
+        pendaftarColumns: new Set(columns.map((row) => row.column_name)),
+        tables: new Set(tables.map((row) => row.table_name)),
+      };
+    })();
+  }
+  return schemaMetadataPromise;
+}
+
 export function buildNis(jenjang: string, id: number): string {
   return `TISA-2027-${nisLevelCode[jenjang] || "SPMB"}-${String(id).padStart(6, "0")}`;
 }
@@ -49,40 +83,48 @@ async function ensurePendaftarNis<T extends { id: number; jenjang: string; nis: 
 }
 
 export async function insertPendaftar(values: InsertPendaftar) {
+  const { pendaftarColumns, tables } = await getSchemaMetadata();
+  const compatibleValues = Object.fromEntries(
+    Object.entries(values).filter(([key]) => pendaftarColumns.has(key)),
+  ) as InsertPendaftar;
   const [created] = await db
     .insert(pendaftarTable)
-    .values(values)
+    .values(compatibleValues)
     .returning({ id: pendaftarTable.id });
 
   if (!created) {
     throw new Error("Pendaftar tidak berhasil dibuat.");
   }
 
-  const nis = buildNis(values.jenjang, created.id);
-  await db.update(pendaftarTable).set({ nis }).where(eq(pendaftarTable.id, created.id));
-  await db.insert(committeeNotificationTable).values([
-    {
-    application_id: created.id,
-    type: "new_application",
-    title: "Pendaftar baru masuk",
-    message: `${values.nama_calon} mengirim pengajuan baru.`,
-    jenjang: values.jenjang,
-    },
-    {
-      application_id: created.id,
-      type: "document_review",
-      title: "Berkas perlu diperiksa",
-      message: `Periksa kelengkapan berkas ${values.nama_calon}.`,
-      jenjang: values.jenjang,
-    },
-    {
-      application_id: created.id,
-      type: "not_verified",
-      title: "Pengajuan belum diverifikasi",
-      message: `${values.nama_calon} menunggu verifikasi panitia.`,
-      jenjang: values.jenjang,
-    },
-  ]);
+  const nis = pendaftarColumns.has("nis") ? buildNis(values.jenjang, created.id) : null;
+  if (nis) {
+    await db.update(pendaftarTable).set({ nis }).where(eq(pendaftarTable.id, created.id));
+  }
+  if (tables.has("committee_notification")) {
+    await db.insert(committeeNotificationTable).values([
+      {
+        application_id: created.id,
+        type: "new_application",
+        title: "Pendaftar baru masuk",
+        message: `${values.nama_calon} mengirim pengajuan baru.`,
+        jenjang: values.jenjang,
+      },
+      {
+        application_id: created.id,
+        type: "document_review",
+        title: "Berkas perlu diperiksa",
+        message: `Periksa kelengkapan berkas ${values.nama_calon}.`,
+        jenjang: values.jenjang,
+      },
+      {
+        application_id: created.id,
+        type: "not_verified",
+        title: "Pengajuan belum diverifikasi",
+        message: `${values.nama_calon} menunggu verifikasi panitia.`,
+        jenjang: values.jenjang,
+      },
+    ]);
+  }
 
   return { ...created, nis };
 }
@@ -207,12 +249,30 @@ async function queryApplicationList(
 }
 
 export async function getPendaftar(id: number) {
-  const [item] = await db
-    .select()
-    .from(pendaftarTable)
-    .where(eq(pendaftarTable.id, id))
-    .limit(1);
-  return item ? ensurePendaftarNis(item) : item;
+  try {
+    const [item] = await db
+      .select()
+      .from(pendaftarTable)
+      .where(eq(pendaftarTable.id, id))
+      .limit(1);
+    return item ? ensurePendaftarNis(item) : item;
+  } catch (error) {
+    if (!isMissingSchemaColumn(error)) throw error;
+    const result = await db.execute(sql`
+      SELECT *
+      FROM "pendaftar"
+      WHERE "id" = ${id}
+      LIMIT 1
+    `);
+    const [legacyItem] = result.rows as Array<Record<string, unknown>>;
+    if (!legacyItem) return undefined;
+    return {
+      ...legacyItem,
+      nis: null,
+      nik_ayah: legacyItem.nik_ayah ?? legacyItem.nik_orangtua ?? null,
+      nik_ibu: legacyItem.nik_ibu ?? null,
+    } as Pendaftar;
+  }
 }
 
 export async function getPublicPendaftarStatus(id: number) {

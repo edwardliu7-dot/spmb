@@ -19,3 +19,14 @@ be loaded, inspect both required columns and required relations. Preserve
 legacy records with a read-compatible fallback, and migrate additive columns
 and feature tables separately rather than assuming a successful health check
 means the full schema is current.
+
+Post-insert work is also schema-sensitive: generating a server-side NIS and
+creating committee notifications happen after the base pendaftar insert.
+
+**Why:** If either follow-up operation fails on a legacy database, the row can
+already exist while the client receives a 500 and may submit the same person
+again.
+
+**How to apply:** Check the live column/table inventory before post-insert
+updates, skip only unavailable additive features, and return the successful
+application ID without masking the core insert result.
