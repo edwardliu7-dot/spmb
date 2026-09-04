@@ -6,7 +6,6 @@ import { SubmitApplicationBody } from "@workspace/api-zod";
 import { getPendaftar, insertPendaftar, uploadsDirectory } from "../lib/spmb-database";
 import { allJenjang } from "../middlewares/committee-auth";
 import { createReceiptToken, createSpmbReceipt, isValidReceiptToken } from "../lib/spmb-receipt";
-import { paymentVerificationCookieName } from "./payment-verification";
 
 const router = Router();
 
@@ -135,16 +134,6 @@ const validFieldValues: Partial<Record<TextField, readonly string[]>> = {
 const uploadMiddleware = upload.fields(
   documentFields.map((name) => ({ name, maxCount: 1 })),
 );
-
-function requirePaymentVerification(request: Request, response: Response, next: NextFunction): void {
-  if (request.signedCookies?.[paymentVerificationCookieName] === "verified") {
-    next();
-    return;
-  }
-  response.status(403).json({
-    error: "Verifikasi pembayaran diperlukan sebelum mengirim pendaftaran.",
-  });
-}
 
 function parseId(value: string): number | null {
   const id = Number(value);
@@ -292,7 +281,7 @@ function handleUpload(request: Request, response: Parameters<typeof uploadMiddle
   });
 }
 
-router.post("/submit", enforceSubmitRateLimit, requirePaymentVerification, handleUpload, async (request, response): Promise<void> => {
+router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, response): Promise<void> => {
   const invalidFields = requiredTextFields.filter((field) => !getValue(request, field));
   const email = getValue(request, "email");
   const jenjang = getValue(request, "jenjang");
@@ -459,7 +448,6 @@ router.post("/submit", enforceSubmitRateLimit, requirePaymentVerification, handl
 
     const result = await insertPendaftar(values);
     const id = Number(result.id);
-    response.clearCookie(paymentVerificationCookieName, { path: "/" });
     request.log.info({ applicationId: id }, "SPMB application submitted");
 
     response.status(201).json({

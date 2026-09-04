@@ -1,4 +1,4 @@
-import { healthCheck, submitApplication, verifyPayment } from '@workspace/api-client-react';
+import { healthCheck, submitApplication } from '@workspace/api-client-react';
 import schoolLogoUrl from '../../../lib/logo tisa.png';
 import './index.css';
 import './form-board.css';
@@ -196,43 +196,7 @@ root.innerHTML = `
         <div class="form-board-stat"><div><span>DOKUMEN PENDUKUNG</span>${icon('folder')}</div><strong>05</strong><small>PDF, JPG, atau PNG · maksimal 5 MB</small></div>
       </section>
 
-      <section class="form-board-payment-gate" id="payment-gate" aria-labelledby="payment-gate-title">
-        <div class="form-board-payment-copy">
-          <div class="form-board-panel-kicker">${icon('shield')}Langkah awal · verifikasi pembayaran</div>
-          <h2 id="payment-gate-title">Pastikan bukti bayar<br /><em>sudah siap.</em></h2>
-          <p>Unggah tangkapan layar atau foto bukti pembayaran. AI akan mengenali detail transaksi yang terbaca sebelum Anda mengisi formulir pendaftaran.</p>
-          <small>Screening AI ini adalah pemeriksaan awal. Panitia tetap melakukan verifikasi penerimaan dana.</small>
-        </div>
-        <form class="form-board-payment-form" id="payment-verification-form">
-          <label class="form-board-payment-dropzone" for="payment-proof">
-            <span class="form-board-payment-dropzone-icon">${icon('upload')}</span>
-            <strong id="payment-proof-label">Pilih bukti bayar</strong>
-            <span id="payment-proof-name">JPG atau PNG · maksimal 5 MB</span>
-            <input id="payment-proof" name="bukti_bayar" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" required aria-required="true" />
-          </label>
-          <div class="form-board-payment-error" id="payment-error" role="alert" aria-live="polite"></div>
-          <button class="form-board-payment-button" id="payment-verify-button" type="submit">
-            <span class="payment-verify-label">Verifikasi bukti bayar</span>${icon('check')}
-          </button>
-          <p class="form-board-payment-privacy">${icon('lock')}Berkas hanya digunakan untuk screening dan tidak disimpan sebagai data pendaftaran pada tahap ini.</p>
-        </form>
-        <div class="form-board-payment-result" id="payment-result" aria-live="polite" hidden>
-          <div class="form-board-payment-result-mark">${icon('check')}</div>
-          <div>
-            <strong id="payment-result-title">Bukti bayar dikenali</strong>
-            <p id="payment-result-message"></p>
-            <dl>
-              <div><dt>Nominal</dt><dd id="payment-detail-amount">—</dd></div>
-              <div><dt>Referensi</dt><dd id="payment-detail-reference">—</dd></div>
-              <div><dt>Penerima</dt><dd id="payment-detail-recipient">—</dd></div>
-              <div><dt>Tanggal</dt><dd id="payment-detail-date">—</dd></div>
-            </dl>
-            <button type="button" class="form-board-payment-continue" id="payment-continue-button">Lanjut ke formulir pendaftaran ${icon('chevron')}</button>
-          </div>
-        </div>
-      </section>
-
-      <div class="form-board-workspace is-hidden" id="registration-workspace">
+       <div class="form-board-workspace" id="registration-workspace">
         <aside class="form-board-sidebar" aria-label="Kemajuan formulir">
           <div class="form-board-sidebar-head">
             <div><div class="form-board-panel-kicker">${icon('file')}Tahapan pendaftaran</div><h2>Formulir<br /><em>pendaftaran.</em></h2></div>
@@ -305,26 +269,8 @@ const healthStatus = document.getElementById('health-status') as HTMLSpanElement
 const healthDot = document.getElementById('health-dot') as HTMLElement;
 const formNotice = document.getElementById('form-notice') as HTMLDivElement;
 const formNoticeText = formNotice.querySelector('span') as HTMLSpanElement;
-const paymentForm = document.getElementById('payment-verification-form') as HTMLFormElement;
-const paymentProofInput = document.getElementById('payment-proof') as HTMLInputElement;
-const paymentProofLabel = document.getElementById('payment-proof-label') as HTMLElement;
-const paymentProofName = document.getElementById('payment-proof-name') as HTMLElement;
-const paymentError = document.getElementById('payment-error') as HTMLElement;
-const paymentVerifyButton = document.getElementById('payment-verify-button') as HTMLButtonElement;
-const paymentVerifyLabel = paymentVerifyButton.querySelector('.payment-verify-label') as HTMLElement;
-const paymentResult = document.getElementById('payment-result') as HTMLDivElement;
-const paymentResultTitle = document.getElementById('payment-result-title') as HTMLElement;
-const paymentResultMessage = document.getElementById('payment-result-message') as HTMLElement;
-const paymentDetailAmount = document.getElementById('payment-detail-amount') as HTMLElement;
-const paymentDetailReference = document.getElementById('payment-detail-reference') as HTMLElement;
-const paymentDetailRecipient = document.getElementById('payment-detail-recipient') as HTMLElement;
-const paymentDetailDate = document.getElementById('payment-detail-date') as HTMLElement;
-const paymentContinueButton = document.getElementById('payment-continue-button') as HTMLButtonElement;
-const paymentGate = document.getElementById('payment-gate') as HTMLElement;
-const registrationWorkspace = document.getElementById('registration-workspace') as HTMLElement;
 const menuButton = document.querySelector<HTMLButtonElement>('.form-board-menu-button');
 const navigation = document.querySelector<HTMLElement>('.form-board-nav');
-let paymentVerified = false;
 
 function setError(field: HTMLElement, message: string): void {
   const wrapper = field.closest<HTMLElement>('[data-field]');
@@ -526,87 +472,6 @@ document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((input
   });
 });
 
-paymentProofInput.addEventListener('change', () => {
-  const file = paymentProofInput.files?.[0];
-  const extension = file?.name.toLowerCase().match(/\.[^.]+$/)?.[0];
-  const validType = Boolean(file && ['.jpg', '.jpeg', '.png'].includes(extension || '') && ['image/jpeg', 'image/png'].includes(file.type));
-  const invalidSize = Boolean(file && file.size > 5 * 1024 * 1024);
-  paymentError.textContent = '';
-  paymentProofInput.removeAttribute('aria-invalid');
-  paymentGate.classList.remove('is-invalid');
-  if (file && (!validType || invalidSize)) {
-    paymentProofInput.value = '';
-    paymentProofLabel.textContent = 'Pilih bukti bayar';
-    paymentProofName.textContent = 'JPG atau PNG · maksimal 5 MB';
-    paymentError.textContent = invalidSize
-      ? 'Ukuran bukti bayar maksimal 5 MB.'
-      : 'Untuk verifikasi AI, gunakan gambar JPG atau PNG.';
-    paymentProofInput.setAttribute('aria-invalid', 'true');
-    paymentGate.classList.add('is-invalid');
-    return;
-  }
-  paymentProofLabel.textContent = file ? 'Bukti bayar siap' : 'Pilih bukti bayar';
-  paymentProofName.textContent = file
-    ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB`
-    : 'JPG atau PNG · maksimal 5 MB';
-});
-
-paymentForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const file = paymentProofInput.files?.[0];
-  if (!file) {
-    paymentError.textContent = 'Bukti pembayaran wajib dipilih.';
-    paymentGate.classList.add('is-invalid');
-    paymentProofInput.focus();
-    return;
-  }
-
-  paymentVerifyButton.disabled = true;
-  paymentVerifyButton.classList.add('is-loading');
-  paymentVerifyLabel.textContent = 'Memeriksa bukti bayar';
-  paymentError.textContent = '';
-  try {
-    const result = await verifyPayment({ bukti_bayar: file as unknown as string });
-    paymentResultTitle.textContent = result.status === 'verified'
-      ? 'Bukti bayar berhasil dikenali'
-      : 'Bukti bayar perlu diperiksa';
-    paymentResultMessage.textContent = result.message;
-    paymentDetailAmount.textContent = result.details.amount || 'Tidak terbaca';
-    paymentDetailReference.textContent = result.details.transactionReference || 'Tidak terbaca';
-    paymentDetailRecipient.textContent = result.details.recipient || 'Tidak terbaca';
-    paymentDetailDate.textContent = result.details.transactionDate || 'Tidak terbaca';
-    paymentResult.hidden = false;
-    if (result.status === 'verified') {
-      paymentVerified = true;
-      paymentGate.classList.remove('is-invalid');
-      paymentGate.classList.add('is-verified');
-      paymentError.textContent = '';
-      paymentContinueButton.focus();
-    } else {
-      paymentVerified = false;
-      paymentGate.classList.add('is-invalid');
-      paymentError.textContent = result.reason;
-    }
-  } catch (error) {
-    paymentVerified = false;
-    paymentGate.classList.add('is-invalid');
-    paymentError.textContent = error instanceof Error
-      ? error.message
-      : 'Verifikasi belum dapat dilakukan. Silakan coba lagi.';
-  } finally {
-    paymentVerifyButton.disabled = false;
-    paymentVerifyButton.classList.remove('is-loading');
-    paymentVerifyLabel.textContent = 'Verifikasi bukti bayar';
-  }
-});
-
-paymentContinueButton.addEventListener('click', () => {
-  if (!paymentVerified) return;
-  registrationWorkspace.classList.remove('is-hidden');
-  paymentGate.classList.add('is-collapsed');
-  registrationWorkspace.scrollIntoView({ behavior: 'smooth', block: 'start' });
-});
-
 function showSubmissionError(error: unknown): void {
   const candidate = error && typeof error === 'object'
     ? error as { message?: unknown; data?: unknown }
@@ -646,12 +511,6 @@ function showSubmissionError(error: unknown): void {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (!paymentVerified) {
-    paymentGate.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    paymentError.textContent = 'Verifikasi pembayaran diperlukan sebelum mengirim pendaftaran.';
-    paymentGate.classList.add('is-invalid');
-    return;
-  }
   if (!validateForm()) return;
   submitButton.disabled = true;
   submitButton.classList.add('is-loading');
@@ -690,16 +549,8 @@ resetButton.addEventListener('click', () => {
   submitButton.disabled = false;
   submitButton.classList.remove('is-loading');
   submitButton.querySelector('.submit-label')!.textContent = 'Kirim pengajuan';
-  paymentVerified = false;
-  paymentForm.reset();
-  paymentResult.hidden = true;
-  paymentGate.classList.remove('is-verified', 'is-collapsed', 'is-invalid');
-  paymentError.textContent = '';
-  paymentProofLabel.textContent = 'Pilih bukti bayar';
-  paymentProofName.textContent = 'JPG atau PNG · maksimal 5 MB';
-  registrationWorkspace.classList.add('is-hidden');
   updateProgress();
-  paymentGate.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 window.addEventListener('scroll', updateProgress, { passive: true });
