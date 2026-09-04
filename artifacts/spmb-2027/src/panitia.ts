@@ -3,7 +3,6 @@ import schoolLogoUrl from "../../../lib/logo tisa.png";
 
 type ApplicationListItem = {
   id: number;
-  nis: string | null;
   nama_calon: string;
   jenjang: string;
   nama_sekolah_asal: string;
@@ -39,7 +38,6 @@ type AdminNotification = {
   created_at: string;
   read: boolean;
   nama_calon: string | null;
-  nis: string | null;
 };
 
 type ObservationResponse = {
@@ -57,9 +55,7 @@ type ObservationResponse = {
   };
 };
 
-type MasterApplication = ApplicationDetail & {
-  nis: string | null;
-};
+type MasterApplication = ApplicationDetail;
 
 const statuses = ["Baru", "Diverifikasi", "Perlu Perbaikan", "Diterima", "Ditolak"];
 const rootElement = document.getElementById("root");
@@ -505,8 +501,8 @@ function renderDashboard(user: AuthUser) {
           </section>
 
           <section class="admin-view" id="master-view" hidden>
-            <div class="admin-view-heading"><div><p class="decision-kicker decision-accent">Master data</p><h2>Master pendaftar</h2><p>NIS adalah nomor internal sekolah; NIK anak dan NISN tetap ditampilkan sebagai data terpisah.</p></div><div class="admin-heading-actions"><button class="admin-export-button" id="master-export-button" type="button">Download Excel</button><button class="admin-zip-button" id="bulk-zip-button" type="button">Download ZIP terpilih</button></div></div>
-            <div class="admin-filter-row"><label>Cari<input id="master-search-input" type="search" placeholder="Nama, NIS, nomor pengajuan, atau sekolah" /></label><label>Jenjang<select id="master-level-filter"><option value="Semua">Semua jenjang</option>${allowedLevels.map((level) => `<option value="${escapeHtml(level)}">${escapeHtml(level)}</option>`).join("")}</select></label><label>Status<select id="master-status-filter"><option value="Semua">Semua status</option>${statuses.map((status) => `<option value="${escapeHtml(status)}">${escapeHtml(status)}</option>`).join("")}</select></label><label>Urutkan<select id="master-sort-filter"><option value="newest">Terbaru</option><option value="oldest">Terlama</option><option value="name">Nama A–Z</option><option value="nis">NIS</option><option value="status">Status</option></select></label></div>
+             <div class="admin-view-heading"><div><p class="decision-kicker decision-accent">Master data</p><h2>Master pendaftar</h2><p>Nomor pengajuan menjadi identitas utama; NIK anak dan NISN tetap ditampilkan sebagai data terpisah.</p></div><div class="admin-heading-actions"><button class="admin-export-button" id="master-export-button" type="button">Download Excel</button><button class="admin-zip-button" id="bulk-zip-button" type="button">Download ZIP terpilih</button></div></div>
+             <div class="admin-filter-row"><label>Cari<input id="master-search-input" type="search" placeholder="Nama, nomor pengajuan, atau sekolah" /></label><label>Jenjang<select id="master-level-filter"><option value="Semua">Semua jenjang</option>${allowedLevels.map((level) => `<option value="${escapeHtml(level)}">${escapeHtml(level)}</option>`).join("")}</select></label><label>Status<select id="master-status-filter"><option value="Semua">Semua status</option>${statuses.map((status) => `<option value="${escapeHtml(status)}">${escapeHtml(status)}</option>`).join("")}</select></label><label>Urutkan<select id="master-sort-filter"><option value="newest">Terbaru</option><option value="oldest">Terlama</option><option value="name">Nama A–Z</option><option value="status">Status</option></select></label></div>
             <div class="admin-table-wrap" id="master-table"></div>
           </section>
 
@@ -599,10 +595,10 @@ function renderDashboard(user: AuthUser) {
       target.innerHTML = `<div class="admin-empty"><strong>Belum ada pendaftar</strong><span>Data yang sesuai filter akan muncul di sini.</span></div>`;
       return;
     }
-    target.innerHTML = `<table class="admin-table"><thead><tr>${selectable ? "<th><span class=\"sr-only\">Pilih</span></th>" : ""}<th>NIS</th><th>Nama calon peserta didik</th><th>Jenjang</th><th>Asal sekolah</th><th>Status</th><th>Tanggal pengajuan</th><th><span class="sr-only">Aksi</span></th></tr></thead><tbody>${items.map((item) => `
+     target.innerHTML = `<table class="admin-table"><thead><tr>${selectable ? "<th><span class=\"sr-only\">Pilih</span></th>" : ""}<th>Nomor pengajuan</th><th>Nama calon peserta didik</th><th>Jenjang</th><th>Asal sekolah</th><th>Status</th><th>Tanggal pengajuan</th><th><span class="sr-only">Aksi</span></th></tr></thead><tbody>${items.map((item) => `
       <tr>
         ${selectable ? `<td><input class="master-row-check" type="checkbox" value="${item.id}" aria-label="Pilih ${escapeHtml(item.nama_calon)}" /></td>` : ""}
-        <td><strong class="admin-nis">${escapeHtml(item.nis || "—")}</strong><small>${escapeHtml(applicationNumber(item.id))}</small></td>
+        <td><strong>${escapeHtml(applicationNumber(item.id))}</strong></td>
         <td><strong>${escapeHtml(item.nama_calon)}</strong><small>${escapeHtml(item.email)}</small></td>
         <td><span class="admin-level-tag">${escapeHtml(item.jenjang)}</span></td>
         <td>${escapeHtml(item.nama_sekolah_asal || "—")}</td>
@@ -668,7 +664,6 @@ function renderDashboard(user: AuthUser) {
       const items = [...result.items].sort((a, b) => {
         if (sort === "oldest") return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
         if (sort === "name") return a.nama_calon.localeCompare(b.nama_calon, "id");
-        if (sort === "nis") return (a.nis || "").localeCompare(b.nis || "", "id");
         if (sort === "status") return a.status.localeCompare(b.status, "id") || a.nama_calon.localeCompare(b.nama_calon, "id");
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
@@ -688,7 +683,7 @@ function renderDashboard(user: AuthUser) {
     target.innerHTML = items.map((item) => `
       <article class="notification-item${item.read ? "" : " is-unread"}">
         <span class="notification-dot" aria-hidden="true"></span>
-        <div><p>${escapeHtml(item.title)}</p><strong>${escapeHtml(item.nama_calon || "Pendaftar")} · ${escapeHtml(item.nis || applicationNumber(item.application_id || 0))}</strong><small>${escapeHtml(item.jenjang)} · ${escapeHtml(formatDate(item.created_at))}</small><span>${escapeHtml(item.message)}</span></div>
+        <div><p>${escapeHtml(item.title)}</p><strong>${escapeHtml(item.nama_calon || "Pendaftar")} · ${escapeHtml(applicationNumber(item.application_id || 0))}</strong><small>${escapeHtml(item.jenjang)} · ${escapeHtml(formatDate(item.created_at))}</small><span>${escapeHtml(item.message)}</span></div>
         <button type="button" data-notification-id="${item.id}">${item.read ? "Baca" : "Tandai dibaca"}</button>
       </article>`).join("");
     target.querySelectorAll<HTMLButtonElement>("[data-notification-id]").forEach((button) => {
@@ -757,7 +752,7 @@ function renderDashboard(user: AuthUser) {
       return `
         <button class="decision-application-row${selected ? " is-selected" : ""}" type="button" data-application-id="${item.id}" aria-label="Buka berkas ${escapeHtml(item.nama_calon)}" aria-current="${selected ? "true" : "false"}">
           <span class="decision-avatar">${escapeHtml(initials)}</span>
-          <span class="decision-row-main"><strong>${escapeHtml(item.nama_calon)}</strong><small>${escapeHtml(item.nis || "NIS belum tersedia")} · ${escapeHtml(applicationNumber(item.id))} · ${escapeHtml(item.jenjang)}</small><span class="decision-row-meta"><b>${escapeHtml(item.jenjang)}</b><span>${escapeHtml(statusLabel)}</span></span></span>
+          <span class="decision-row-main"><strong>${escapeHtml(item.nama_calon)}</strong><small>${escapeHtml(applicationNumber(item.id))} · ${escapeHtml(item.jenjang)}</small><span class="decision-row-meta"><b>${escapeHtml(item.jenjang)}</b><span>${escapeHtml(statusLabel)}</span></span></span>
           <span class="decision-row-date">${escapeHtml(formatDate(item.created_at))}</span><span class="decision-row-arrow" aria-hidden="true">›</span>
         </button>
       `;
@@ -796,15 +791,15 @@ function renderDashboard(user: AuthUser) {
     detailElement.innerHTML = `
       <div class="inspector-scroll">
         <div class="inspector-header">
-          <div><p class="decision-kicker">▣ Decision inspector</p><h2>${escapeHtml(application.nama_calon)}</h2><span>${escapeHtml(application.nis || "NIS belum tersedia")} · ${escapeHtml(applicationNumber(application.id))} · dikirim ${escapeHtml(formatDate(application.created_at))}</span></div>
-          <div class="inspector-header-actions"><button class="inspector-zip-button" id="single-zip-button" type="button">ZIP berkas</button><button class="inspector-close" id="inspector-close" type="button" aria-label="Tutup inspector">×</button></div>
+          <div><p class="decision-kicker">▣ Decision inspector</p><h2>${escapeHtml(application.nama_calon)}</h2><span>${escapeHtml(applicationNumber(application.id))} · dikirim ${escapeHtml(formatDate(application.created_at))}</span></div>
+          <div class="inspector-header-actions">${user.username.toLowerCase() === "admin" ? '<button class="inspector-delete-button" id="delete-application-button" type="button">Hapus pendaftar</button>' : ""}<button class="inspector-zip-button" id="single-zip-button" type="button">ZIP berkas</button><button class="inspector-close" id="inspector-close" type="button" aria-label="Tutup inspector">×</button></div>
         </div>
         <div class="inspector-tags"><span>${escapeHtml(application.jenjang)}</span><span>${escapeHtml(application.status)}</span><span class="is-priority">${application.status === "Baru" ? "● Prioritas review" : "● Dalam proses"}</span></div>
         <div class="inspector-note"><p>CATATAN REVIEWER</p><strong>${application.status === "Baru" ? "Pengajuan baru menunggu pembacaan pertama." : "Pastikan setiap bukti pendukung sudah sesuai sebelum keputusan akhir."}</strong></div>
-          <dl class="inspector-facts">${field("NIS", application.nis)}${field("Nomor pengajuan", applicationNumber(application.id))}${field("Sekolah asal", application.nama_sekolah_asal)}${field("Alamat domisili", application.alamat_domisili)}${field("Nomor WhatsApp orang tua", application.nomor_hp_orangtua)}${field("Email", application.email)}</dl>
+           <dl class="inspector-facts">${field("Nomor pengajuan", applicationNumber(application.id))}${field("Sekolah asal", application.nama_sekolah_asal)}${field("Alamat domisili", application.alamat_domisili)}${field("Nomor WhatsApp orang tua", application.nomor_hp_orangtua)}${field("Email", application.email)}</dl>
         <section class="inspector-section"><div class="inspector-section-title"><h3>Bukti pendukung</h3><b>${availableDocuments}/${totalDocuments || 0} lengkap</b></div><div class="inspector-progress"><i style="width: ${completion}%"></i></div><div class="inspector-documents">${documents || `<p class="inspector-muted">Belum ada daftar dokumen.</p>`}</div></section>
         <section class="inspector-section inspector-actions"><p class="decision-kicker">TINDAKAN KEPUTUSAN</p><div class="decision-action-grid"><button type="button" data-decision="Diterima" class="decision-action is-approve">✓<span>Sahkan</span></button><button type="button" data-decision="Diverifikasi" class="decision-action is-hold">◷<span>Tahan</span></button><button type="button" data-decision="Perlu Perbaikan" class="decision-action is-return">↻<span>Kembalikan</span></button></div><p class="decision-feedback" id="status-feedback" aria-live="polite"></p><label class="manual-status-label" for="application-status">Status manual</label><select id="application-status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${status === application.status ? "selected" : ""}>${escapeHtml(status)}</option>`).join("")}</select></section>
-         <section class="inspector-section detail-section"><h3>Calon peserta didik</h3><dl class="detail-grid">${field("NIS", application.nis)}${field("Nama lengkap", application.nama_calon)}${field("Nama panggilan", application.nama_panggilan)}${field("Jenis kelamin", application.jenis_kelamin)}${field("Tempat, tanggal lahir", `${application.tempat_lahir || "—"}, ${application.tanggal_lahir || "—"}`)}${field("NISN", application.nisn)}${field("NIK anak", application.nik_anak)}${field("Alamat domisili", application.alamat_domisili, "span-2")}${field("Anak ke-", application.anak_ke)}${field("Jumlah saudara", application.jumlah_saudara)}${field("Status anak", application.status_anak)}${field("Agama", application.agama)}${field("Kewarganegaraan", application.warga_negara)}${field("Tinggi / berat", `${application.tinggi_badan || "—"} cm / ${application.berat_badan || "—"} kg`)}${field("Transportasi", application.transportasi)}${field("Jarak ke sekolah", application.jarak_sekolah)}${field("Riwayat penyakit", application.riwayat_penyakit, "span-2")}</dl></section>
+         <section class="inspector-section detail-section"><h3>Calon peserta didik</h3><dl class="detail-grid">${field("Nama lengkap", application.nama_calon)}${field("Nama panggilan", application.nama_panggilan)}${field("Jenis kelamin", application.jenis_kelamin)}${field("Tempat, tanggal lahir", `${application.tempat_lahir || "—"}, ${application.tanggal_lahir || "—"}`)}${field("NISN", application.nisn)}${field("NIK anak", application.nik_anak)}${field("Alamat domisili", application.alamat_domisili, "span-2")}${field("Anak ke-", application.anak_ke)}${field("Jumlah saudara", application.jumlah_saudara)}${field("Status anak", application.status_anak)}${field("Agama", application.agama)}${field("Kewarganegaraan", application.warga_negara)}${field("Tinggi / berat", `${application.tinggi_badan || "—"} cm / ${application.berat_badan || "—"} kg`)}${field("Transportasi", application.transportasi)}${field("Jarak ke sekolah", application.jarak_sekolah)}${field("Riwayat penyakit", application.riwayat_penyakit, "span-2")}</dl></section>
         <section class="inspector-section detail-section"><h3>Sekolah asal</h3><dl class="detail-grid">${field("Nama sekolah", application.nama_sekolah_asal, "span-2")}${field("Tahun lulus", application.tahun_lulus)}${field("Alamat sekolah", application.alamat_sekolah_asal, "span-2")}</dl></section>
         <section class="inspector-section detail-section"><h3>Orang tua & wali</h3><dl class="detail-grid">${field("Nomor Kartu Keluarga", application.nomor_kk)}${field("NIK ayah", application.nik_ayah)}${field("Nama ayah", application.nama_ayah)}${field("Pekerjaan ayah", application.pekerjaan_ayah)}${field("Penghasilan ayah", application.penghasilan_ayah)}${field("NIK ibu", application.nik_ibu)}${field("Nama ibu", application.nama_ibu)}${field("Pekerjaan ibu", application.pekerjaan_ibu)}${field("Penghasilan ibu", application.penghasilan_ibu)}${field("Nama wali", application.nama_wali)}${field("Hubungan wali", application.hubungan_wali)}</dl></section>
       </div>
@@ -814,6 +809,26 @@ function renderDashboard(user: AuthUser) {
        void downloadBinary(`/api/admin/applications/${application.id}/files.zip`, undefined, `${applicationNumber(application.id)}-berkas.zip`)
          .then(() => showNotice("ZIP berkas berhasil diunduh."))
          .catch((error) => showNotice(error instanceof Error ? error.message : "ZIP belum dapat dibuat."));
+     });
+     document.getElementById("delete-application-button")?.addEventListener("click", async (event) => {
+       const button = event.currentTarget as HTMLButtonElement;
+       const confirmed = window.confirm(`Hapus data ${application.nama_calon} (${applicationNumber(application.id)}) secara permanen? Data dan berkas pendukungnya akan dihapus.`);
+       if (!confirmed) return;
+       button.disabled = true;
+       button.textContent = "Menghapus…";
+       try {
+         await requestJSON<{ success: boolean }>(`/api/applications/${application.id}`, { method: "DELETE" });
+         selectedId = null;
+         selectedApplication = null;
+         detailElement.className = "decision-inspector";
+         detailElement.innerHTML = '<div class="inspector-empty"><span>01</span><h2>Pilih satu pengajuan</h2><p>Detail, bukti pendukung, dan tindakan keputusan akan muncul di sini setelah Anda memilih dari antrean.</p></div>';
+         await loadList();
+         showNotice("Data pendaftar dan berkas pendukung berhasil dihapus.");
+       } catch (error) {
+         button.disabled = false;
+         button.textContent = "Hapus pendaftar";
+         showNotice(error instanceof Error ? error.message : "Data pendaftar belum dapat dihapus.");
+       }
      });
     detailElement.querySelectorAll<HTMLButtonElement>("[data-decision]").forEach((button) => {
       button.addEventListener("click", () => void updateStatus(button.dataset.decision || "", "Tindakan keputusan tersimpan."));

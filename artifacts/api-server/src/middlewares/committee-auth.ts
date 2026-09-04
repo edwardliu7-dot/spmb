@@ -90,6 +90,17 @@ export function requireCommitteeAuth(request: Request, response: Response, next:
   return next();
 }
 
+export function isAdministrator(account: CommitteeAccount | null | undefined): boolean {
+  return account?.username.toLowerCase() === "admin";
+}
+
+export function requireAdministrator(request: Request, response: Response, next: NextFunction) {
+  if (!isAdministrator(request.committeeAccount)) {
+    return response.status(403).json({ error: "Hanya akun administrator yang dapat menghapus pendaftar." });
+  }
+  return next();
+}
+
 export function canAccessJenjang(account: CommitteeAccount, jenjang: string): boolean {
   return account.allowedJenjang.includes(jenjang);
 }

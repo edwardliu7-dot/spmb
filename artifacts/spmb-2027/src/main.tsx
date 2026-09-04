@@ -1099,7 +1099,7 @@ form.addEventListener('submit', async (event) => {
     clearDraft();
     document.querySelectorAll<HTMLElement>('[data-file-name]').forEach((label) => { label.textContent = 'Belum ada berkas dipilih'; });
     document.querySelectorAll<HTMLElement>('[data-field]').forEach((field) => field.classList.remove('field-error'));
-    submissionId.textContent = `Nomor pengajuan: SPMB-${String(result.id).padStart(6, '0')} · NIS: ${result.nis || 'akan diberikan panitia'}`;
+    submissionId.textContent = `Nomor pengajuan: SPMB-${String(result.id).padStart(6, '0')}`;
     statusNumberInput.value = `SPMB-${String(result.id).padStart(6, '0')}`;
     receiptDownload.href = result.receiptUrl;
     receiptDownload.hidden = false;

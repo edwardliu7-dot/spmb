@@ -92,9 +92,8 @@ function applicationNumber(id: number): string {
 
 function rowsForMasterData(items: Awaited<ReturnType<typeof listMasterPendaftar>>): string[][] {
   return [
-    ["NIS", "Nomor pengajuan", "Nama calon peserta didik", "Jenjang", "NIK anak", "NISN", "Jenis kelamin", "Tempat lahir", "Tanggal lahir", "Alamat domisili", "Nama orang tua/wali", "Nomor WhatsApp orang tua", "Email", "Asal sekolah", "Status pengajuan", "Tanggal pengajuan", "Kelengkapan berkas"],
+    ["Nomor pengajuan", "Nama calon peserta didik", "Jenjang", "NIK anak", "NISN", "Jenis kelamin", "Tempat lahir", "Tanggal lahir", "Alamat domisili", "Nama orang tua/wali", "Nomor WhatsApp orang tua", "Email", "Asal sekolah", "Status pengajuan", "Tanggal pengajuan", "Kelengkapan berkas"],
     ...items.map((item) => [
-      item.nis || "",
       applicationNumber(item.id),
       item.nama_calon,
       item.jenjang,
@@ -247,7 +246,6 @@ async function createApplicationZip(id: number, user: NonNullable<Express.Reques
   entries.push({
     name: `${folder}/manifest.txt`,
     data: Buffer.from([
-      `NIS: ${item.nis || "—"}`,
       `Nomor pengajuan: ${applicationNumber(item.id)}`,
       `Nama: ${item.nama_calon}`,
       `Jenjang: ${item.jenjang}`,
@@ -284,7 +282,7 @@ router.post("/admin/files.zip", async (request, response) => {
     : [];
   try {
     const entries = [];
-    const manifest = [["Nomor pengajuan", "NIS", "Nama", "Jenjang", "Status", "Berkas tersedia", "Berkas belum tersedia"]];
+    const manifest = [["Nomor pengajuan", "Nama", "Jenjang", "Status", "Berkas tersedia", "Berkas belum tersedia"]];
     for (const id of ids) {
       const item = await getPendaftar(id);
       if (!item || !canAccessJenjang(user, item.jenjang)) continue;
@@ -302,7 +300,7 @@ router.post("/admin/files.zip", async (request, response) => {
           missing.push(document.file);
         }
       }
-      manifest.push([applicationNumber(item.id), item.nis || "", item.nama_calon, item.jenjang, item.status, available.join(", "), missing.join(", ")]);
+      manifest.push([applicationNumber(item.id), item.nama_calon, item.jenjang, item.status, available.join(", "), missing.join(", ")]);
     }
     if (!entries.length && !ids.length) return response.status(400).json({ error: "Pilih minimal satu pendaftar." });
     entries.push({ name: "manifest.csv", data: Buffer.from(manifest.map((row) => row.map(csvCell).join(",")).join("\n")) });

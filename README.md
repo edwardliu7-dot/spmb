@@ -198,8 +198,7 @@ Detail field dan response tersedia di `lib/api-spec/openapi.yaml`.
 ## Penyimpanan data
 
 - Data pendaftar disimpan di PostgreSQL pada tabel `pendaftar`.
-- Nomor internal siswa disimpan sebagai **NIS** dan harus berbeda dari NIK
-  anak maupun NISN.
+- Setiap pengajuan dikenali dengan nomor pengajuan yang dibuat server.
 - Berkas diunggah ke penyimpanan server pada `artifacts/api-server/uploads/`
   atau lokasi upload yang dikonfigurasi runtime.
 - Database menyimpan path relatif berkas, bukan isi berkas.

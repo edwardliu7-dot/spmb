@@ -166,7 +166,6 @@ export const SubmitApplicationResponse = zod.object({
   "success": zod.boolean(),
   "message": zod.string(),
   "id": zod.number(),
-  "nis": zod.string().nullable(),
   "receiptUrl": zod.string()
 })
 
@@ -253,7 +252,6 @@ export const ListApplicationsQueryParams = zod.object({
 export const ListApplicationsResponse = zod.object({
   "items": zod.array(zod.object({
   "id": zod.number(),
-  "nis": zod.string().nullable(),
   "nama_calon": zod.string(),
   "jenjang": zod.string(),
   "nama_sekolah_asal": zod.string().nullable(),
@@ -365,7 +363,6 @@ export const getApplicationResponseTwoHubunganWaliMax = 100;
 
 export const GetApplicationResponse = zod.object({
   "id": zod.number(),
-  "nis": zod.string().nullable(),
   "nama_calon": zod.string(),
   "jenjang": zod.string(),
   "nama_sekolah_asal": zod.string().nullable(),
@@ -430,6 +427,22 @@ export const GetApplicationResponse = zod.object({
 
 
 /**
+ * Permanently deletes an application and its stored documents. Only the administrator account may use this operation.
+ * @summary Delete an application
+ */
+export const DeleteApplicationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteApplicationResponse = zod.object({
+  "success": zod.boolean(),
+  "message": zod.string(),
+  "id": zod.number(),
+  "filesRemoved": zod.number()
+})
+
+
+/**
  * @summary Update application status
  */
 export const UpdateApplicationStatusParams = zod.object({
@@ -481,8 +494,7 @@ export const ListAdminNotificationsResponse = zod.object({
   "jenjang": zod.string(),
   "created_at": zod.string(),
   "read": zod.boolean(),
-  "nama_calon": zod.string().nullable(),
-  "nis": zod.string().nullable()
+  "nama_calon": zod.string().nullable()
 })),
   "unreadCount": zod.number()
 })
@@ -639,7 +651,6 @@ export const listAdminMasterDataResponseItemsItemTwoHubunganWaliMax = 100;
 export const ListAdminMasterDataResponse = zod.object({
   "items": zod.array(zod.object({
   "id": zod.number(),
-  "nis": zod.string().nullable(),
   "nama_calon": zod.string(),
   "jenjang": zod.string(),
   "nama_sekolah_asal": zod.string().nullable(),

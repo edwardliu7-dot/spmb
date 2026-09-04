@@ -8,7 +8,6 @@
 
 export interface ApplicationListItem {
   id: number;
-  nis: string | null;
   nama_calon: string;
   jenjang: string;
   nama_sekolah_asal: string | null;

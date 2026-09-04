@@ -6,9 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface SubmissionResult {
+export interface ApplicationDeleteResponse {
   success: boolean;
   message: string;
   id: number;
-  receiptUrl: string;
+  filesRemoved: number;
 }

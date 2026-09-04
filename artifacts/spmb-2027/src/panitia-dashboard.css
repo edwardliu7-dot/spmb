@@ -50,17 +50,17 @@
   width: 38px;
   height: 38px;
   place-items: center;
-   overflow: hidden;
-   border: 1px solid #edb84bcc;
-   border-radius: 10px;
-   background: #fff;
+  overflow: hidden;
+  border: 1px solid #edb84bcc;
+  border-radius: 10px;
+  background: #fff;
 }
 
 .decision-brand-mark img {
-   display: block;
-   width: 100%;
-   height: 100%;
-   object-fit: contain;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .decision-brand-name,
@@ -1639,11 +1639,6 @@
   margin-top: 5px;
   color: #92998f;
   font-size: 9px;
-}
-
-.admin-nis {
-  color: #315f5c;
-  font: 700 10px "IBM Plex Mono", monospace;
 }
 
 .admin-level-tag {

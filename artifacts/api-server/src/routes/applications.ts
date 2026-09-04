@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { getPendaftar, listPendaftar, updatePendaftarStatus, uploadsDirectory } from "../lib/spmb-database";
-import { canAccessJenjang, committeeStatuses, requireCommitteeAuth } from "../middlewares/committee-auth";
+import { deletePendaftar, getPendaftar, listPendaftar, updatePendaftarStatus, uploadsDirectory } from "../lib/spmb-database";
+import { canAccessJenjang, committeeStatuses, requireAdministrator, requireCommitteeAuth } from "../middlewares/committee-auth";
 
 const router = Router();
 const documentFields = {
@@ -15,7 +15,8 @@ const documentFields = {
 
 router.use("/applications", requireCommitteeAuth);
 
-function parseId(value: string) {
+function parseId(value: string | string[]) {
+  if (Array.isArray(value)) return null;
   const id = Number(value);
   return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
@@ -105,6 +106,26 @@ router.get("/applications/:id", async (request, response) => {
   } catch (error) {
     request.log.error({ err: error, applicationId: id }, "Failed to load SPMB application");
     return response.status(500).json({ error: "Detail pendaftar belum dapat dimuat." });
+  }
+});
+
+router.delete("/applications/:id", requireAdministrator, async (request, response) => {
+  const id = parseId(request.params.id);
+  if (!id) return response.status(400).json({ error: "ID pendaftar tidak valid." });
+
+  try {
+    const deleted = await deletePendaftar(id, request.committeeAccount!.username);
+    if (!deleted) return response.status(404).json({ error: "Pendaftar tidak ditemukan." });
+    request.log.info({ applicationId: id, deletedBy: request.committeeAccount!.username }, "SPMB application deleted");
+    return response.json({
+      success: true,
+      message: "Data pendaftar berhasil dihapus.",
+      id: deleted.id,
+      filesRemoved: deleted.filesRemoved,
+    });
+  } catch (error) {
+    request.log.error({ err: error, applicationId: id }, "Failed to delete SPMB application");
+    return response.status(500).json({ error: "Data pendaftar belum dapat dihapus." });
   }
 });
 

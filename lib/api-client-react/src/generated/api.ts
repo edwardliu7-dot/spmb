@@ -20,6 +20,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ApplicationDeleteResponse,
   ApplicationDetail,
   ApplicationListResponse,
   ApplicationStatusResponse,
@@ -754,6 +755,78 @@ export function useGetApplication<TData = Awaited<ReturnType<typeof getApplicati
 
 
 
+
+export const getDeleteApplicationUrl = (id: number,) => {
+
+
+
+
+  return `/api/applications/${id}`
+}
+
+/**
+ * Permanently deletes an application and its stored documents. Only the administrator account may use this operation.
+ * @summary Delete an application
+ */
+export const deleteApplication = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<ApplicationDeleteResponse> => {
+
+  return customFetch<ApplicationDeleteResponse>(getDeleteApplicationUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteApplicationMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApplication>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteApplication>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteApplication'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApplication>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteApplication(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteApplicationMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApplication>>>
+
+    export type DeleteApplicationMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Delete an application
+ */
+export const useDeleteApplication = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApplication>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteApplication>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteApplicationMutationOptions(options));
+    }
 
 export const getUpdateApplicationStatusUrl = (id: number,) => {
 

@@ -1,4 +1,5 @@
 import { mkdirSync } from "node:fs";
+import { unlink } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -20,6 +21,7 @@ import {
   type InsertPendaftar,
   type Pendaftar,
 } from "@workspace/db";
+import { logger } from "./logger";
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.basename(moduleDirectory) === "lib"
@@ -29,14 +31,13 @@ export const uploadsDirectory = path.join(packageRoot, "uploads");
 
 mkdirSync(uploadsDirectory, { recursive: true });
 
-const nisLevelCode: Record<string, string> = {
-  Playgroup: "PG",
-  Daycare: "DC",
-  "TK-A": "TKA",
-  "TK-B": "TKB",
-  SD: "SD",
-  SMP: "SMP",
-};
+const storedDocumentFields = [
+  "foto_3x4_path",
+  "akte_lahir_path",
+  "kartu_keluarga_path",
+  "ktp_orangtua_path",
+  "bukti_bayar_path",
+] as const;
 
 type SchemaMetadata = {
   pendaftarColumns: Set<string>;
@@ -71,17 +72,6 @@ async function getSchemaMetadata(): Promise<SchemaMetadata> {
   return schemaMetadataPromise;
 }
 
-export function buildNis(jenjang: string, id: number): string {
-  return `TISA-2027-${nisLevelCode[jenjang] || "SPMB"}-${String(id).padStart(6, "0")}`;
-}
-
-async function ensurePendaftarNis<T extends { id: number; jenjang: string; nis: string | null }>(item: T): Promise<T> {
-  if (item.nis) return item;
-  const nis = buildNis(item.jenjang, item.id);
-  await db.update(pendaftarTable).set({ nis }).where(eq(pendaftarTable.id, item.id));
-  return { ...item, nis };
-}
-
 export async function insertPendaftar(values: InsertPendaftar) {
   const { pendaftarColumns, tables } = await getSchemaMetadata();
   const compatibleValues = Object.fromEntries(
@@ -96,37 +86,37 @@ export async function insertPendaftar(values: InsertPendaftar) {
     throw new Error("Pendaftar tidak berhasil dibuat.");
   }
 
-  const nis = pendaftarColumns.has("nis") ? buildNis(values.jenjang, created.id) : null;
-  if (nis) {
-    await db.update(pendaftarTable).set({ nis }).where(eq(pendaftarTable.id, created.id));
-  }
   if (tables.has("committee_notification")) {
-    await db.insert(committeeNotificationTable).values([
-      {
-        application_id: created.id,
-        type: "new_application",
-        title: "Pendaftar baru masuk",
-        message: `${values.nama_calon} mengirim pengajuan baru.`,
-        jenjang: values.jenjang,
-      },
-      {
-        application_id: created.id,
-        type: "document_review",
-        title: "Berkas perlu diperiksa",
-        message: `Periksa kelengkapan berkas ${values.nama_calon}.`,
-        jenjang: values.jenjang,
-      },
-      {
-        application_id: created.id,
-        type: "not_verified",
-        title: "Pengajuan belum diverifikasi",
-        message: `${values.nama_calon} menunggu verifikasi panitia.`,
-        jenjang: values.jenjang,
-      },
-    ]);
+    try {
+      await db.insert(committeeNotificationTable).values([
+        {
+          application_id: created.id,
+          type: "new_application",
+          title: "Pendaftar baru masuk",
+          message: `${values.nama_calon} mengirim pengajuan baru.`,
+          jenjang: values.jenjang,
+        },
+        {
+          application_id: created.id,
+          type: "document_review",
+          title: "Berkas perlu diperiksa",
+          message: `Periksa kelengkapan berkas ${values.nama_calon}.`,
+          jenjang: values.jenjang,
+        },
+        {
+          application_id: created.id,
+          type: "not_verified",
+          title: "Pengajuan belum diverifikasi",
+          message: `${values.nama_calon} menunggu verifikasi panitia.`,
+          jenjang: values.jenjang,
+        },
+      ]);
+    } catch (error) {
+      logger.warn({ err: error, applicationId: created.id }, "Optional committee notifications could not be created");
+    }
   }
 
-  return { ...created, nis };
+  return created;
 }
 
 export async function listPendaftar(filters: {
@@ -137,14 +127,7 @@ export async function listPendaftar(filters: {
   to?: string;
   allowedJenjang?: readonly string[];
 }) {
-  try {
-    return await queryApplicationList(filters, true);
-  } catch (error) {
-    // Older external databases may predate the server-generated NIS column.
-    // Keep the read-only list usable until that database can be migrated.
-    if (!isMissingSchemaColumn(error)) throw error;
-    return queryApplicationList(filters, false);
-  }
+  return queryApplicationList(filters);
 }
 
 function buildApplicationConditions(filters: {
@@ -154,7 +137,7 @@ function buildApplicationConditions(filters: {
   from?: string;
   to?: string;
   allowedJenjang?: readonly string[];
-}, includeNisSearch = true) {
+}) {
   const conditions = [];
   const search = filters.search?.trim();
 
@@ -165,7 +148,6 @@ function buildApplicationConditions(filters: {
       ilike(pendaftarTable.nama_sekolah_asal, `%${search}%`),
       ilike(pendaftarTable.nomor_hp_orangtua, `%${search}%`),
     ];
-    if (includeNisSearch) searchConditions.push(ilike(pendaftarTable.nis, `%${search}%`));
     conditions.push(or(...searchConditions));
   }
 
@@ -205,29 +187,9 @@ async function queryApplicationList(
     to?: string;
     allowedJenjang?: readonly string[];
   },
-  includeNis: boolean,
 ) {
-  const conditions = buildApplicationConditions(filters, includeNis);
+  const conditions = buildApplicationConditions(filters);
   const where = conditions.length ? and(...conditions) : undefined;
-  if (includeNis) {
-    const items = await db
-      .select({
-        id: pendaftarTable.id,
-        nis: pendaftarTable.nis,
-        nama_calon: pendaftarTable.nama_calon,
-        jenjang: pendaftarTable.jenjang,
-        nama_sekolah_asal: pendaftarTable.nama_sekolah_asal,
-        email: pendaftarTable.email,
-        status: pendaftarTable.status,
-        created_at: pendaftarTable.created_at,
-      })
-      .from(pendaftarTable)
-      .where(where)
-      .orderBy(desc(pendaftarTable.created_at), desc(pendaftarTable.id));
-
-    return { items: await Promise.all(items.map(ensurePendaftarNis)), total: items.length };
-  }
-
   const items = await db
     .select({
       id: pendaftarTable.id,
@@ -242,10 +204,7 @@ async function queryApplicationList(
     .where(where)
     .orderBy(desc(pendaftarTable.created_at), desc(pendaftarTable.id));
 
-  return {
-    items: items.map((item) => ({ ...item, nis: null })),
-    total: items.length,
-  };
+  return { items, total: items.length };
 }
 
 export async function getPendaftar(id: number) {
@@ -255,7 +214,7 @@ export async function getPendaftar(id: number) {
       .from(pendaftarTable)
       .where(eq(pendaftarTable.id, id))
       .limit(1);
-    return item ? ensurePendaftarNis(item) : item;
+    return item;
   } catch (error) {
     if (!isMissingSchemaColumn(error)) throw error;
     const result = await db.execute(sql`
@@ -268,7 +227,6 @@ export async function getPendaftar(id: number) {
     if (!legacyItem) return undefined;
     return {
       ...legacyItem,
-      nis: null,
       nik_ayah: legacyItem.nik_ayah ?? legacyItem.nik_orangtua ?? null,
       nik_ibu: legacyItem.nik_ibu ?? null,
     } as Pendaftar;
@@ -290,6 +248,64 @@ export async function getPublicPendaftarStatus(id: number) {
   return item;
 }
 
+function resolveStoredUploadForDeletion(relativePath: unknown): string | null {
+  if (typeof relativePath !== "string" || !relativePath || path.isAbsolute(relativePath)) return null;
+  const root = path.resolve(uploadsDirectory);
+  const filePath = path.resolve(path.dirname(root), relativePath);
+  return filePath.startsWith(`${root}${path.sep}`) ? filePath : null;
+}
+
+export async function deletePendaftar(id: number, deletedBy: string) {
+  const application = await getPendaftar(id);
+  if (!application) return null;
+
+  const files = storedDocumentFields
+    .map((field) => resolveStoredUploadForDeletion(application[field]))
+    .filter((filePath): filePath is string => Boolean(filePath));
+  const { tables } = await getSchemaMetadata();
+
+  await db.transaction(async (tx) => {
+    if (tables.has("committee_notification")) {
+      await tx.delete(committeeNotificationTable)
+        .where(eq(committeeNotificationTable.application_id, id));
+    }
+    if (tables.has("application_status_history")) {
+      await tx.delete(applicationStatusHistoryTable)
+        .where(eq(applicationStatusHistoryTable.application_id, id));
+    }
+    if (tables.has("committee_audit_log")) {
+      await tx.insert(committeeAuditLogTable).values({
+        username: deletedBy,
+        action: "application_delete",
+        application_id: id,
+        details: `Menghapus pendaftar #${id}.`,
+      });
+    }
+
+    const [deleted] = await tx.delete(pendaftarTable)
+      .where(eq(pendaftarTable.id, id))
+      .returning({ id: pendaftarTable.id });
+    if (!deleted) throw new Error("Pendaftar tidak ditemukan.");
+  });
+
+  let filesRemoved = 0;
+  for (const filePath of files) {
+    try {
+      await unlink(filePath);
+      filesRemoved += 1;
+    } catch (error) {
+      const code = error && typeof error === "object" && "code" in error
+        ? (error as { code?: unknown }).code
+        : undefined;
+      if (code !== "ENOENT") {
+        logger.warn({ err: error, filePath }, "Berkas pendaftar tidak dapat dihapus setelah data dihapus");
+      }
+    }
+  }
+
+  return { id, filesRemoved };
+}
+
 export async function updatePendaftarStatus(
   id: number,
   status: string,
@@ -297,6 +313,7 @@ export async function updatePendaftarStatus(
 ) {
   const current = await getPendaftar(id);
   if (!current) return current;
+  const { tables } = await getSchemaMetadata();
   const [item] = await db
     .update(pendaftarTable)
     .set({ status })
@@ -306,25 +323,43 @@ export async function updatePendaftarStatus(
       status: pendaftarTable.status,
     });
   if (item && current.status !== status) {
-    await db.insert(applicationStatusHistoryTable).values({
-      application_id: id,
-      previous_status: current.status,
-      next_status: status,
-      changed_by: changedBy,
-    });
-    await recordCommitteeAudit({
-      username: changedBy,
-      action: "status_change",
-      applicationId: id,
-      details: `${current.status} → ${status}`,
-    });
-    await db.insert(committeeNotificationTable).values({
-      application_id: id,
-      type: status === "Perlu Perbaikan" ? "needs_revision" : "status_changed",
-      title: status === "Perlu Perbaikan" ? "Pengajuan membutuhkan perbaikan" : "Status pengajuan berubah",
-      message: `${current.nama_calon}: ${current.status} → ${status}.`,
-      jenjang: current.jenjang,
-    });
+    if (tables.has("application_status_history")) {
+      try {
+        await db.insert(applicationStatusHistoryTable).values({
+          application_id: id,
+          previous_status: current.status,
+          next_status: status,
+          changed_by: changedBy,
+        });
+      } catch (error) {
+        logger.warn({ err: error, applicationId: id }, "Optional application status history could not be created");
+      }
+    }
+    if (tables.has("committee_audit_log")) {
+      try {
+        await recordCommitteeAudit({
+          username: changedBy,
+          action: "status_change",
+          applicationId: id,
+          details: `${current.status} → ${status}`,
+        });
+      } catch (error) {
+        logger.warn({ err: error, applicationId: id }, "Optional committee audit entry could not be created");
+      }
+    }
+    if (tables.has("committee_notification")) {
+      try {
+        await db.insert(committeeNotificationTable).values({
+          application_id: id,
+          type: status === "Perlu Perbaikan" ? "needs_revision" : "status_changed",
+          title: status === "Perlu Perbaikan" ? "Pengajuan membutuhkan perbaikan" : "Status pengajuan berubah",
+          message: `${current.nama_calon}: ${current.status} → ${status}.`,
+          jenjang: current.jenjang,
+        });
+      } catch (error) {
+        logger.warn({ err: error, applicationId: id }, "Optional committee notification could not be created");
+      }
+    }
   }
   return item;
 }
@@ -335,6 +370,8 @@ export async function recordCommitteeAudit(input: {
   applicationId?: number;
   details?: string;
 }) {
+  const { tables } = await getSchemaMetadata();
+  if (!tables.has("committee_audit_log")) return;
   await db.insert(committeeAuditLogTable).values({
     username: input.username,
     action: input.action,
@@ -344,6 +381,8 @@ export async function recordCommitteeAudit(input: {
 }
 
 export async function listNotifications(username: string, allowedJenjang: readonly string[], limit = 30) {
+  const { tables } = await getSchemaMetadata();
+  if (!tables.has("committee_notification") || !tables.has("committee_notification_read")) return [];
   const rows = await db
     .select({
       id: committeeNotificationTable.id,
@@ -354,8 +393,7 @@ export async function listNotifications(username: string, allowedJenjang: readon
       jenjang: committeeNotificationTable.jenjang,
       created_at: committeeNotificationTable.created_at,
       read_at: committeeNotificationReadTable.read_at,
-      nama_calon: pendaftarTable.nama_calon,
-      nis: pendaftarTable.nis,
+       nama_calon: pendaftarTable.nama_calon,
     })
     .from(committeeNotificationTable)
     .leftJoin(
@@ -373,12 +411,16 @@ export async function listNotifications(username: string, allowedJenjang: readon
 }
 
 export async function markNotificationRead(notificationId: number, username: string) {
+  const { tables } = await getSchemaMetadata();
+  if (!tables.has("committee_notification_read")) return;
   await db.insert(committeeNotificationReadTable)
     .values({ notification_id: notificationId, username })
     .onConflictDoNothing();
 }
 
 export async function markAllNotificationsRead(username: string, allowedJenjang: readonly string[]) {
+  const { tables } = await getSchemaMetadata();
+  if (!tables.has("committee_notification") || !tables.has("committee_notification_read")) return 0;
   const unread = await db
     .select({ id: committeeNotificationTable.id })
     .from(committeeNotificationTable)
@@ -413,7 +455,7 @@ export async function listMasterPendaftar(filters: {
       return conditions.length ? and(...conditions) : undefined;
     })())
     .orderBy(desc(pendaftarTable.created_at), desc(pendaftarTable.id));
-  return Promise.all(rows.map(ensurePendaftarNis));
+  return rows;
 }
 
 export async function getObservationRows(filters: {
@@ -426,8 +468,7 @@ export async function getObservationRows(filters: {
 }) {
   const rows = await db
     .select({
-      id: pendaftarTable.id,
-      nis: pendaftarTable.nis,
+       id: pendaftarTable.id,
       nama_calon: pendaftarTable.nama_calon,
       jenjang: pendaftarTable.jenjang,
       jenis_kelamin: pendaftarTable.jenis_kelamin,
@@ -448,5 +489,5 @@ export async function getObservationRows(filters: {
       return conditions.length ? and(...conditions) : undefined;
     })())
     .orderBy(desc(pendaftarTable.created_at));
-  return Promise.all(rows.map(ensurePendaftarNis));
+  return rows;
 }

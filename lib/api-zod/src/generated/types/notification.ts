@@ -16,5 +16,4 @@ export interface Notification {
   created_at: string;
   read: boolean;
   nama_calon: string | null;
-  nis: string | null;
 }

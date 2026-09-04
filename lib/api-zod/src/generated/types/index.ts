@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './applicationDeleteResponse';
 export * from './applicationDetail';
 export * from './applicationFile';
 export * from './applicationListItem';

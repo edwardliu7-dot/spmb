@@ -4,7 +4,6 @@ import { z } from "zod/v4";
 
 export const pendaftarTable = pgTable("pendaftar", {
   id: serial("id").primaryKey(),
-  nis: text("nis"),
   jenjang: text("jenjang").notNull(),
   nama_calon: text("nama_calon").notNull(),
   nama_panggilan: text("nama_panggilan").notNull(),
@@ -53,9 +52,7 @@ export const pendaftarTable = pgTable("pendaftar", {
   ktp_orangtua_path: text("ktp_orangtua_path"),
   bukti_bayar_path: text("bukti_bayar_path"),
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-}, (table) => ({
-  nisUniqueIndex: uniqueIndex("pendaftar_nis_unique").on(table.nis),
-}));
+});
 
 export const committeeNotificationTable = pgTable("committee_notification", {
   id: serial("id").primaryKey(),

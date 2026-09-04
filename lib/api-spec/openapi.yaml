@@ -238,6 +238,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteApplication
+      tags: [applications]
+      summary: Delete an application
+      description: Permanently deletes an application and its stored documents. Only the administrator account may use this operation.
+      security:
+        - committeeSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: number }
+      responses:
+        "200":
+          description: Application deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationDeleteResponse"
+        "400":
+          description: Invalid application ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Administrator access required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Application not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /applications/{id}/status:
     patch:
       operationId: updateApplicationStatus
@@ -585,9 +622,8 @@ components:
         success: { type: boolean }
         message: { type: string }
         id: { type: number }
-        nis: { type: string, nullable: true }
         receiptUrl: { type: string }
-      required: [success, message, id, nis, receiptUrl]
+      required: [success, message, id, receiptUrl]
     SubmissionStatusResponse:
       type: object
       properties:
@@ -602,14 +638,13 @@ components:
       type: object
       properties:
         id: { type: number }
-        nis: { type: string, nullable: true }
         nama_calon: { type: string }
         jenjang: { type: string }
         nama_sekolah_asal: { type: string, nullable: true }
         email: { type: string }
         status: { type: string }
         created_at: { type: string }
-      required: [id, nis, nama_calon, jenjang, nama_sekolah_asal, email, status, created_at]
+      required: [id, nama_calon, jenjang, nama_sekolah_asal, email, status, created_at]
     ApplicationListResponse:
       type: object
       properties:
@@ -619,6 +654,14 @@ components:
             $ref: "#/components/schemas/ApplicationListItem"
         total: { type: number }
       required: [items, total]
+    ApplicationDeleteResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        id: { type: number }
+        filesRemoved: { type: number }
+      required: [success, message, id, filesRemoved]
     ApplicationFile:
       type: object
       properties:
@@ -650,8 +693,7 @@ components:
         created_at: { type: string }
         read: { type: boolean }
         nama_calon: { type: string, nullable: true }
-        nis: { type: string, nullable: true }
-      required: [id, application_id, type, title, message, jenjang, created_at, read, nama_calon, nis]
+      required: [id, application_id, type, title, message, jenjang, created_at, read, nama_calon]
     NotificationListResponse:
       type: object
       properties:

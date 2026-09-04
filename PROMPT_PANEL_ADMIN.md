@@ -11,7 +11,7 @@ Bangun panel admin yang berfokus pada:
 1. Pengelolaan pendaftar berdasarkan jenjang.
 2. Notifikasi yang benar-benar berisi pekerjaan admin.
 3. Data observasi untuk setiap jenjang.
-4. Master data pendaftar dengan NIS yang dibuat otomatis oleh server.
+4. Master data pendaftar dengan nomor pengajuan sebagai identitas utama.
 5. Ekspor master data ke Excel.
 6. Download berkas pendaftar secara massal dalam ZIP.
 
@@ -84,7 +84,6 @@ Ganti notifikasi placeholder menjadi daftar notifikasi yang membantu panitia men
 
 - Jenis notifikasi.
 - Nomor pengajuan, contoh `SPMB-000014`.
-- NIS jika sudah tersedia.
 - Nama calon peserta didik.
 - Jenjang.
 - Waktu kejadian.
@@ -168,58 +167,18 @@ Data NIK, nomor KK, dan dokumen keluarga jangan ditampilkan pada grafik ringkasa
 
 ---
 
-## Fitur 3 — NIS otomatis
+## Fitur 3 — Identitas pengajuan
 
-### Klarifikasi istilah yang wajib diikuti
-
-Yang dimaksud dengan “NIK otomatis” pada konsep awal adalah **NIS**, bukan NIK.
-
-- **NIS (Nomor Induk Siswa)** adalah nomor internal yang dibuat oleh sistem/sekolah untuk kebutuhan administrasi SPMB.
-- **NIK anak** adalah NIK resmi dari dokumen kependudukan dan harus diisi berdasarkan dokumen resmi. Sistem tidak boleh membuat atau mengubah NIK anak secara otomatis.
-- **NISN** adalah Nomor Induk Siswa Nasional dan tetap menjadi field yang terpisah dari NIS.
-
-Pada seluruh UI, API, database, notifikasi, Excel, ZIP, manifest, dan dokumentasi gunakan istilah **NIS** untuk nomor otomatis. Jangan memberi label “NIK otomatis”, “NIK internal”, atau istilah lain yang dapat membingungkan operator.
-
-### Aturan penting
-
-Jangan membuat NIK resmi Dukcapil secara otomatis. Field `nik_anak` yang sudah ada tetap berarti NIK resmi dari dokumen kependudukan.
-
-Field identitas internal yang dibuat otomatis harus menggunakan nama yang jelas:
-
-- `nis`, atau
-- `nomor_induk_siswa`.
-
-Label UI yang disarankan:
-
-> NIS
-
-### Format yang disarankan
-
-Contoh format yang mudah dibaca:
-
-```text
-TISA-2027-SD-000014
-```
-
-Jika sekolah menghendaki format numerik, gunakan:
-
-```text
-2027000014
-```
-
-Pilih satu format dan gunakan secara konsisten pada UI, Excel, ZIP, manifest, dan notifikasi. Format boleh disesuaikan dengan kebijakan sekolah, tetapi harus terdokumentasi dan tidak boleh menyerupai atau menggantikan NIK/NISN.
-
-### Aturan pembuatan
-
-- Dibuat oleh server saat pengajuan berhasil disimpan, bukan oleh browser.
-- Unik.
-- Tidak berubah ketika status berubah.
-- Tidak dipakai sebagai pengganti NIK anak atau NISN.
-- Tidak dibuat ulang ketika halaman dimuat.
-- Tidak boleh bergantung pada input dari browser.
-- Jika ada pengajuan ganda dengan NIK anak yang sama, tandai sebagai duplikat untuk diperiksa; jangan otomatis menggabungkan data.
-- Pengajuan yang ditolak tetap memiliki NIS dan tetap tersimpan di master data.
-- Jika data lama belum memiliki NIS, lakukan pengisian secara aman dan idempotent tanpa mengubah NIK anak atau NISN.
+- Nomor pengajuan dibuat oleh server saat data berhasil disimpan.
+- Nomor pengajuan ditampilkan konsisten pada halaman sukses, panel, notifikasi,
+  Excel, ZIP, dan manifest.
+- Nomor pengajuan tidak dibuat dari input browser dan tidak berubah ketika status
+  pengajuan berubah.
+- `NIK anak` tetap merupakan NIK resmi dari dokumen kependudukan. Sistem tidak
+  boleh membuat atau mengubahnya secara otomatis.
+- `NISN` tetap menjadi field nasional yang terpisah.
+- Jika ada pengajuan ganda dengan NIK anak yang sama, tandai sebagai duplikat
+  untuk diperiksa; jangan otomatis menggabungkan data.
 
 ---
 
@@ -227,7 +186,6 @@ Pilih satu format dan gunakan secara konsisten pada UI, Excel, ZIP, manifest, da
 
 Buat halaman master data dengan kolom:
 
-- NIS.
 - Nomor pengajuan.
 - Nama calon peserta didik.
 - Jenjang.
@@ -348,7 +306,6 @@ spmb-2027-sd-berkas.zip
 `manifest.csv` minimal berisi:
 
 - Nomor pengajuan.
-- NIS.
 - Nama.
 - Jenjang.
 - Status.
@@ -416,10 +373,9 @@ Implementasikan dalam urutan berikut:
 - Filter.
 - Tabel/grafik observasi.
 
-### Tahap 4 — Master data dan NIS otomatis
+### Tahap 4 — Master data dan identitas pengajuan
 
-- Tambah NIS server-side.
-- Tampilkan NIS di detail dan daftar.
+- Gunakan nomor pengajuan sebagai identitas utama di detail dan daftar.
 - Tambahkan deteksi duplikasi yang aman.
 
 ### Tahap 5 — Ekspor
@@ -440,9 +396,10 @@ Fitur dianggap selesai jika:
 - Notifikasi menampilkan kejadian nyata dan dapat ditandai sudah dibaca.
 - Agenda rapat dan arsip tidak lagi muncul di panel.
 - Observasi dapat difilter per jenjang.
-- Setiap pengajuan baru memiliki NIS yang stabil.
+- Setiap pengajuan baru memiliki nomor pengajuan yang stabil.
 - NIK resmi anak tidak digantikan oleh nomor otomatis.
-- NISN tetap menjadi field terpisah dan tidak ditimpa oleh NIS.
+- NISN tetap menjadi field nasional yang terpisah dan tidak ditimpa oleh nomor
+  pengajuan.
 - Master data dapat diekspor ke `.xlsx`.
 - Berkas satu atau banyak pendaftar dapat diunduh sebagai ZIP.
 - Berkas yang tidak tersedia dicatat di manifest tanpa menggagalkan seluruh ZIP.

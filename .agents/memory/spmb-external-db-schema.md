@@ -28,5 +28,6 @@ already exist while the client receives a 500 and may submit the same person
 again.
 
 **How to apply:** Check the live column/table inventory before post-insert
-updates, skip only unavailable additive features, and return the successful
-application ID without masking the core insert result.
+updates, skip unavailable additive features, and treat failures in optional
+history, audit, or notification writes as non-fatal so the successful core
+insert/status update is returned.

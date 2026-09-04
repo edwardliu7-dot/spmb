@@ -272,7 +272,6 @@ export interface SubmissionResult {
   success: boolean;
   message: string;
   id: number;
-  nis: string | null;
   receiptUrl: string;
 }
 
@@ -298,7 +297,6 @@ export interface SubmissionStatusResponse {
 
 export interface ApplicationListItem {
   id: number;
-  nis: string | null;
   nama_calon: string;
   jenjang: string;
   nama_sekolah_asal: string | null;
@@ -310,6 +308,13 @@ export interface ApplicationListItem {
 export interface ApplicationListResponse {
   items: ApplicationListItem[];
   total: number;
+}
+
+export interface ApplicationDeleteResponse {
+  success: boolean;
+  message: string;
+  id: number;
+  filesRemoved: number;
 }
 
 export interface ApplicationFile {
@@ -333,7 +338,6 @@ export interface Notification {
   created_at: string;
   read: boolean;
   nama_calon: string | null;
-  nis: string | null;
 }
 
 export interface NotificationListResponse {

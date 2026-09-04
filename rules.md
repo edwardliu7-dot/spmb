@@ -53,13 +53,11 @@ untuk mencegah data tidak sah melewati API.
 3. `NIK anak` adalah NIK resmi dari dokumen kependudukan dan harus diisi dari
    dokumen resmi.
 4. `NISN` adalah nomor nasional dan tetap menjadi field terpisah.
-5. `NIS` adalah nomor internal sekolah yang dibuat server setelah pengajuan
-   berhasil disimpan.
-6. NIS harus unik, stabil, tidak dibuat oleh browser, dan tidak berubah ketika
-   status pengajuan berubah.
+5. Nomor pengajuan dibuat server setelah pengajuan berhasil disimpan dan menjadi
+   identitas utama pengajuan.
 7. Pengajuan ganda dengan NIK anak yang sama ditandai untuk diperiksa; data
    tidak boleh otomatis digabung.
-8. Pendaftar yang ditolak tetap memiliki NIS dan tetap tersimpan.
+8. Pendaftar yang ditolak tetap tersimpan dengan riwayat statusnya.
 9. Draft browser boleh membantu kenyamanan pengguna, tetapi bukan sumber
    kebenaran dan tidak menggantikan validasi server.
 
@@ -102,7 +100,7 @@ Perubahan status:
 2. Harus memeriksa cakupan jenjang akun.
 3. Tidak boleh menghapus data pendaftar.
 4. Perubahan penting dicatat pada riwayat status dan audit log.
-5. NIS tidak boleh dibuat ulang karena perubahan status.
+5. Nomor pengajuan tidak boleh berubah karena perubahan status.
 
 ## 7. Hak akses panitia
 
@@ -173,7 +171,8 @@ Aturan akses wajib:
 
 ## 10. Aturan keamanan dan privasi
 
-- Jangan membuat NIK resmi palsu atau memakai NIS sebagai pengganti NIK/NISN.
+- Jangan membuat NIK resmi palsu atau memakai nomor pengajuan sebagai pengganti
+  NIK/NISN.
 - Jangan mengirim raw upload path ke browser.
 - Jangan mengandalkan hidden field, query parameter, atau filter UI untuk
   membatasi akses.
@@ -217,4 +216,4 @@ Sebelum menyatakan perubahan selesai:
 - Jangan mengedit file generated API client secara manual.
 - Jangan membocorkan path upload.
 - Jangan menambahkan kembali agenda rapat atau arsip pengajuan ke alur baru.
-- Jangan mengubah arti NIS, NIK, atau NISN.
+- Jangan mengubah arti nomor pengajuan, NIK, atau NISN.
