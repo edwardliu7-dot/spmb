@@ -10,4 +10,5 @@ export interface SubmissionResult {
   success: boolean;
   message: string;
   id: number;
+  receiptUrl: string;
 }

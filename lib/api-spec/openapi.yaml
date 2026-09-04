@@ -313,7 +313,8 @@ components:
         success: { type: boolean }
         message: { type: string }
         id: { type: number }
-      required: [success, message, id]
+        receiptUrl: { type: string }
+      required: [success, message, id, receiptUrl]
     ApplicationListItem:
       type: object
       properties:

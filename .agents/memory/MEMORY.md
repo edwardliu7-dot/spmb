@@ -1,3 +1,4 @@
 - [SPMB runtime decisions](spmb-runtime.md) — PostgreSQL uses the secure runtime-managed DATABASE_URL; uploads persist on disk with paths in the database.
 - [Committee access](committee-access.md) — panel sessions use signed HTTP-only cookies and server-enforced jenjang scopes for the four fixed accounts.
 - [Publish lockfile compatibility](publish-lockfile.md) — validate frozen installs with the same pnpm major/minor version used by the publish builder.
+- [SPMB receipt template](spmb-receipt.md) — the supplied receipt is a flattened sample PDF, so dynamic values require white overlays and image replacement.

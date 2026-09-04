@@ -77,7 +77,8 @@ export const SubmitApplicationBody = zod.object({
 export const SubmitApplicationResponse = zod.object({
   "success": zod.boolean(),
   "message": zod.string(),
-  "id": zod.number()
+  "id": zod.number(),
+  "receiptUrl": zod.string()
 })
 
 

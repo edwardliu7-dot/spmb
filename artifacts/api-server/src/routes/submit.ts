@@ -2,8 +2,9 @@ import { Router, type Request } from "express";
 import multer from "multer";
 import path from "node:path";
 import { unlink } from "node:fs/promises";
-import { uploadsDirectory, insertPendaftar } from "../lib/spmb-database";
+import { getPendaftar, insertPendaftar, uploadsDirectory } from "../lib/spmb-database";
 import { allJenjang } from "../middlewares/committee-auth";
+import { createReceiptToken, createSpmbReceipt, isValidReceiptToken } from "../lib/spmb-receipt";
 
 const router = Router();
 
@@ -88,6 +89,11 @@ type TextField = (typeof textFields)[number];
 const uploadMiddleware = upload.fields(
   documentFields.map((name) => ({ name, maxCount: 1 })),
 );
+
+function parseId(value: string): number | null {
+  const id = Number(value);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
 
 function getValue(request: Request, field: TextField): string {
   const value = request.body[field];
@@ -209,6 +215,7 @@ router.post("/submit", uploadMiddleware, async (request, response) => {
       success: true,
       message: "Pendaftaran berhasil dikirim.",
       id,
+      receiptUrl: `/api/submissions/${id}/receipt?token=${createReceiptToken(id)}`,
     });
   } catch (error) {
     request.log.error({ err: error }, "Failed to save SPMB application");
@@ -216,6 +223,32 @@ router.post("/submit", uploadMiddleware, async (request, response) => {
     return response.status(500).json({
       error: "Pendaftaran belum dapat disimpan. Silakan coba lagi.",
     });
+  }
+});
+
+router.get("/submissions/:id/receipt", async (request, response) => {
+  const id = parseId(request.params.id);
+  const token = typeof request.query.token === "string" ? request.query.token : "";
+  if (!id || !token || !/^[a-f0-9]{64}$/i.test(token)) {
+    return response.status(404).json({ error: "Bukti formulir tidak ditemukan." });
+  }
+
+  try {
+    if (!isValidReceiptToken(id, token)) {
+      return response.status(404).json({ error: "Bukti formulir tidak ditemukan." });
+    }
+    const application = await getPendaftar(id);
+    if (!application) {
+      return response.status(404).json({ error: "Bukti formulir tidak ditemukan." });
+    }
+
+    const pdf = await createSpmbReceipt(application);
+    response.setHeader("Content-Type", "application/pdf");
+    response.setHeader("Content-Disposition", `attachment; filename="bukti-formulir-spmb-${id}.pdf"`);
+    return response.end(Buffer.from(pdf));
+  } catch (error) {
+    request.log.error({ err: error, applicationId: id }, "Failed to create SPMB receipt");
+    return response.status(500).json({ error: "Bukti formulir belum dapat dibuat." });
   }
 });
 

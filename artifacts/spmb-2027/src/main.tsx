@@ -237,8 +237,9 @@ root.innerHTML = `
           <div class="success-view" id="success-view" aria-live="polite" data-testid="status-submission-success">
             <div class="success-mark" aria-hidden="true">${icon('check')}</div>
             <h2>Pengajuan sudah diterima.</h2>
-            <p>Terima kasih. Data Anda telah masuk ke sistem SPMB. Simpan nomor pengajuan ini untuk referensi Anda.</p>
+            <p>Data Anda telah masuk ke sistem SPMB. Simpan nomor pengajuan ini dan unduh bukti formulir.</p>
             <span class="success-id" id="submission-id"></span>
+            <a class="receipt-download-button" id="receipt-download" href="#" download hidden data-testid="link-download-receipt">Unduh bukti formulir (PDF)</a>
             <button class="reset-button" type="button" id="reset-button" data-testid="button-new-application">Buat pengajuan baru</button>
           </div>
         </section>
@@ -256,6 +257,7 @@ const errorAlert = document.getElementById('form-error') as HTMLDivElement;
 const formBody = document.getElementById('form-body') as HTMLDivElement;
 const successView = document.getElementById('success-view') as HTMLDivElement;
 const submissionId = document.getElementById('submission-id') as HTMLSpanElement;
+const receiptDownload = document.getElementById('receipt-download') as HTMLAnchorElement;
 const resetButton = document.getElementById('reset-button') as HTMLButtonElement;
 const healthStatus = document.getElementById('health-status') as HTMLSpanElement;
 const healthDot = document.getElementById('health-dot') as HTMLElement;
@@ -393,6 +395,8 @@ form.addEventListener('submit', async (event) => {
     document.querySelectorAll<HTMLElement>('[data-file-name]').forEach((label) => { label.textContent = 'Belum ada berkas dipilih'; });
     document.querySelectorAll<HTMLElement>('[data-field]').forEach((field) => field.classList.remove('field-error'));
     submissionId.textContent = `Nomor pengajuan: SPMB-${String(result.id).padStart(6, '0')}`;
+    receiptDownload.href = result.receiptUrl;
+    receiptDownload.hidden = false;
     formBody.classList.add('is-hidden');
     successView.classList.add('is-visible');
     const cardTop = document.querySelector('.form-card')?.getBoundingClientRect().top ?? 0;
@@ -408,6 +412,8 @@ form.addEventListener('submit', async (event) => {
 
 resetButton.addEventListener('click', () => {
   successView.classList.remove('is-visible');
+  receiptDownload.hidden = true;
+  receiptDownload.removeAttribute('href');
   formBody.classList.remove('is-hidden');
   submitButton.disabled = false;
   submitButton.classList.remove('is-loading');
