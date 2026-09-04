@@ -299,9 +299,18 @@ router.post("/submit", enforceSubmitRateLimit, requirePaymentVerification, handl
   const jenisKelamin = getValue(request, "jenis_kelamin");
   const validLevels = allJenjang;
   const validGenders = ["Laki-laki", "Perempuan"];
-  const bodyForValidation = Object.fromEntries(
-    textFields.map((field) => [field, getValue(request, field)]),
-  );
+  const bodyForValidation = Object.fromEntries([
+    ...textFields.map((field) => {
+      const value = getValue(request, field);
+      // Nullish optional values are accepted by the generated contract
+      // schema; an empty string would still fail patterns such as NISN.
+      return [field, optionalTextFields.has(field) && !value ? null : value];
+    }),
+    // The generated multipart contract represents uploads as strings. Use
+    // their original names for contract validation while Multer keeps the
+    // actual files available for signature and size checks below.
+    ...documentFields.map((field) => [field, getUploadedFile(request, field)?.originalname]),
+  ]);
   const contractResult = SubmitApplicationBody.safeParse(bodyForValidation);
   const schemaFields = contractResult.success
     ? []

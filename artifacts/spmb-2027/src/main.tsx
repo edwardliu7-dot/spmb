@@ -344,24 +344,96 @@ function clearError(field: HTMLElement): void {
   if (messageElement) messageElement.textContent = '';
 }
 
+const numericRules: Record<string, { min: number; max: number; integer: boolean }> = {
+  anak_ke: { min: 1, max: 20, integer: true },
+  jumlah_saudara: { min: 0, max: 50, integer: true },
+  tinggi_badan: { min: 30, max: 250, integer: false },
+  berat_badan: { min: 2, max: 250, integer: false },
+  tahun_lulus: { min: 1900, max: new Date().getFullYear() + 1, integer: true },
+};
+
+const digitRules: Record<string, number> = {
+  nisn: 10,
+  nik_anak: 16,
+  nik_orangtua: 16,
+  nomor_kk: 16,
+};
+
+function getFieldControl(name: string): HTMLElement | null {
+  return document.getElementById(name);
+}
+
+function getFieldLabel(name: string): string {
+  const label = document.querySelector<HTMLElement>(`[data-field="${name}"] label`);
+  return label?.textContent?.replace(/\s+/g, ' ').replace(' *', '').replace(' opsional', '').trim() || name;
+}
+
+function isValidPhone(value: string): boolean {
+  return /^(?:\+62|62|0)8\d{8,12}$/.test(value.replace(/[^\d+]/g, ''));
+}
+
 function validateForm(): boolean {
   let firstInvalid: HTMLElement | null = null;
-  const controls = Array.from(form.querySelectorAll<HTMLElement>('input[required], select[required], textarea[required]'));
+  const invalidNames = new Set<string>();
+  const markInvalid = (control: HTMLElement, message: string) => {
+    setError(control, message);
+    invalidNames.add(control.id);
+    if (!firstInvalid) firstInvalid = control;
+  };
+  const controls = Array.from(form.querySelectorAll<HTMLElement>('input, select, textarea'));
   controls.forEach((control) => {
     clearError(control);
     const input = control as HTMLInputElement;
     const empty = input.type === 'checkbox' ? !input.checked : !input.value.trim();
     if (empty) {
-      setError(control, input.type === 'checkbox' ? 'Persetujuan diperlukan sebelum mengirim.' : 'Bagian ini wajib diisi.');
-      if (!firstInvalid) firstInvalid = control;
+      if (input.required) {
+        markInvalid(control, input.type === 'checkbox' ? 'Persetujuan diperlukan sebelum mengirim.' : 'Bagian ini wajib diisi.');
+      }
     } else if (input.type === 'email' && !input.validity.valid) {
-      setError(control, 'Masukkan alamat email yang valid.');
-      if (!firstInvalid) firstInvalid = control;
+      markInvalid(control, 'Masukkan alamat email yang valid.');
+    } else if (input.type !== 'checkbox') {
+      const value = input.value.trim();
+      const digitLength = digitRules[input.name];
+      const numericRule = numericRules[input.name];
+      if (digitLength && !new RegExp(`^\\d{${digitLength}}$`).test(value)) {
+        markInvalid(control, `${getFieldLabel(input.name)} harus terdiri dari ${digitLength} digit angka.`);
+      } else if (numericRule) {
+        const numberValue = Number(value);
+        const invalidNumber =
+          !Number.isFinite(numberValue) ||
+          numberValue < numericRule.min ||
+          numberValue > numericRule.max ||
+          (numericRule.integer && !Number.isInteger(numberValue));
+        if (invalidNumber) {
+          markInvalid(control, `${getFieldLabel(input.name)} harus berada di antara ${numericRule.min} dan ${numericRule.max}${numericRule.integer ? ' dan berupa bilangan bulat' : ''}.`);
+        }
+      } else if (input.name === 'nomor_hp_orangtua' && !isValidPhone(value)) {
+        markInvalid(control, 'Masukkan nomor HP Indonesia yang aktif, misalnya 081234567890.');
+      } else if (input.name === 'tanggal_lahir') {
+        const birthDate = new Date(`${value}T00:00:00.000Z`);
+        const today = new Date();
+        const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+        if (Number.isNaN(birthDate.getTime()) || birthDate.getTime() > todayUtc || birthDate.getUTCFullYear() < 1900) {
+          markInvalid(control, 'Tanggal lahir harus valid dan tidak boleh melebihi hari ini.');
+        }
+      }
     }
   });
+
+  const guardianName = document.getElementById('nama_wali') as HTMLInputElement | null;
+  const guardianRelation = document.getElementById('hubungan_wali') as HTMLInputElement | null;
+  if (guardianName?.value.trim() && !guardianRelation?.value.trim()) {
+    markInvalid(guardianRelation || guardianName, 'Isi hubungan dengan wali.');
+  } else if (guardianRelation?.value.trim() && !guardianName?.value.trim()) {
+    markInvalid(guardianName || guardianRelation, 'Isi nama wali.');
+  }
+
   if (firstInvalid) {
     (firstInvalid as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).focus();
-     errorAlert.textContent = 'Masih ada data yang perlu dilengkapi. Kolom bertanda * wajib diisi.';
+    const labels = [...invalidNames].map(getFieldLabel);
+    errorAlert.textContent = labels.length === 1
+      ? `Periksa kolom ${labels[0]}.`
+      : `Periksa ${labels.length} kolom yang ditandai merah: ${labels.slice(0, 4).join(', ')}${labels.length > 4 ? ', dan lainnya' : ''}.`;
     errorAlert.className = 'form-alert error is-visible';
     return false;
   }
@@ -535,6 +607,43 @@ paymentContinueButton.addEventListener('click', () => {
   registrationWorkspace.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
+function showSubmissionError(error: unknown): void {
+  const candidate = error && typeof error === 'object'
+    ? error as { message?: unknown; data?: unknown }
+    : {};
+  const data = candidate.data && typeof candidate.data === 'object'
+    ? candidate.data as { error?: unknown; fields?: unknown }
+    : null;
+  const fields = data && Array.isArray(data.fields)
+    ? data.fields.filter((field): field is string => typeof field === 'string')
+    : [];
+  const normalizedFields = [...new Set(fields.map((field) => field.split(':', 1)[0]))];
+  normalizedFields.forEach((name) => {
+    const control = getFieldControl(name);
+    if (control) {
+      const message = name.includes('nik') || name === 'nomor_kk'
+        ? `${getFieldLabel(name)} harus berupa angka dengan panjang yang benar.`
+        : name.includes('file') || ['foto_3x4', 'akte_lahir', 'kartu_keluarga', 'ktp_orangtua', 'bukti_bayar'].includes(name)
+          ? 'Berkas ini perlu diperiksa dan diunggah ulang.'
+          : 'Periksa kembali isian ini.';
+      setError(control, message);
+    }
+  });
+
+  if (normalizedFields.length) {
+    const labels = normalizedFields.map(getFieldLabel);
+    errorAlert.textContent = `Data belum dapat dikirim. Periksa: ${labels.slice(0, 4).join(', ')}${labels.length > 4 ? ', dan lainnya' : ''}.`;
+    getFieldControl(normalizedFields[0])?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else {
+    errorAlert.textContent = typeof data?.error === 'string'
+      ? data.error
+      : typeof candidate.message === 'string'
+        ? candidate.message
+        : 'Pengajuan belum dapat dikirim. Silakan coba lagi.';
+  }
+  errorAlert.className = 'form-alert error is-visible';
+}
+
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   if (!paymentVerified) {
@@ -566,8 +675,7 @@ form.addEventListener('submit', async (event) => {
     const cardTop = document.querySelector('.form-card')?.getBoundingClientRect().top ?? 0;
     window.scrollTo({ top: cardTop + window.scrollY - 25, behavior: 'smooth' });
   } catch (error) {
-    errorAlert.textContent = error instanceof Error ? error.message : 'Pengajuan belum dapat dikirim. Silakan coba lagi.';
-    errorAlert.className = 'form-alert error is-visible';
+    showSubmissionError(error);
     submitButton.disabled = false;
     submitButton.classList.remove('is-loading');
     submitButton.querySelector('.submit-label')!.textContent = 'Kirim pengajuan';
