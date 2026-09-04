@@ -1,4 +1,22 @@
+import { useState } from "react";
+import {
+  Bell,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  ClipboardCheck,
+  FileCheck2,
+  FileText,
+  FolderOpen,
+  Info,
+  LockKeyhole,
+  Menu,
+  ShieldCheck,
+  Upload,
+} from "lucide-react";
+
 import "./_group.css";
+import "./Current.css";
 
 type Field = {
   name: string;
@@ -66,22 +84,33 @@ const uploads = [
   ["bukti_bayar", "Bukti pembayaran"],
 ];
 
+const steps = [
+  ["01", "Calon peserta didik", "Identitas utama"],
+  ["02", "Sekolah asal", "Riwayat pendidikan"],
+  ["03", "Orang tua & wali", "Kontak keluarga"],
+  ["04", "Upload berkas", "Dokumen pendukung"],
+];
+
 function FieldControl({ field }: { field: Field }) {
   const placeholder = `Tulis ${field.label.toLowerCase()}`;
 
   return (
-    <div className={`field${field.span ? " span-2" : ""}`}>
+    <div className={`form-board-field${field.span ? " form-board-field-span" : ""}`}>
       <label htmlFor={field.name}>
-        {field.label} <span className="req" aria-hidden="true">*</span>
-        {field.hint && <span className="hint">{field.hint}</span>}
+        {field.label}
+        <span className="form-board-required" aria-hidden="true">*</span>
+        {field.hint && <span className="form-board-hint">{field.hint}</span>}
       </label>
       {field.kind === "textarea" ? (
         <textarea id={field.name} placeholder={placeholder} />
       ) : field.kind === "select" ? (
-        <select id={field.name} defaultValue="">
-          <option value="">Pilih {field.label.toLowerCase()}</option>
-          {field.options?.map((option) => <option key={option}>{option}</option>)}
-        </select>
+        <span className="form-board-select-wrap">
+          <select id={field.name} defaultValue="">
+            <option value="">Pilih {field.label.toLowerCase()}</option>
+            {field.options?.map((option) => <option key={option}>{option}</option>)}
+          </select>
+          <ChevronDown aria-hidden="true" />
+        </span>
       ) : (
         <input id={field.name} type={field.kind ?? "text"} placeholder={field.kind === "date" ? "" : placeholder} />
       )}
@@ -89,17 +118,40 @@ function FieldControl({ field }: { field: Field }) {
   );
 }
 
-function Section({ index, title, description, fields }: { index: string; title: string; description: string; fields: Field[] }) {
+function Section({
+  id,
+  index,
+  title,
+  description,
+  fields,
+  active,
+  onActivate,
+}: {
+  id: string;
+  index: string;
+  title: string;
+  description: string;
+  fields: Field[];
+  active: boolean;
+  onActivate: () => void;
+}) {
   return (
-    <fieldset className="field-section">
-      <div className="section-heading">
-        <span className="section-index">{index}</span>
-        <div>
+    <fieldset id={id} className={`form-board-section${active ? " form-board-section-active" : ""}`} onFocus={onActivate}>
+      <div className="form-board-section-heading">
+        <span className="form-board-section-index">{index}</span>
+        <div className="form-board-section-copy">
+          <div className="form-board-section-kicker">
+            <span>{active ? "Sedang diisi" : "Tahap berikutnya"}</span>
+            <span className="form-board-section-rule" />
+          </div>
           <h3>{title}</h3>
           <p>{description}</p>
         </div>
+        <span className="form-board-section-check" aria-label={active ? "Tahap aktif" : "Belum diisi"}>
+          {active ? <span className="form-board-section-dot" /> : <span />}
+        </span>
       </div>
-      <div className="field-grid">
+      <div className="form-board-field-grid">
         {fields.map((field) => <FieldControl key={field.name} field={field} />)}
       </div>
     </fieldset>
@@ -107,112 +159,166 @@ function Section({ index, title, description, fields }: { index: string; title: 
 }
 
 export function Current() {
+  const [activeStep, setActiveStep] = useState("01");
+  const [fileNames, setFileNames] = useState<Record<string, string>>({});
+  const [notice, setNotice] = useState("");
+  const [mobileMenu, setMobileMenu] = useState(false);
+
+  const goToStep = (step: string) => {
+    setActiveStep(step);
+    document.getElementById(`form-board-step-${step}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const showNotice = (message: string) => {
+    setNotice(message);
+    window.setTimeout(() => setNotice(""), 2800);
+  };
+
   return (
-    <div className="app-shell">
-      <header className="topbar">
-        <a className="brand" href="#formulir" aria-label="SPMB">
-          <span className="brand-mark" aria-hidden="true">S</span>
-          <span className="brand-copy">
-            <span className="brand-name">SPMB</span>
-            <span className="brand-sub">Penerimaan murid baru</span>
-          </span>
-        </a>
-        <div className="topbar-note">
-          <span className="health-dot" aria-hidden="true" />
-          <span>Layanan siap menerima pengajuan</span>
+    <div className="form-board-shell">
+      <header className="form-board-topbar">
+        <div className="form-board-topbar-inner">
+          <div className="form-board-brand-group">
+            <button type="button" className="form-board-menu-button" aria-label="Buka navigasi" onClick={() => setMobileMenu((open) => !open)}>
+              <Menu aria-hidden="true" />
+            </button>
+            <a className="form-board-brand" href="#form-board-content" aria-label="SPMB">
+              <span className="form-board-brand-mark">S</span>
+              <span>
+                <strong>SPMB</strong>
+                <small>Penerimaan murid baru</small>
+              </span>
+            </a>
+          </div>
+          <nav className={`form-board-nav${mobileMenu ? " form-board-nav-open" : ""}`} aria-label="Navigasi pendaftaran">
+            <button type="button" className="form-board-nav-active" onClick={() => showNotice("Anda sedang berada di formulir pendaftaran.")}>Pendaftaran</button>
+            <button type="button" onClick={() => showNotice("Status pengajuan dapat dicek setelah formulir dikirim.")}>Status pengajuan</button>
+            <button type="button" onClick={() => showNotice("Panduan pendaftaran akan membantu Anda menyiapkan dokumen.")}>Panduan</button>
+          </nav>
+          <div className="form-board-topbar-actions">
+            <button type="button" className="form-board-icon-button" aria-label="Notifikasi" onClick={() => showNotice("Tidak ada notifikasi baru.")}>
+              <Bell aria-hidden="true" />
+              <span />
+            </button>
+            <span className="form-board-service-status"><i />Layanan siap</span>
+          </div>
         </div>
       </header>
 
-      <section className="hero" aria-labelledby="page-title">
-        <div className="hero-inner">
-          <div className="eyebrow">Tahun ajaran 2027 / 2028</div>
-          <h1 id="page-title">Satu langkah kecil menuju <em>sekolah baru.</em></h1>
-          <p className="hero-intro">
-            Lengkapi data calon peserta didik dengan tenang. Kami menyimpan pengajuan Anda dengan aman untuk membantu proses penerimaan murid baru berjalan jelas dan tertata.
-          </p>
-          <div className="hero-meta">
-            <span className="meta-pill">Pengajuan baru</span>
-            <span className="meta-pill">Waktu pengisian sekitar 10 menit</span>
+      <main id="form-board-content" className="form-board-main">
+        <div className="form-board-intro">
+          <div className="form-board-intro-copy">
+            <div className="form-board-eyebrow"><span />Ruang pendaftaran · tahun ajaran 2027 / 2028</div>
+            <h1>Mulai dari data yang <em>paling penting.</em></h1>
+            <p>Isi pengajuan dengan tenang. Setiap bagian tersusun sebagai catatan yang jelas untuk membantu panitia meninjau data calon peserta didik.</p>
+          </div>
+          <div className="form-board-date">
+            <div className="form-board-date-mark"><CalendarDays aria-hidden="true" /><span>BARU</span></div>
+            <div><strong>Pengajuan baru</strong><small>Disiapkan untuk Anda</small></div>
           </div>
         </div>
-      </section>
 
-      <main className="main-layout" id="formulir">
-        <aside className="progress-panel" aria-label="Kemajuan formulir">
-          <p className="progress-title">Kemajuan pengisian</p>
-          <ol className="progress-list">
-            {[
-              ["01", "Calon peserta didik", "Identitas utama"],
-              ["02", "Sekolah asal", "Riwayat pendidikan"],
-              ["03", "Orang tua & wali", "Kontak keluarga"],
-              ["04", "Upload berkas", "Dokumen pendukung"],
-            ].map(([number, title, subtitle], index) => (
-              <li key={number}>
-                <button className={`progress-item${index === 0 ? " is-active" : ""}`} type="button">
-                  <span className="progress-number">{number}</span>
-                  <span className="progress-label">{title}<small>{subtitle}</small></span>
-                </button>
-              </li>
-            ))}
-          </ol>
-        </aside>
-
-        <section className="form-card" aria-label="Formulir pendaftaran SPMB">
-          <div className="form-top">
-            <div>
-              <h2>Formulir pengajuan</h2>
-              <p>Mohon isi sesuai dokumen resmi yang Anda miliki.</p>
-            </div>
-            <div className="required-note"><b>*</b> Wajib diisi</div>
+        <section className="form-board-stats" aria-label="Ringkasan formulir">
+          <div className="form-board-stat">
+            <div><span>TAHAP PENGISIAN</span><ClipboardCheck aria-hidden="true" /></div>
+            <strong>04</strong>
+            <small>identitas, sekolah, keluarga, berkas</small>
           </div>
+          <div className="form-board-stat">
+            <div><span>WAKTU PENGISIAN</span><FileCheck2 aria-hidden="true" /></div>
+            <strong>10<span className="form-board-stat-unit">mnt</span></strong>
+            <small>siapkan dokumen resmi di dekat Anda</small>
+          </div>
+          <div className="form-board-stat">
+            <div><span>DOKUMEN PENDUKUNG</span><FolderOpen aria-hidden="true" /></div>
+            <strong>05</strong>
+            <small>PDF, JPG, atau PNG · maksimal 5 MB</small>
+          </div>
+        </section>
 
-          <form>
-            <Section index="01" title="Data Calon Peserta Didik" description="Ceritakan identitas dan keseharian calon peserta didik." fields={studentFields} />
-            <Section index="02" title="Data Sekolah Asal" description="Informasi pendidikan terakhir calon peserta didik." fields={schoolFields} />
-            <Section index="03" title="Data Orang Tua & Wali" description="Kontak keluarga untuk komunikasi proses penerimaan." fields={parentFields} />
+        <div className="form-board-workspace">
+          <aside className="form-board-sidebar">
+            <div className="form-board-sidebar-head">
+              <div>
+                <div className="form-board-panel-kicker"><FileText aria-hidden="true" />Alur pengajuan</div>
+                <h2>Lengkapi satu<br /><em>per satu.</em></h2>
+              </div>
+              <span className="form-board-progress-count">01<span>/04</span></span>
+            </div>
+            <ol className="form-board-step-list">
+              {steps.map(([number, title, subtitle], index) => (
+                <li key={number}>
+                  <button type="button" className={`form-board-step${activeStep === number ? " form-board-step-active" : ""}${index === 0 && activeStep !== "01" ? " form-board-step-complete" : ""}`} onClick={() => goToStep(number)}>
+                    <span className="form-board-step-number">{index === 0 && activeStep !== "01" ? <Check aria-hidden="true" /> : number}</span>
+                    <span><strong>{title}</strong><small>{subtitle}</small></span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+            <div className="form-board-sidebar-note">
+              <LockKeyhole aria-hidden="true" />
+              <div><strong>Data tersimpan aman</strong><p>Informasi Anda hanya digunakan untuk proses penerimaan murid baru.</p></div>
+            </div>
+            <div className="form-board-sidebar-help">
+              <Info aria-hidden="true" />
+              <span>Wajib diisi ditandai dengan <b>*</b></span>
+            </div>
+          </aside>
 
-            <fieldset className="field-section">
-              <div className="section-heading">
-                <span className="section-index">04</span>
-                <div>
-                  <h3>Upload Berkas</h3>
-                  <p>Siapkan dokumen yang terbaca jelas. Berkas dapat berupa PDF, JPG, atau PNG.</p>
+          <section className="form-board-form-panel" aria-label="Formulir pendaftaran SPMB">
+            <div className="form-board-form-header">
+              <div>
+                <div className="form-board-panel-kicker"><FileCheck2 aria-hidden="true" />Formulir pengajuan</div>
+                <h2>Data calon peserta didik</h2>
+                <p>Mohon isi sesuai dokumen resmi yang Anda miliki.</p>
+              </div>
+              <span className="form-board-draft-badge"><i />Draft baru</span>
+            </div>
+
+            <form onSubmit={(event) => event.preventDefault()}>
+              <Section id="form-board-step-01" index="01" title="Data Calon Peserta Didik" description="Ceritakan identitas dan keseharian calon peserta didik." fields={studentFields} active={activeStep === "01"} onActivate={() => setActiveStep("01")} />
+              <Section id="form-board-step-02" index="02" title="Data Sekolah Asal" description="Informasi pendidikan terakhir calon peserta didik." fields={schoolFields} active={activeStep === "02"} onActivate={() => setActiveStep("02")} />
+              <Section id="form-board-step-03" index="03" title="Data Orang Tua & Wali" description="Kontak keluarga untuk komunikasi proses penerimaan." fields={parentFields} active={activeStep === "03"} onActivate={() => setActiveStep("03")} />
+
+              <fieldset id="form-board-step-04" className={`form-board-section${activeStep === "04" ? " form-board-section-active" : ""}`} onFocus={() => setActiveStep("04")}>
+                <div className="form-board-section-heading">
+                  <span className="form-board-section-index">04</span>
+                  <div className="form-board-section-copy">
+                    <div className="form-board-section-kicker"><span>{activeStep === "04" ? "Sedang diisi" : "Tahap berikutnya"}</span><span className="form-board-section-rule" /></div>
+                    <h3>Upload Berkas</h3>
+                    <p>Siapkan dokumen yang terbaca jelas. Berkas dapat berupa PDF, JPG, atau PNG.</p>
+                  </div>
+                  <span className="form-board-section-check"><span className={activeStep === "04" ? "form-board-section-dot" : ""} /></span>
+                </div>
+                <div className="form-board-upload-grid">
+                  {uploads.map(([name, label]) => (
+                    <div className="form-board-upload" key={name}>
+                      <div className="form-board-upload-icon"><Upload aria-hidden="true" /></div>
+                      <div className="form-board-upload-copy"><strong>{label} <span className="form-board-required">*</span></strong><small>{fileNames[name] ?? "Belum ada berkas dipilih"}</small></div>
+                      <label className="form-board-upload-button" htmlFor={name}>Pilih berkas<input id={name} name={name} type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(event) => { const file = event.target.files?.[0]; if (file) { setFileNames((current) => ({ ...current, [name]: `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB` })); showNotice(`${label} berhasil dipilih.`); } }} /></label>
+                    </div>
+                  ))}
+                </div>
+              </fieldset>
+
+              <div className="form-board-submit-area">
+                <label className="form-board-consent"><input type="checkbox" /><span>Saya memastikan data yang diisi <b>benar dan dapat dipertanggungjawabkan</b>.</span></label>
+                <div className="form-board-submit-row">
+                  <div className="form-board-submit-info"><ShieldCheck aria-hidden="true" /><span>Periksa kembali data sebelum mengirim.<small>Pengajuan akan diproses oleh panitia SPMB.</small></span></div>
+                  <button className="form-board-submit-button" type="submit" onClick={() => showNotice("Formulir siap dikirim setelah semua bagian lengkap.")}>Kirim pengajuan <Check aria-hidden="true" /></button>
                 </div>
               </div>
-              <div className="upload-grid">
-                {uploads.map(([name, label]) => (
-                  <div className="upload-box" key={name}>
-                    <div className="upload-copy">
-                      <strong>{label} <span className="req" aria-hidden="true">*</span></strong>
-                      <span>Belum ada berkas dipilih</span>
-                    </div>
-                    <div className="upload-action">
-                      <span className="choose-file">Pilih berkas</span>
-                      <input id={name} name={name} type="file" accept=".pdf,.jpg,.jpeg,.png" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </fieldset>
+            </form>
+          </section>
+        </div>
 
-            <div className="submit-area">
-              <div className="consent-row">
-                <input id="consent" type="checkbox" />
-                <label htmlFor="consent">Saya memastikan data yang diisi <b>benar dan dapat dipertanggungjawabkan</b>.</label>
-              </div>
-              <div className="submit-row">
-                <span className="submit-info">Periksa kembali data sebelum mengirim.<br />Pengajuan akan diproses oleh panitia SPMB.</span>
-                <button className="submit-button" type="button">Kirim pengajuan</button>
-              </div>
-            </div>
-          </form>
-        </section>
+        <footer className="form-board-footer">
+          <span>SPMB 2027/2028 · Ruang pendaftaran</span>
+          <span><LockKeyhole aria-hidden="true" /> Data pendaftar tersimpan aman</span>
+        </footer>
       </main>
 
-      <footer className="footer">
-        <p>SPMB 2027/2028 · Layanan pengajuan penerimaan murid baru</p>
-        <span className="footer-code">FORM / 01</span>
-      </footer>
+      {notice && <div className="form-board-notice" role="status"><Check aria-hidden="true" /><span>{notice}</span></div>}
     </div>
   );
 }
