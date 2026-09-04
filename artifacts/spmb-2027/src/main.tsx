@@ -194,7 +194,7 @@ root.innerHTML = `
         <nav class="form-board-nav" aria-label="Navigasi pendaftaran">
            <button type="button" class="form-board-nav-active" data-page-view="registration">Pendaftaran</button>
            <button type="button" data-page-view="status">Status pengajuan</button>
-          <button type="button" data-notice="Panduan belum tersedia.">Panduan</button>
+          <button type="button" data-page-view="guide">Panduan</button>
         </nav>
         <div class="form-board-topbar-actions">
           <button type="button" class="form-board-icon-button" aria-label="Notifikasi" data-notice="Tidak ada notifikasi baru.">${icon('bell')}<span></span></button>
@@ -268,6 +268,52 @@ root.innerHTML = `
            <div class="form-board-status-timeline" id="status-result-timeline"></div>
            <div class="form-board-status-note" id="status-result-note"></div>
          </article>
+       </section>
+
+       <section class="form-board-guide-view" id="guide-view" hidden aria-labelledby="guide-view-title">
+         <div class="form-board-guide-hero">
+           <div>
+             <div class="form-board-panel-kicker">${icon('file')}Panduan pendaftaran</div>
+             <h2 id="guide-view-title">Daftar dengan <em>tenang.</em></h2>
+             <p>Ikuti alur berikut agar data lengkap, berkas mudah diverifikasi, dan Anda tidak melewatkan informasi penting.</p>
+           </div>
+           <div class="form-board-guide-year"><strong>SPMB</strong><span>2027 / 2028</span></div>
+         </div>
+         <div class="form-board-guide-grid">
+           <article class="form-board-guide-card form-board-guide-card-primary">
+             <div class="form-board-guide-card-top"><span>01 — ALUR UTAMA</span>${icon('clipboard')}</div>
+             <h3>Empat langkah sampai selesai</h3>
+             <ol class="form-board-guide-steps">
+               <li><span>01</span><div><strong>Siapkan data dan berkas</strong><small>Gunakan dokumen resmi dan pastikan foto/scan dapat dibaca.</small></div></li>
+               <li><span>02</span><div><strong>Isi formulir pendaftaran</strong><small>Lengkapi identitas calon peserta didik, sekolah, serta orang tua atau wali.</small></div></li>
+               <li><span>03</span><div><strong>Periksa lalu kirim</strong><small>Centang pernyataan kebenaran data sebelum menekan tombol kirim.</small></div></li>
+               <li><span>04</span><div><strong>Simpan bukti dan pantau</strong><small>Unduh bukti PDF, simpan nomor SPMB, lalu cek status secara berkala.</small></div></li>
+             </ol>
+           </article>
+           <article class="form-board-guide-card">
+             <div class="form-board-guide-card-top"><span>02 — YANG DISIAPKAN</span>${icon('folder')}</div>
+             <h3>Dokumen pendukung</h3>
+             <ul class="form-board-guide-checklist">
+               <li>${icon('check')}Pas foto 3×4</li>
+               <li>${icon('check')}Akta kelahiran</li>
+               <li>${icon('check')}Kartu Keluarga</li>
+               <li>${icon('check')}KTP orang tua</li>
+               <li>${icon('check')}Bukti pembayaran</li>
+             </ul>
+             <div class="form-board-guide-tip">${icon('info')}Format PDF, JPG, atau PNG · maksimal 5 MB per berkas.</div>
+           </article>
+         </div>
+         <div class="form-board-guide-bottom">
+           <div class="form-board-guide-contact">
+             <span class="form-board-guide-card-top">03 — CATATAN PENTING</span>
+             <strong>Nomor WhatsApp harus aktif.</strong>
+             <p>Panitia dapat menghubungi orang tua atau wali melalui nomor WhatsApp yang dicantumkan di formulir.</p>
+           </div>
+           <div class="form-board-guide-actions">
+             <button type="button" class="form-board-guide-action form-board-guide-action-primary" data-open-view="registration">Mulai isi formulir ${icon('chevron')}</button>
+             <button type="button" class="form-board-guide-action form-board-guide-action-secondary" data-open-view="status">Cek status pengajuan</button>
+           </div>
+         </div>
        </section>
 
        <div class="form-board-workspace" id="registration-workspace">
@@ -355,6 +401,7 @@ const navigation = document.querySelector<HTMLElement>('.form-board-nav');
 const pageViewButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-page-view]'));
 const registrationWorkspace = document.getElementById('registration-workspace') as HTMLDivElement;
 const statusView = document.getElementById('status-view') as HTMLElement;
+const guideView = document.getElementById('guide-view') as HTMLElement;
 const statusForm = document.getElementById('status-form') as HTMLFormElement;
 const statusNumberInput = document.getElementById('status-number') as HTMLInputElement;
 const statusSubmitButton = document.getElementById('status-submit-button') as HTMLButtonElement;
@@ -763,18 +810,23 @@ function showNotice(message: string): void {
   window.setTimeout(() => { formNotice.hidden = true; }, 2800);
 }
 
-function setPageView(view: 'registration' | 'status', shouldScroll = true): void {
+function setPageView(view: 'registration' | 'status' | 'guide', shouldScroll = true): void {
+  const isRegistrationView = view === 'registration';
   const isStatusView = view === 'status';
-  registrationWorkspace.hidden = isStatusView;
+  registrationWorkspace.hidden = !isRegistrationView;
   statusView.hidden = !isStatusView;
+  guideView.hidden = view !== 'guide';
   pageViewButtons.forEach((button) => {
     button.classList.toggle('form-board-nav-active', button.dataset.pageView === view);
   });
   navigation?.classList.remove('form-board-nav-open');
   menuButton?.setAttribute('aria-expanded', 'false');
-  if (isStatusView && shouldScroll) {
-    statusView.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    window.setTimeout(() => statusNumberInput.focus({ preventScroll: true }), 350);
+  if (shouldScroll) {
+    const target = isStatusView ? statusView : view === 'guide' ? guideView : registrationWorkspace;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (isStatusView) {
+      window.setTimeout(() => statusNumberInput.focus({ preventScroll: true }), 350);
+    }
   }
 }
 
@@ -831,7 +883,17 @@ menuButton?.addEventListener('click', () => {
 });
 
 pageViewButtons.forEach((button) => {
-  button.addEventListener('click', () => setPageView(button.dataset.pageView === 'status' ? 'status' : 'registration'));
+  button.addEventListener('click', () => {
+    const view = button.dataset.pageView;
+    setPageView(view === 'status' ? 'status' : view === 'guide' ? 'guide' : 'registration');
+  });
+});
+
+document.querySelectorAll<HTMLButtonElement>('[data-open-view]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const view = button.dataset.openView;
+    setPageView(view === 'status' ? 'status' : 'registration');
+  });
 });
 
 document.querySelectorAll<HTMLButtonElement>('[data-notice]').forEach((button) => {

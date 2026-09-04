@@ -1840,6 +1840,279 @@
   color: #7a2e21;
 }
 
+.form-board-guide-view {
+  margin-bottom: 24px;
+  border: 1px solid #d8d5c8;
+  border-radius: 16px;
+  background: #fbf9f2;
+  box-shadow: 0 16px 34px #223d390c;
+  animation: form-board-rise 0.35s ease both;
+}
+
+.form-board-guide-view[hidden] {
+  display: none;
+}
+
+.form-board-guide-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 30px 32px 25px;
+  border-bottom: 1px solid #e0ddd2;
+}
+
+.form-board-guide-hero h2 {
+  margin: 12px 0 8px;
+  color: #173f43;
+  font: 600 38px/0.98 "Fraunces", Georgia, serif;
+  letter-spacing: -0.04em;
+}
+
+.form-board-guide-hero h2 em {
+  color: #b55341;
+  font-style: normal;
+}
+
+.form-board-guide-hero p {
+  max-width: 590px;
+  margin: 0;
+  color: #74756b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.form-board-guide-year {
+  display: grid;
+  flex: 0 0 auto;
+  width: 92px;
+  height: 92px;
+  align-content: center;
+  justify-items: center;
+  border: 1px solid #e0c566;
+  border-radius: 50%;
+  background: #f8edc9;
+  color: #765d1a;
+  transform: rotate(4deg);
+}
+
+.form-board-guide-year strong {
+  color: #b55341;
+  font: 600 18px "Fraunces", Georgia, serif;
+}
+
+.form-board-guide-year span {
+  margin-top: 3px;
+  font: 700 8px "IBM Plex Mono", monospace;
+  letter-spacing: 0.08em;
+}
+
+.form-board-guide-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+  gap: 16px;
+  padding: 22px 32px;
+}
+
+.form-board-guide-card {
+  border: 1px solid #d8e3d4;
+  border-radius: 12px;
+  background: #f6f8ef;
+  padding: 20px 21px;
+}
+
+.form-board-guide-card-primary {
+  background: #eef4ec;
+}
+
+.form-board-guide-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #b55341;
+  font: 700 9px "IBM Plex Mono", monospace;
+  letter-spacing: 0.1em;
+}
+
+.form-board-guide-card-top svg {
+  width: 16px;
+  height: 16px;
+  color: #4d7569;
+}
+
+.form-board-guide-card h3 {
+  margin: 13px 0 17px;
+  color: #173f43;
+  font: 600 23px "Fraunces", Georgia, serif;
+  letter-spacing: -0.025em;
+}
+
+.form-board-guide-steps {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.form-board-guide-steps li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+}
+
+.form-board-guide-steps li > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid #b9c9bd;
+  border-radius: 50%;
+  background: #fbf9f2;
+  color: #4d7569;
+  font: 700 9px "IBM Plex Mono", monospace;
+}
+
+.form-board-guide-steps strong,
+.form-board-guide-steps small {
+  display: block;
+}
+
+.form-board-guide-steps strong {
+  color: #294646;
+  font-size: 11px;
+}
+
+.form-board-guide-steps small {
+  margin-top: 4px;
+  color: #74756b;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.form-board-guide-checklist {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.form-board-guide-checklist li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #3d5e59;
+  font-size: 11px;
+}
+
+.form-board-guide-checklist svg {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  color: #1f5a5b;
+}
+
+.form-board-guide-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 20px;
+  border-radius: 8px;
+  background: #f8edc9;
+  color: #765d1a;
+  padding: 10px;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.form-board-guide-tip svg {
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+}
+
+.form-board-guide-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 32px 30px;
+  border-top: 1px solid #e0ddd2;
+  padding-top: 21px;
+}
+
+.form-board-guide-contact {
+  max-width: 530px;
+}
+
+.form-board-guide-contact > span {
+  display: block;
+  color: #b55341;
+  font: 700 9px "IBM Plex Mono", monospace;
+  letter-spacing: 0.1em;
+}
+
+.form-board-guide-contact strong {
+  display: block;
+  margin-top: 9px;
+  color: #173f43;
+  font-size: 12px;
+}
+
+.form-board-guide-contact p {
+  margin: 4px 0 0;
+  color: #74756b;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.form-board-guide-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 9px;
+}
+
+.form-board-guide-action {
+  min-height: 39px;
+  border-radius: 8px;
+  padding: 0 13px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.form-board-guide-action-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: #1f5a5b;
+  color: #f7f3e9;
+}
+
+.form-board-guide-action-primary:hover {
+  background: #164849;
+}
+
+.form-board-guide-action-primary svg {
+  width: 12px;
+  height: 12px;
+  transform: rotate(-90deg);
+}
+
+.form-board-guide-action-secondary {
+  border: 1px solid #1f5a5b70;
+  background: transparent;
+  color: #1f5a5b;
+}
+
+.form-board-guide-action-secondary:hover {
+  border-color: #1f5a5b;
+  background: #eef4ec;
+}
+
 .form-board-footer {
   display: flex;
   align-items: center;
@@ -2055,6 +2328,25 @@
     margin-left: 22px;
   }
 
+  .form-board-guide-hero {
+    padding: 24px 22px 20px;
+  }
+
+  .form-board-guide-grid {
+    grid-template-columns: 1fr;
+    padding: 20px 22px;
+  }
+
+  .form-board-guide-bottom {
+    display: block;
+    margin-right: 22px;
+    margin-left: 22px;
+  }
+
+  .form-board-guide-actions {
+    margin-top: 18px;
+  }
+
   .form-board-stat {
     border-right: 0;
     border-bottom: 1px solid #d6d2c6;
@@ -2145,6 +2437,39 @@
 
   .form-board-status-intro h2 {
     font-size: 32px;
+  }
+
+  .form-board-guide-hero {
+    display: block;
+  }
+
+  .form-board-guide-hero h2 {
+    font-size: 32px;
+  }
+
+  .form-board-guide-year {
+    margin-top: 18px;
+  }
+
+  .form-board-guide-grid {
+    padding: 18px;
+  }
+
+  .form-board-guide-card {
+    padding: 18px;
+  }
+
+  .form-board-guide-bottom {
+    margin: 0 18px 22px;
+  }
+
+  .form-board-guide-actions {
+    display: grid;
+    gap: 8px;
+  }
+
+  .form-board-guide-action {
+    width: 100%;
   }
 
   .form-board-status-badge {
