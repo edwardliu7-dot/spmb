@@ -2628,3 +2628,239 @@
     justify-content: center;
   }
 }
+
+/* Jenjang themes: the form responds immediately when the destination level changes. */
+.form-board-shell {
+  --theme-primary: #1f5a5b;
+  --theme-primary-deep: #123f43;
+  --theme-accent: #2f6c8a;
+  --theme-soft: #e7f0f5;
+  --theme-pale: #eef5f8;
+  --theme-background: #f3f7fa;
+  --theme-surface: #ffffff;
+  --theme-line: #d4e0e8;
+  --theme-ink: #173f43;
+  background: var(--theme-background);
+  color: var(--theme-ink);
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+.form-board-shell[data-theme="smp"] {
+  --theme-primary: #2368a2;
+  --theme-primary-deep: #153f69;
+  --theme-accent: #2d83c5;
+  --theme-soft: #e3f0fb;
+  --theme-pale: #edf6fd;
+  --theme-background: #f2f7fc;
+  --theme-line: #cbddea;
+  --theme-ink: #163b5d;
+}
+
+.form-board-shell[data-theme="sd"] {
+  --theme-primary: #b5484d;
+  --theme-primary-deep: #71343b;
+  --theme-accent: #cf5c5a;
+  --theme-soft: #f9e8e8;
+  --theme-pale: #fdf1f0;
+  --theme-background: #fcf6f6;
+  --theme-line: #ead4d5;
+  --theme-ink: #532f35;
+}
+
+.form-board-shell[data-theme="pg"] {
+  --theme-primary: #c76f2f;
+  --theme-primary-deep: #7e452a;
+  --theme-accent: #df8a3c;
+  --theme-soft: #fbead9;
+  --theme-pale: #fff4e8;
+  --theme-background: #fff9f3;
+  --theme-line: #ecd9c6;
+  --theme-ink: #5d3b2b;
+}
+
+.form-board-shell[data-theme="tk"] {
+  --theme-primary: #3e8067;
+  --theme-primary-deep: #285746;
+  --theme-accent: #5b9b79;
+  --theme-soft: #e5f2e9;
+  --theme-pale: #eff8f1;
+  --theme-background: #f5faf6;
+  --theme-line: #d1e3d6;
+  --theme-ink: #284b3d;
+}
+
+.form-board-shell[data-theme="daycare"] {
+  --theme-primary: #b58b22;
+  --theme-primary-deep: #6f591f;
+  --theme-accent: #d3a532;
+  --theme-soft: #f8efd1;
+  --theme-pale: #fff9e8;
+  --theme-background: #fffcf3;
+  --theme-line: #eadfbf;
+  --theme-ink: #51451f;
+}
+
+.form-board-shell .form-board-topbar {
+  border-bottom-color: var(--theme-primary-deep);
+  background: var(--theme-primary-deep);
+}
+
+.form-board-shell .form-board-nav button:hover,
+.form-board-shell .form-board-nav .form-board-nav-active {
+  color: var(--theme-soft);
+}
+
+.form-board-shell .form-board-nav .form-board-nav-active::after,
+.form-board-shell .form-board-stat::before,
+.form-board-shell .form-board-stat:nth-child(2)::before,
+.form-board-shell .form-board-stat:nth-child(3)::before {
+  background: var(--theme-accent);
+}
+
+.form-board-shell .form-board-eyebrow,
+.form-board-shell .form-board-panel-kicker,
+.form-board-shell .form-board-section-index,
+.form-board-shell .form-board-section-active .form-board-section-kicker,
+.form-board-shell .form-board-required,
+.form-board-shell .form-board-intro h1 em,
+.form-board-shell .form-board-sidebar h2 em {
+  color: var(--theme-primary);
+}
+
+.form-board-shell .form-board-intro h1,
+.form-board-shell .form-board-sidebar h2,
+.form-board-shell .form-board-form-header h2,
+.form-board-shell .form-board-section-copy h3,
+.form-board-shell .form-board-stat strong {
+  color: var(--theme-ink);
+}
+
+.form-board-shell .form-board-header-notice {
+  border-color: var(--theme-line);
+  background: var(--theme-pale);
+}
+
+.form-board-shell .form-board-header-notice-lead {
+  border-left-color: var(--theme-accent);
+  background: var(--theme-soft);
+}
+
+.form-board-shell .form-board-stats,
+.form-board-shell .form-board-sidebar,
+.form-board-shell .form-board-form-panel,
+.form-board-shell .form-board-status-view,
+.form-board-shell .form-board-guide-view {
+  border-color: var(--theme-line);
+  background: var(--theme-surface);
+}
+
+.form-board-shell .form-board-stat,
+.form-board-shell .form-board-form-header,
+.form-board-shell .form-board-section,
+.form-board-shell .form-board-step-navigation {
+  border-color: var(--theme-line);
+}
+
+.form-board-shell .form-board-step:hover {
+  background: var(--theme-soft);
+}
+
+.form-board-shell .form-board-step-active .form-board-step-number {
+  border-color: var(--theme-primary);
+  background: var(--theme-primary);
+}
+
+.form-board-shell .form-board-step-active strong,
+.form-board-shell .form-board-progress-count {
+  color: var(--theme-primary);
+}
+
+.form-board-shell .form-board-sidebar-note {
+  border-color: var(--theme-line);
+  background: var(--theme-pale);
+}
+
+.form-board-shell .form-board-sidebar-note > svg,
+.form-board-shell .form-board-sidebar-help > svg {
+  color: var(--theme-primary);
+}
+
+.form-board-shell .form-board-section-active {
+  background: var(--theme-pale);
+  box-shadow: inset 3px 0 0 var(--theme-primary);
+}
+
+.form-board-shell .form-board-field input:not([type="file"]),
+.form-board-shell .form-board-field select,
+.form-board-shell .form-board-field textarea,
+.form-board-shell .form-board-upload {
+  border-color: var(--theme-line);
+  background: var(--theme-background);
+  color: var(--theme-ink);
+}
+
+.form-board-shell .form-board-field input:hover,
+.form-board-shell .form-board-field select:hover,
+.form-board-shell .form-board-field textarea:hover {
+  border-color: var(--theme-primary);
+}
+
+.form-board-shell .form-board-field input:focus,
+.form-board-shell .form-board-field select:focus,
+.form-board-shell .form-board-field textarea:focus {
+  border-color: var(--theme-primary);
+  background: var(--theme-surface);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary) 13%, transparent);
+}
+
+.form-board-shell .form-board-select-wrap svg,
+.form-board-shell .form-board-upload-icon,
+.form-board-shell .form-board-upload-button,
+.form-board-shell .form-board-submit-info {
+  color: var(--theme-primary);
+}
+
+.form-board-shell .form-board-upload-icon {
+  background: var(--theme-soft);
+}
+
+.form-board-shell .form-board-upload-button {
+  border-color: color-mix(in srgb, var(--theme-primary) 45%, transparent);
+  background: var(--theme-surface);
+}
+
+.form-board-shell .form-board-upload-button:hover {
+  border-color: var(--theme-primary);
+  background: var(--theme-soft);
+}
+
+.form-board-shell .form-board-step-navigation,
+.form-board-shell .form-board-submit-area {
+  background: var(--theme-soft);
+}
+
+.form-board-shell .form-board-step-button-primary,
+.form-board-shell .form-board-submit-button,
+.form-board-shell .form-board-status-search button {
+  background: var(--theme-primary);
+}
+
+.form-board-shell .form-board-step-button-primary:hover,
+.form-board-shell .form-board-submit-button:hover,
+.form-board-shell .form-board-status-search button:hover {
+  background: var(--theme-primary-deep);
+}
+
+.form-board-shell .form-board-step-button-secondary {
+  border-color: color-mix(in srgb, var(--theme-primary) 55%, transparent);
+  color: var(--theme-primary);
+}
+
+.form-board-shell .form-board-step-button-secondary:hover {
+  border-color: var(--theme-primary);
+  background: var(--theme-pale);
+}
+
+.form-board-shell .form-board-submit-button {
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--theme-primary) 18%, transparent);
+}

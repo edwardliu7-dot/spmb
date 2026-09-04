@@ -647,6 +647,24 @@ function updateSchoolFieldsRequirement(): void {
   });
 }
 
+function applyPublicTheme(jenjang: string): void {
+  const shell = document.querySelector<HTMLElement>('.form-board-shell');
+  if (!shell) return;
+  const normalizedTheme = jenjang === 'SMP'
+    ? 'smp'
+    : jenjang === 'SD'
+      ? 'sd'
+      : jenjang === 'Playgroup'
+        ? 'pg'
+        : jenjang === 'Daycare'
+          ? 'daycare'
+          : ['TK-A', 'TK-B'].includes(jenjang)
+            ? 'tk'
+            : 'default';
+  shell.dataset.theme = normalizedTheme;
+  shell.dataset.selectedJenjang = jenjang || 'Belum dipilih';
+}
+
 const digitRules: Record<string, number> = {
   nisn: 10,
   nik_anak: 16,
@@ -922,6 +940,7 @@ form.querySelectorAll<HTMLElement>('input, select, textarea').forEach((control) 
 });
 
 getFieldControl('jenjang')?.addEventListener('change', () => {
+  applyPublicTheme((getFieldControl('jenjang') as HTMLSelectElement).value);
   updateSchoolFieldsRequirement();
   saveDraft();
 });
@@ -958,6 +977,7 @@ successStatusButton.addEventListener('click', () => {
 });
 
 restoreDraft();
+applyPublicTheme((getFieldControl('jenjang') as HTMLSelectElement | null)?.value || '');
 updateSchoolFieldsRequirement();
 
 document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((input) => {
@@ -1105,6 +1125,7 @@ resetButton.addEventListener('click', () => {
   submitButton.classList.remove('is-loading');
   submitButton.querySelector('.submit-label')!.textContent = 'Kirim pengajuan';
   activeSectionIndex = 0;
+  applyPublicTheme('');
   updateProgress();
   form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });

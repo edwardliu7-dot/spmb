@@ -1909,6 +1909,205 @@
   white-space: nowrap;
 }
 
+/* Committee theme follows the authenticated account. */
+.decision-desk-shell {
+  --admin-primary: #1f5a5b;
+  --admin-primary-deep: #123f43;
+  --admin-accent: #2f6c8a;
+  --admin-soft: #e7f0f5;
+  --admin-surface: #ffffff;
+  --admin-background: #f3f7fa;
+  --admin-line: #d4e0e8;
+  --admin-ink: #173f43;
+  background: var(--admin-background);
+  color: var(--admin-ink);
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+.decision-desk-shell[data-theme="admin"] {
+  --admin-primary: #c56b3c;
+  --admin-primary-deep: #743d2e;
+  --admin-accent: #da8a48;
+  --admin-soft: #f8e9dd;
+  --admin-surface: #ffffff;
+  --admin-background: #fff8f3;
+  --admin-line: #ecd7ca;
+  --admin-ink: #54352e;
+}
+
+.decision-desk-shell[data-theme="smp"] {
+  --admin-primary: #2368a2;
+  --admin-primary-deep: #153f69;
+  --admin-accent: #2d83c5;
+  --admin-soft: #e3f0fb;
+  --admin-surface: #ffffff;
+  --admin-background: #f2f7fc;
+  --admin-line: #cbddea;
+  --admin-ink: #163b5d;
+}
+
+.decision-desk-shell[data-theme="sd"] {
+  --admin-primary: #b5484d;
+  --admin-primary-deep: #71343b;
+  --admin-accent: #cf5c5a;
+  --admin-soft: #f9e8e8;
+  --admin-surface: #ffffff;
+  --admin-background: #fcf6f6;
+  --admin-line: #ead4d5;
+  --admin-ink: #532f35;
+}
+
+.decision-desk-shell[data-theme="pgtk"] {
+  --admin-primary: #3e8067;
+  --admin-primary-deep: #285746;
+  --admin-accent: #5b9b79;
+  --admin-soft: #e5f2e9;
+  --admin-surface: #ffffff;
+  --admin-background: #f5faf6;
+  --admin-line: #d1e3d6;
+  --admin-ink: #284b3d;
+}
+
+.decision-desk-shell .decision-rail {
+  background: var(--admin-primary-deep);
+}
+
+.decision-desk-shell .decision-nav-item:hover,
+.decision-desk-shell .decision-nav-item.is-active {
+  background: color-mix(in srgb, var(--admin-primary) 34%, var(--admin-primary-deep));
+}
+
+.decision-desk-shell .decision-nav-item.is-active > span,
+.decision-desk-shell .decision-nav-item.is-active > i,
+.decision-desk-shell .decision-profile-avatar {
+  color: var(--admin-accent);
+}
+
+.decision-desk-shell .decision-profile-avatar {
+  border-color: color-mix(in srgb, var(--admin-accent) 60%, transparent);
+}
+
+.decision-desk-shell .decision-header,
+.decision-desk-shell .decision-metrics,
+.decision-desk-shell .evidence-ledger,
+.decision-desk-shell .decision-inspector,
+.decision-desk-shell .admin-table-wrap,
+.decision-desk-shell .admin-table th,
+.decision-desk-shell .admin-table-wrap,
+.decision-desk-shell .observation-summary > div,
+.decision-desk-shell .observation-card,
+.decision-desk-shell .notification-item {
+  border-color: var(--admin-line);
+  background: var(--admin-surface);
+}
+
+.decision-desk-shell .decision-main {
+  background: var(--admin-background);
+}
+
+.decision-desk-shell .decision-header,
+.decision-desk-shell .decision-metrics,
+.decision-desk-shell .evidence-ledger,
+.decision-desk-shell .decision-inspector {
+  background: var(--admin-surface);
+}
+
+.decision-desk-shell .decision-header-title,
+.decision-desk-shell .decision-briefing h1,
+.decision-desk-shell .decision-briefing h1 em,
+.decision-desk-shell .ledger-heading h2,
+.decision-desk-shell .inspector-empty h2,
+.decision-desk-shell .inspector-header h2,
+.decision-desk-shell .admin-view-heading h2 {
+  color: var(--admin-ink);
+}
+
+.decision-desk-shell .decision-accent,
+.decision-desk-shell .decision-briefing h1 em,
+.decision-desk-shell .admin-open-button {
+  color: var(--admin-primary);
+}
+
+.decision-desk-shell .decision-metric::before,
+.decision-desk-shell .decision-metric:nth-child(2)::before,
+.decision-desk-shell .decision-metric:nth-child(3)::before,
+.decision-desk-shell .decision-metric:nth-child(4)::before {
+  background: var(--admin-accent);
+}
+
+.decision-desk-shell .decision-metric:hover,
+.decision-desk-shell .decision-metric:focus-visible,
+.decision-desk-shell .decision-application-row:hover,
+.decision-desk-shell .decision-application-row:focus-visible,
+.decision-desk-shell .decision-application-row.is-selected {
+  background: var(--admin-soft);
+}
+
+.decision-desk-shell .decision-application-row.is-selected {
+  box-shadow: inset 3px 0 0 var(--admin-primary);
+}
+
+.decision-desk-shell .decision-metric strong,
+.decision-desk-shell .decision-row-main strong,
+.decision-desk-shell .inspector-fact dd,
+.decision-desk-shell .detail-field dd,
+.decision-desk-shell .observation-summary strong,
+.decision-desk-shell .observation-card h3,
+.decision-desk-shell .notification-item p {
+  color: var(--admin-ink);
+}
+
+.decision-desk-shell .decision-avatar {
+  background: var(--admin-soft);
+  color: var(--admin-primary);
+}
+
+.decision-desk-shell .ledger-filter-button:hover,
+.decision-desk-shell .ledger-filter-button.is-active,
+.decision-desk-shell .ledger-refresh-button:hover,
+.decision-desk-shell .ledger-clear-button:hover,
+.decision-desk-shell .ledger-footer button:hover,
+.decision-desk-shell .decision-note-button:hover,
+.decision-desk-shell .decision-icon-button:hover {
+  border-color: var(--admin-primary);
+  background: var(--admin-soft);
+}
+
+.decision-desk-shell .ledger-filters input:focus,
+.decision-desk-shell .ledger-filters select:focus,
+.decision-desk-shell .admin-filter-row input:focus,
+.decision-desk-shell .admin-filter-row select:focus {
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--admin-primary) 13%, transparent);
+}
+
+.decision-desk-shell .admin-export-button,
+.decision-desk-shell .admin-filter-row button {
+  border-color: var(--admin-primary);
+  background: var(--admin-primary);
+}
+
+.decision-desk-shell .admin-export-button:hover,
+.decision-desk-shell .admin-filter-row button:hover {
+  background: var(--admin-primary-deep);
+}
+
+.decision-desk-shell .admin-level-tag {
+  background: var(--admin-soft);
+  color: var(--admin-primary);
+}
+
+.decision-desk-shell .notification-item.is-unread {
+  border-color: color-mix(in srgb, var(--admin-primary) 35%, var(--admin-line));
+  background: var(--admin-soft);
+}
+
+.decision-desk-shell .notification-item.is-unread .notification-dot,
+.decision-desk-shell .trend-list em,
+.decision-desk-shell .observation-bar em {
+  background: var(--admin-primary);
+}
+
 @media (max-width: 760px) {
   .admin-view-heading {
     display: block;

@@ -98,6 +98,19 @@ function statusClass(status: string): string {
   return status.toLowerCase().replaceAll(" ", "-");
 }
 
+function committeeThemeForUser(user: AuthUser): string {
+  if (user.username.toLowerCase() === "admin") return "admin";
+  if (user.allowedJenjang.includes("SMP")) return "smp";
+  if (user.allowedJenjang.includes("SD")) return "sd";
+  if (user.allowedJenjang.some((level) => ["Playgroup", "Daycare", "TK-A", "TK-B"].includes(level))) return "pgtk";
+  return "default";
+}
+
+function applyCommitteeTheme(user: AuthUser): void {
+  const shell = document.querySelector<HTMLElement>(".decision-desk-shell");
+  if (shell) shell.dataset.theme = committeeThemeForUser(user);
+}
+
 async function requestJSON<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     ...options,
@@ -508,6 +521,7 @@ function renderDashboard(user: AuthUser) {
       <div class="decision-toast" id="decision-toast" role="status" aria-live="polite" hidden></div>
     </div>
   `;
+  applyCommitteeTheme(user);
 
   const listElement = document.getElementById("application-list") as HTMLDivElement;
   const detailElement = document.getElementById("detail-panel") as HTMLElement;
