@@ -64,8 +64,8 @@ function section(index: string, title: string, description: string, content: str
     <div class="form-board-section-heading">
       <span class="form-board-section-index">${index}</span>
       <div class="form-board-section-copy">
-        <div class="form-board-section-kicker"><span>Tahap berikutnya</span><span class="form-board-section-rule"></span></div>
-        <h3>${title}</h3><p>${description}</p>
+        <div class="form-board-section-kicker"><span>Bagian ${index}</span><span class="form-board-section-rule"></span></div>
+        <h3>${title}</h3>${description ? `<p>${description}</p>` : ''}
       </div>
       <span class="form-board-section-check"><span></span></span>
     </div>
@@ -163,7 +163,7 @@ root.innerHTML = `
         <nav class="form-board-nav" aria-label="Navigasi pendaftaran">
           <button type="button" class="form-board-nav-active" data-notice="Anda sedang berada di formulir pendaftaran.">Pendaftaran</button>
           <button type="button" data-notice="Status pengajuan dapat dicek setelah formulir dikirim.">Status pengajuan</button>
-          <button type="button" data-notice="Panduan pendaftaran akan membantu Anda menyiapkan dokumen.">Panduan</button>
+          <button type="button" data-notice="Panduan belum tersedia.">Panduan</button>
         </nav>
         <div class="form-board-topbar-actions">
           <button type="button" class="form-board-icon-button" aria-label="Notifikasi" data-notice="Tidak ada notifikasi baru.">${icon('bell')}<span></span></button>
@@ -176,12 +176,11 @@ root.innerHTML = `
       <div class="form-board-intro">
         <div class="form-board-intro-copy">
           <div class="form-board-eyebrow"><span></span>Ruang pendaftaran · tahun ajaran 2027 / 2028</div>
-          <h1 id="page-title">Mulai dari data yang <em>paling penting.</em></h1>
-          <p>Isi pengajuan dengan tenang. Setiap bagian tersusun sebagai catatan yang jelas untuk membantu panitia meninjau data calon peserta didik.</p>
+          <h1 id="page-title">Formulir pendaftaran <em>SPMB.</em></h1>
         </div>
         <div class="form-board-date">
           <div class="form-board-date-mark">${icon('calendar')}<span>BARU</span></div>
-          <div><strong>Pengajuan baru</strong><small>Disiapkan untuk Anda</small></div>
+          <div><strong>Pengajuan baru</strong></div>
         </div>
       </div>
 
@@ -194,7 +193,7 @@ root.innerHTML = `
       <div class="form-board-workspace">
         <aside class="form-board-sidebar" aria-label="Kemajuan formulir">
           <div class="form-board-sidebar-head">
-            <div><div class="form-board-panel-kicker">${icon('file')}Alur pengajuan</div><h2>Lengkapi satu<br /><em>per satu.</em></h2></div>
+            <div><div class="form-board-panel-kicker">${icon('file')}Tahapan pendaftaran</div><h2>Formulir<br /><em>pendaftaran.</em></h2></div>
             <span class="form-board-progress-count">01<span>/04</span></span>
           </div>
           <ol class="form-board-step-list">
@@ -215,13 +214,13 @@ root.innerHTML = `
           <div class="form-body" id="form-body">
             <div class="form-alert error" id="form-error" role="alert" data-testid="alert-form-error"></div>
             <form id="application-form" novalidate>
-              ${section('01', 'Data Calon Peserta Didik', 'Ceritakan identitas dan keseharian calon peserta didik.', studentFields, 'section-student')}
-              ${section('02', 'Data Sekolah Asal', 'Informasi pendidikan terakhir calon peserta didik.', schoolFields, 'section-school')}
-              ${section('03', 'Data Orang Tua & Wali', 'Kontak keluarga untuk komunikasi proses penerimaan.', parentFields, 'section-parent')}
+              ${section('01', 'Data Calon Peserta Didik', '', studentFields, 'section-student')}
+              ${section('02', 'Data Sekolah Asal', '', schoolFields, 'section-school')}
+              ${section('03', 'Data Orang Tua & Wali', '', parentFields, 'section-parent')}
               <fieldset class="form-board-section" id="section-upload" data-section="04">
                 <div class="form-board-section-heading">
                   <span class="form-board-section-index">04</span>
-                  <div class="form-board-section-copy"><div class="form-board-section-kicker"><span>Tahap berikutnya</span><span class="form-board-section-rule"></span></div><h3>Upload Berkas</h3><p>Siapkan dokumen yang terbaca jelas. Berkas dapat berupa PDF, JPG, atau PNG.</p></div>
+                  <div class="form-board-section-copy"><div class="form-board-section-kicker"><span>Bagian 04</span><span class="form-board-section-rule"></span></div><h3>Upload Berkas</h3><p>Format PDF, JPG, atau PNG. Maksimal 5 MB per berkas.</p></div>
                   <span class="form-board-section-check"><span></span></span>
                 </div>
                 <div class="form-board-upload-grid">${uploadFields}</div>
@@ -324,7 +323,7 @@ function updateProgress(): void {
     const isCurrent = sectionElement.offsetTop <= marker && (index === sections.length - 1 || sections[index + 1].offsetTop > marker);
     sectionElement.classList.toggle('form-board-section-active', isCurrent);
     const kicker = sectionElement.querySelector<HTMLElement>('.form-board-section-kicker span');
-    if (kicker) kicker.textContent = isCurrent ? 'Sedang diisi' : 'Tahap berikutnya';
+    if (kicker) kicker.textContent = isCurrent ? 'Sedang diisi' : 'Belum diisi';
     sectionElement.querySelector('.form-board-section-check > span')?.classList.toggle('form-board-section-dot', isCurrent);
     const item = document.querySelector<HTMLElement>(`[data-go-section="${sectionElement.id}"]`);
     item?.classList.toggle('is-complete', complete && index < activeIndex);

@@ -1,3 +1,5 @@
+import "./panitia-dashboard.css";
+
 type ApplicationListItem = {
   id: number;
   nama_calon: string;
@@ -81,7 +83,7 @@ function renderLogin(errorMessage = "") {
       <header class="committee-topbar">
         <a class="brand" href="/" aria-label="Kembali ke formulir SPMB">
           <span class="brand-mark" aria-hidden="true">S</span>
-          <span class="brand-copy"><span class="brand-name">SPMB</span><span class="brand-sub">Ruang kerja panitia</span></span>
+          <span class="brand-copy"><span class="brand-name">SPMB</span><span class="brand-sub">Panel panitia</span></span>
         </a>
         <a class="back-link" href="/">Kembali ke formulir</a>
       </header>
@@ -89,8 +91,8 @@ function renderLogin(errorMessage = "") {
         <div class="committee-auth-ornament" aria-hidden="true"><span>SPMB</span><small>2027 / 2028</small></div>
         <section class="committee-auth-card">
           <p class="eyebrow">Akses internal · panitia</p>
-          <h1>Selamat datang <em>kembali.</em></h1>
-          <p class="auth-lede">Masuk untuk meninjau dan mengelola data pendaftar sesuai tanggung jawab jenjang Anda.</p>
+          <h1>Login <em>panitia.</em></h1>
+          <p class="auth-lede">Masuk untuk meninjau dan mengelola data pendaftar.</p>
           <form id="committee-login-form" class="committee-login-form">
             <label for="committee-username">Username</label>
             <input id="committee-username" name="username" type="text" autocomplete="username" placeholder="Masukkan username" required />
@@ -139,7 +141,7 @@ function renderLegacyDashboard(user: AuthUser) {
     <header class="committee-topbar">
       <a class="brand" href="/" aria-label="Kembali ke formulir SPMB">
         <span class="brand-mark" aria-hidden="true">S</span>
-        <span class="brand-copy"><span class="brand-name">SPMB</span><span class="brand-sub">Ruang kerja panitia</span></span>
+        <span class="brand-copy"><span class="brand-name">SPMB</span><span class="brand-sub">Panel panitia</span></span>
       </a>
       <div class="committee-topbar-actions">
         <span class="committee-user"><strong>${escapeHtml(user.username)}</strong><small>${escapeHtml(user.label)}</small></span>
@@ -152,8 +154,7 @@ function renderLegacyDashboard(user: AuthUser) {
       <section class="committee-intro">
         <div>
           <p class="eyebrow">Panel pengelolaan · 2027 / 2028</p>
-          <h1>Ruang kerja <em>panitia.</em></h1>
-          <p class="committee-lede">Tinjau pengajuan yang masuk, periksa dokumen pendukung, dan catat perkembangan setiap calon peserta didik dari satu tempat.</p>
+          <h1>Panel <em>panitia.</em></h1>
         </div>
         <div class="committee-intro-mark" aria-hidden="true"><span>SPMB</span><small>Internal</small></div>
       </section>
@@ -365,7 +366,7 @@ function renderDashboard(user: AuthUser) {
         <div class="decision-rail-brand">
           <a class="decision-brand" href="/" aria-label="Kembali ke formulir SPMB">
             <span class="decision-brand-mark" aria-hidden="true">S</span>
-            <span><span class="decision-brand-name">SPMB</span><span class="decision-brand-sub">Decision desk</span></span>
+            <span><span class="decision-brand-name">SPMB</span><span class="decision-brand-sub">Panel panitia</span></span>
           </a>
           <button class="rail-close-button" id="rail-close-button" type="button" aria-label="Tutup navigasi">×</button>
         </div>
@@ -391,7 +392,7 @@ function renderDashboard(user: AuthUser) {
         <header class="decision-header">
           <div class="decision-header-left">
             <button class="rail-menu-button" id="rail-menu-button" type="button" aria-label="Buka navigasi">☰</button>
-            <div><p class="decision-kicker">Panitia / Workspace</p><p class="decision-header-title">Ruang keputusan</p></div>
+            <div><p class="decision-kicker">Panitia</p><p class="decision-header-title">Panel panitia</p></div>
           </div>
           <div class="decision-header-actions">
             <span class="decision-date">PANEL INTERNAL · 2027 / 2028</span>
@@ -404,9 +405,8 @@ function renderDashboard(user: AuthUser) {
         <div class="decision-content">
           <section class="decision-briefing">
             <div class="decision-briefing-copy">
-              <p class="decision-kicker decision-accent">✦ Briefing pagi · data live</p>
-              <h1>Keputusan yang <em>jelas.</em></h1>
-              <p>Satu meja untuk membaca bukti, menyamakan catatan, dan menutup pengajuan tanpa kehilangan konteks.</p>
+              <p class="decision-kicker decision-accent">Ringkasan pendaftaran</p>
+              <h1>Tinjauan <em>pengajuan.</em></h1>
             </div>
             <div class="decision-forum-callout">
               <div><p class="decision-kicker">Status sesi</p><strong>Siap meninjau</strong><small>Ruang keputusan · akses ${escapeHtml(user.label)}</small></div>
@@ -415,16 +415,16 @@ function renderDashboard(user: AuthUser) {
           </section>
 
           <section class="decision-metrics" aria-label="Ringkasan pendaftaran">
-            <button class="decision-metric" type="button" data-metric-status="Semua"><span>Total masuk<i></i></span><strong id="total-count">00</strong><small>hasil antrean aktif</small></button>
-            <button class="decision-metric" type="button" data-metric-status="Baru"><span>Menunggu review<i class="is-coral"></i></span><strong id="new-count">00</strong><small>perlu mata kedua</small></button>
-            <button class="decision-metric" type="button" data-metric-status="Diverifikasi"><span>Siap dibahas<i class="is-gold"></i></span><strong id="ready-count">00</strong><small>masuk forum hari ini</small></button>
-            <button class="decision-metric" type="button" data-metric-status="Diterima"><span>Disetujui<i class="is-green"></i></span><strong id="accepted-count">00</strong><small>keputusan tersimpan</small></button>
+            <button class="decision-metric" type="button" data-metric-status="Semua"><span>Total pengajuan<i></i></span><strong id="total-count">00</strong><small>Semua status</small></button>
+            <button class="decision-metric" type="button" data-metric-status="Baru"><span>Perlu ditinjau<i class="is-coral"></i></span><strong id="new-count">00</strong><small>Status baru</small></button>
+            <button class="decision-metric" type="button" data-metric-status="Diverifikasi"><span>Siap diproses<i class="is-gold"></i></span><strong id="ready-count">00</strong><small>Sudah diverifikasi</small></button>
+            <button class="decision-metric" type="button" data-metric-status="Diterima"><span>Diterima<i class="is-green"></i></span><strong id="accepted-count">00</strong><small>Status diterima</small></button>
           </section>
 
           <section class="decision-workspace">
             <div class="evidence-ledger">
               <div class="ledger-heading">
-                <div><p class="decision-kicker decision-accent">◈ Evidence ledger</p><h2>Berkas yang perlu mata Anda.</h2></div>
+                <div><p class="decision-kicker decision-accent">Berkas pendaftar</p><h2>Berkas pendukung</h2></div>
                 <div class="ledger-actions"><span class="ledger-count" id="list-count">—</span><button class="ledger-filter-button" id="filter-toggle" type="button" aria-expanded="false">☷ Filter</button><button class="ledger-refresh-button" id="refresh-button" type="button" aria-label="Segarkan data">↻</button></div>
               </div>
               <form class="ledger-filters" id="committee-filter-form" hidden>
@@ -443,7 +443,7 @@ function renderDashboard(user: AuthUser) {
             </aside>
           </section>
 
-          <footer class="decision-footer"><span>SPMB 2027/2028 · Decision desk panitia</span><span>◈ Data internal terlindungi</span></footer>
+          <footer class="decision-footer"><span>SPMB 2027/2028 · Panel panitia</span><span>◈ Data internal terlindungi</span></footer>
         </div>
       </main>
       <div class="decision-toast" id="decision-toast" role="status" aria-live="polite" hidden></div>
