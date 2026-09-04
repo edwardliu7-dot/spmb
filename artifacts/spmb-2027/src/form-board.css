@@ -246,6 +246,105 @@
   line-height: 1.7;
 }
 
+.form-board-header-notice {
+  max-width: 760px;
+  margin-top: 26px;
+  overflow: hidden;
+  border: 1px solid #cbd8c8;
+  border-radius: 14px;
+  background: #f6f8ef;
+  box-shadow: 0 12px 28px #223d390c;
+}
+
+.form-board-header-notice-lead {
+  display: grid;
+  gap: 6px;
+  padding: 15px 17px;
+  border-left: 4px solid #e4ad3d;
+  background: #edf2e5;
+}
+
+.form-board-header-notice-lead strong {
+  color: #173f43;
+  font-size: 13px;
+}
+
+.form-board-header-notice-lead span {
+  color: #68776e;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.form-board-contact-details {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(120px, 1fr));
+  gap: 0;
+  padding: 13px 16px;
+}
+
+.form-board-contact-item,
+.form-board-contact-socials {
+  min-width: 0;
+  padding: 0 13px;
+  color: #68776e;
+  font-size: 10px;
+  line-height: 1.45;
+  text-decoration: none;
+}
+
+.form-board-contact-item:first-child {
+  padding-left: 0;
+}
+
+.form-board-contact-item + .form-board-contact-item,
+.form-board-contact-socials {
+  border-left: 1px solid #d8e0d2;
+}
+
+.form-board-contact-item:hover,
+.form-board-contact-item:focus-visible {
+  color: #1f5a5b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.form-board-contact-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #9a9b90;
+  font: 700 8px/1.2 "IBM Plex Mono", monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.form-board-contact-socials {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 5px 12px;
+  margin-top: 12px;
+  padding: 10px 0 0;
+  border-top: 1px solid #d8e0d2;
+  border-left: 0;
+}
+
+.form-board-contact-socials .form-board-contact-label {
+  margin-right: 3px;
+}
+
+.form-board-contact-socials a {
+  color: #3d7068;
+  text-decoration: none;
+}
+
+.form-board-contact-socials a:hover,
+.form-board-contact-socials a:focus-visible {
+  color: #173f43;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .form-board-date {
   display: flex;
   min-width: 210px;
@@ -1597,6 +1696,28 @@
 
   .form-board-intro-copy > p {
     font-size: 13px;
+  }
+
+  .form-board-header-notice {
+    margin-top: 22px;
+  }
+
+  .form-board-contact-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px 0;
+  }
+
+  .form-board-contact-item:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .form-board-contact-item:nth-child(2n) {
+    padding-right: 0;
+  }
+
+  .form-board-contact-item:nth-child(2n + 1) {
+    padding-left: 0;
   }
 
   .form-board-form-header {

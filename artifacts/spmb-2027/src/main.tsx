@@ -183,6 +183,19 @@ root.innerHTML = `
         <div class="form-board-intro-copy">
           <div class="form-board-eyebrow"><span></span>Ruang pendaftaran · tahun ajaran 2027 / 2028</div>
           <h1 id="page-title">Formulir pendaftaran <em>SPMB.</em></h1>
+          <div class="form-board-header-notice" aria-label="Informasi pendaftaran dan kontak">
+            <div class="form-board-header-notice-lead">
+              <strong>Pendaftaran dibuka 5 September 2026</strong>
+              <span>Hubungi admin → lakukan pembayaran dan konfirmasi → terima link pendaftaran → isi formulir → cek notifikasi di Gmail.</span>
+            </div>
+            <div class="form-board-contact-details">
+              <span class="form-board-contact-item"><span class="form-board-contact-label">Kantor</span><span>Kp. Cimahi RT.07/04, Sukamahi, Kec. Cikarang Pusat, Kab. Bekasi, Jawa Barat</span></span>
+              <a class="form-board-contact-item" href="tel:+6281299876500"><span class="form-board-contact-label">Telepon</span><span>+62 812 9987 6500</span></a>
+              <a class="form-board-contact-item" href="mailto:tsislamics@gmail.com"><span class="form-board-contact-label">Email</span><span>tsislamics@gmail.com</span></a>
+              <span class="form-board-contact-item"><span class="form-board-contact-label">Jam layanan</span><span>08:00–14:00 WIB</span></span>
+              <span class="form-board-contact-socials"><span class="form-board-contact-label">Bantuan di</span><a href="https://www.instagram.com/tisa.islamicschool/" target="_blank" rel="noreferrer">@tisa.islamicschool</a><a href="https://www.youtube.com/@TisaIslamicSchool" target="_blank" rel="noreferrer">@TisaIslamicSchool</a><a href="https://www.tiktok.com/@tisaislamic" target="_blank" rel="noreferrer">@tisaislamic</a></span>
+            </div>
+          </div>
         </div>
         <div class="form-board-date">
           <div class="form-board-date-mark">${icon('calendar')}<span>BARU</span></div>
