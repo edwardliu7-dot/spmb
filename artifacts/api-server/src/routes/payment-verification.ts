@@ -170,7 +170,6 @@ router.post(
       return;
     }
 
-    const imageType = file.mimetype === "image/png" ? "png" : "jpeg";
     const imageData = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 25_000);
@@ -184,9 +183,10 @@ router.post(
         },
         signal: controller.signal,
         body: JSON.stringify({
-          model: "meta-llama/llama-4-scout-17b-16e-instruct",
+          model: "qwen/qwen3.6-27b",
           temperature: 0,
-          max_tokens: 500,
+          max_completion_tokens: 500,
+          response_format: { type: "json_object" },
           messages: [
             {
               role: "system",

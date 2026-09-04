@@ -11,4 +11,3 @@ paths = ["/api"]
 
 [services.development]
 run = "pnpm --filter @workspace/api-server run dev"
-

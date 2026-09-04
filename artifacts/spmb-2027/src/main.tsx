@@ -464,6 +464,7 @@ paymentProofInput.addEventListener('change', () => {
   paymentGate.classList.remove('is-invalid');
   if (file && (!validType || invalidSize)) {
     paymentProofInput.value = '';
+    paymentProofLabel.textContent = 'Pilih bukti bayar';
     paymentProofName.textContent = 'JPG atau PNG · maksimal 5 MB';
     paymentError.textContent = invalidSize
       ? 'Ukuran bukti bayar maksimal 5 MB.'
@@ -472,6 +473,7 @@ paymentProofInput.addEventListener('change', () => {
     paymentGate.classList.add('is-invalid');
     return;
   }
+  paymentProofLabel.textContent = file ? 'Bukti bayar siap' : 'Pilih bukti bayar';
   paymentProofName.textContent = file
     ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB`
     : 'JPG atau PNG · maksimal 5 MB';
@@ -585,6 +587,7 @@ resetButton.addEventListener('click', () => {
   paymentResult.hidden = true;
   paymentGate.classList.remove('is-verified', 'is-collapsed', 'is-invalid');
   paymentError.textContent = '';
+  paymentProofLabel.textContent = 'Pilih bukti bayar';
   paymentProofName.textContent = 'JPG atau PNG · maksimal 5 MB';
   registrationWorkspace.classList.add('is-hidden');
   updateProgress();

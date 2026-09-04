@@ -573,6 +573,10 @@
   background: #edf5ea;
 }
 
+.form-board-payment-result[hidden] {
+  display: none;
+}
+
 .form-board-payment-result-mark {
   display: grid;
   flex: 0 0 auto;
