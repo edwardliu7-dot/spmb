@@ -86,7 +86,10 @@ const parentRowBounds = [
 
 function textValue(value: unknown): string {
   if (value === null || value === undefined) return "-";
-  const result = String(value).trim();
+  const result = String(value)
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   return result || "-";
 }
 
