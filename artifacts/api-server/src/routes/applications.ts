@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { getPendaftar, listPendaftar, updatePendaftarStatus, uploadsDirectory } from "../lib/spmb-database";
 import { canAccessJenjang, committeeStatuses, requireCommitteeAuth } from "../middlewares/committee-auth";
@@ -17,6 +18,23 @@ router.use("/applications", requireCommitteeAuth);
 function parseId(value: string) {
   const id = Number(value);
   return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
+
+const uploadRoot = path.resolve(uploadsDirectory);
+const legacyUploadRoot = path.resolve(path.dirname(uploadRoot), "artifacts/api-server/uploads");
+
+function resolveStoredUpload(relativePath: string): string | null {
+  const roots = [uploadRoot, legacyUploadRoot];
+  for (const root of roots) {
+    const filePath = path.resolve(path.dirname(root), relativePath);
+    if (
+      filePath.startsWith(`${root}${path.sep}`)
+      && existsSync(filePath)
+    ) {
+      return filePath;
+    }
+  }
+  return null;
 }
 
 router.get("/applications", async (request, response) => {
@@ -51,9 +69,8 @@ router.get("/applications/:id/files/:field", async (request, response) => {
     return response.status(404).json({ error: "Berkas belum tersedia." });
   }
 
-  const uploadRoot = path.resolve(uploadsDirectory);
-  const filePath = path.resolve(path.dirname(uploadRoot), relativePath);
-  if (!filePath.startsWith(`${uploadRoot}${path.sep}`)) {
+  const filePath = resolveStoredUpload(relativePath);
+  if (!filePath) {
     return response.status(404).json({ error: "Berkas tidak ditemukan." });
   }
 
@@ -74,12 +91,15 @@ router.get("/applications/:id", async (request, response) => {
       return response.status(404).json({ error: "Pendaftar tidak ditemukan." });
     }
 
-    const files = Object.entries(documentFields).map(([column, item]) => ({
+    const files = Object.entries(documentFields).map(([column, item]) => {
+      const relativePath = application[column as keyof typeof application];
+      return {
       field: item.field,
       label: item.label,
       url: `/api/applications/${id}/files/${item.field}`,
-      available: Boolean(application[column as keyof typeof application]),
-    }));
+        available: typeof relativePath === "string" && Boolean(resolveStoredUpload(relativePath)),
+      };
+    });
 
     return response.json({ ...application, files });
   } catch (error) {
