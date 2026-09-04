@@ -6,13 +6,15 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface ApplicationListItem {
+export interface Notification {
   id: number;
-  nis: string | null;
-  nama_calon: string;
+  application_id: number | null;
+  type: string;
+  title: string;
+  message: string;
   jenjang: string;
-  nama_sekolah_asal: string | null;
-  email: string;
-  status: string;
   created_at: string;
+  read: boolean;
+  nama_calon: string | null;
+  nis: string | null;
 }

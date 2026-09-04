@@ -5,3 +5,4 @@
 - [SPMB production startup](spmb-production-start.md) — production must start the built server directly so health probes do not time out during a second build.
 - [SPMB receipt template](spmb-receipt.md) — the supplied receipt is a flattened sample PDF, so dynamic values require white overlays and image replacement.
 - [SPMB external database sync](spmb-external-db-schema.md) — runtime may use an external DATABASE_URL whose schema lags behind the nullable school fields in the source model.
+- [SPMB OpenAPI numeric schemas](spmb-openapi-numeric.md) — this workspace's Orval/Zod combination rejects generated zod.int(); use compatible number schemas unless the toolchain is upgraded.

@@ -23,7 +23,7 @@ function parseId(value: string) {
 const uploadRoot = path.resolve(uploadsDirectory);
 const legacyUploadRoot = path.resolve(path.dirname(uploadRoot), "artifacts/api-server/uploads");
 
-function resolveStoredUpload(relativePath: string): string | null {
+export function resolveStoredUpload(relativePath: string): string | null {
   const roots = [uploadRoot, legacyUploadRoot];
   for (const root of roots) {
     const filePath = path.resolve(path.dirname(root), relativePath);
@@ -120,7 +120,7 @@ router.patch("/applications/:id/status", async (request, response) => {
     if (!application || !request.committeeAccount || !canAccessJenjang(request.committeeAccount, application.jenjang)) {
       return response.status(404).json({ error: "Pendaftar tidak ditemukan." });
     }
-    const updated = await updatePendaftarStatus(id, status);
+    const updated = await updatePendaftarStatus(id, status, request.committeeAccount.username);
     if (!updated) return response.status(404).json({ error: "Pendaftar tidak ditemukan." });
     request.log.info({ applicationId: id, status }, "SPMB application status updated");
     return response.json({

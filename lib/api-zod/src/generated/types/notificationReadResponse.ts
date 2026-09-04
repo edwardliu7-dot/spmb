@@ -6,10 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface SubmissionResult {
+export interface NotificationReadResponse {
   success: boolean;
-  message: string;
-  id: number;
-  nis: string | null;
-  receiptUrl: string;
+  count?: number | null;
 }

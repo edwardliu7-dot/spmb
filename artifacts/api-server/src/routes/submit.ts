@@ -518,6 +518,7 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
       success: true,
       message: "Pendaftaran berhasil dikirim.",
       id,
+      nis: result.nis,
       receiptUrl: `/api/submissions/${id}/receipt?token=${createReceiptToken(id)}`,
     });
     return;

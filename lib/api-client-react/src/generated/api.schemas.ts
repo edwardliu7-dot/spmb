@@ -272,6 +272,7 @@ export interface SubmissionResult {
   success: boolean;
   message: string;
   id: number;
+  nis: string | null;
   receiptUrl: string;
 }
 
@@ -297,6 +298,7 @@ export interface SubmissionStatusResponse {
 
 export interface ApplicationListItem {
   id: number;
+  nis: string | null;
   nama_calon: string;
   jenjang: string;
   nama_sekolah_asal: string | null;
@@ -320,6 +322,57 @@ export interface ApplicationFile {
 export type ApplicationDetail = ApplicationListItem & StudentApplicationInput & {
   files: ApplicationFile[];
 };
+
+export interface Notification {
+  id: number;
+  application_id: number | null;
+  type: string;
+  title: string;
+  message: string;
+  jenjang: string;
+  created_at: string;
+  read: boolean;
+  nama_calon: string | null;
+  nis: string | null;
+}
+
+export interface NotificationListResponse {
+  items: Notification[];
+  unreadCount: number;
+}
+
+export interface NotificationReadResponse {
+  success: boolean;
+  count?: number | null;
+}
+
+export type ObservationResponseCounts = {[key: string]: number};
+
+export type ObservationResponseTrendsItem = {
+  date: string;
+  count: number;
+};
+
+export type ObservationResponseBreakdowns = { [key: string]: unknown };
+
+export interface ObservationResponse {
+  jenjang: string;
+  total: number;
+  counts: ObservationResponseCounts;
+  incompleteDocuments: number;
+  trends: ObservationResponseTrendsItem[];
+  breakdowns: ObservationResponseBreakdowns;
+}
+
+export interface MasterDataResponse {
+  items: ApplicationDetail[];
+  total: number;
+}
+
+export interface BulkFilesRequest {
+  /** @maxItems 100 */
+  ids: number[];
+}
 
 export type ApplicationStatusUpdateStatus = typeof ApplicationStatusUpdateStatus[keyof typeof ApplicationStatusUpdateStatus];
 
@@ -408,4 +461,36 @@ export const ListApplicationsStatus = {
   Diterima: 'Diterima',
   Ditolak: 'Ditolak',
 } as const;
+
+export type ListAdminNotificationsParams = {
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
+};
+
+export type GetAdminObservationsParams = {
+jenjang?: string;
+status?: string;
+q?: string;
+from?: string;
+to?: string;
+};
+
+export type ListAdminMasterDataParams = {
+jenjang?: string;
+status?: string;
+q?: string;
+from?: string;
+to?: string;
+};
+
+export type ExportAdminMasterDataParams = {
+jenjang?: string;
+status?: string;
+q?: string;
+from?: string;
+to?: string;
+};
 

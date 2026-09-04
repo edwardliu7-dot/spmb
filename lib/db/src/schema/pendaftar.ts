@@ -1,9 +1,10 @@
 import { createInsertSchema } from "drizzle-zod";
-import { date, integer, pgTable, real, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { date, integer, pgTable, real, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { z } from "zod/v4";
 
 export const pendaftarTable = pgTable("pendaftar", {
   id: serial("id").primaryKey(),
+  nis: text("nis"),
   jenjang: text("jenjang").notNull(),
   nama_calon: text("nama_calon").notNull(),
   nama_panggilan: text("nama_panggilan").notNull(),
@@ -51,6 +52,45 @@ export const pendaftarTable = pgTable("pendaftar", {
   kartu_keluarga_path: text("kartu_keluarga_path"),
   ktp_orangtua_path: text("ktp_orangtua_path"),
   bukti_bayar_path: text("bukti_bayar_path"),
+  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  nisUniqueIndex: uniqueIndex("pendaftar_nis_unique").on(table.nis),
+}));
+
+export const committeeNotificationTable = pgTable("committee_notification", {
+  id: serial("id").primaryKey(),
+  application_id: integer("application_id").references(() => pendaftarTable.id, { onDelete: "cascade" }),
+  type: text("type").notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  jenjang: text("jenjang").notNull(),
+  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const committeeNotificationReadTable = pgTable("committee_notification_read", {
+  id: serial("id").primaryKey(),
+  notification_id: integer("notification_id").notNull().references(() => committeeNotificationTable.id, { onDelete: "cascade" }),
+  username: text("username").notNull(),
+  read_at: timestamp("read_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  notificationReaderUnique: uniqueIndex("committee_notification_reader_unique").on(table.notification_id, table.username),
+}));
+
+export const applicationStatusHistoryTable = pgTable("application_status_history", {
+  id: serial("id").primaryKey(),
+  application_id: integer("application_id").notNull().references(() => pendaftarTable.id, { onDelete: "cascade" }),
+  previous_status: text("previous_status"),
+  next_status: text("next_status").notNull(),
+  changed_by: text("changed_by").notNull(),
+  changed_at: timestamp("changed_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const committeeAuditLogTable = pgTable("committee_audit_log", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull(),
+  action: text("action").notNull(),
+  application_id: integer("application_id").references(() => pendaftarTable.id, { onDelete: "set null" }),
+  details: text("details"),
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

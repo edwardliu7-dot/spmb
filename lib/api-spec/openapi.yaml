@@ -298,6 +298,154 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /admin/notifications:
+    get:
+      operationId: listAdminNotifications
+      tags: [applications]
+      summary: List committee notifications
+      security:
+        - committeeSession: []
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema: { type: number, minimum: 1, maximum: 100, default: 30 }
+      responses:
+        "200":
+          description: Committee notifications
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationListResponse"
+        "401":
+          description: Not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/notifications/read-all:
+    post:
+      operationId: markAllAdminNotificationsRead
+      tags: [applications]
+      summary: Mark all visible notifications as read
+      security:
+        - committeeSession: []
+      responses:
+        "200":
+          description: Notifications marked as read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationReadResponse"
+  /admin/notifications/{id}/read:
+    post:
+      operationId: markAdminNotificationRead
+      tags: [applications]
+      summary: Mark a notification as read
+      security:
+        - committeeSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: number }
+      responses:
+        "200":
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationReadResponse"
+  /admin/observations:
+    get:
+      operationId: getAdminObservations
+      tags: [applications]
+      summary: Get observation aggregates by level
+      security:
+        - committeeSession: []
+      parameters:
+        - { name: jenjang, in: query, required: false, schema: { type: string } }
+        - { name: status, in: query, required: false, schema: { type: string } }
+        - { name: q, in: query, required: false, schema: { type: string } }
+        - { name: from, in: query, required: false, schema: { type: string, format: date } }
+        - { name: to, in: query, required: false, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Observation aggregates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObservationResponse"
+  /admin/master-data:
+    get:
+      operationId: listAdminMasterData
+      tags: [applications]
+      summary: List master student data
+      security:
+        - committeeSession: []
+      parameters:
+        - { name: jenjang, in: query, required: false, schema: { type: string } }
+        - { name: status, in: query, required: false, schema: { type: string } }
+        - { name: q, in: query, required: false, schema: { type: string } }
+        - { name: from, in: query, required: false, schema: { type: string, format: date } }
+        - { name: to, in: query, required: false, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Master data list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MasterDataResponse"
+  /admin/export.xlsx:
+    get:
+      operationId: exportAdminMasterData
+      tags: [applications]
+      summary: Export master data as XLSX
+      security:
+        - committeeSession: []
+      parameters:
+        - { name: jenjang, in: query, required: false, schema: { type: string } }
+        - { name: status, in: query, required: false, schema: { type: string } }
+        - { name: q, in: query, required: false, schema: { type: string } }
+        - { name: from, in: query, required: false, schema: { type: string, format: date } }
+        - { name: to, in: query, required: false, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: XLSX export
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet: {}
+  /admin/applications/{id}/files.zip:
+    get:
+      operationId: downloadApplicationFilesZip
+      tags: [applications]
+      summary: Download one application files as ZIP
+      security:
+        - committeeSession: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: number } }
+      responses:
+        "200":
+          description: Application ZIP
+          content:
+            application/zip: {}
+  /admin/files.zip:
+    post:
+      operationId: downloadBulkApplicationFilesZip
+      tags: [applications]
+      summary: Download selected application files as ZIP
+      security:
+        - committeeSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkFilesRequest"
+      responses:
+        "200":
+          description: Bulk application ZIP
+          content:
+            application/zip: {}
 components:
   securitySchemes:
     committeeSession:
@@ -437,8 +585,9 @@ components:
         success: { type: boolean }
         message: { type: string }
         id: { type: number }
+        nis: { type: string, nullable: true }
         receiptUrl: { type: string }
-      required: [success, message, id, receiptUrl]
+      required: [success, message, id, nis, receiptUrl]
     SubmissionStatusResponse:
       type: object
       properties:
@@ -453,13 +602,14 @@ components:
       type: object
       properties:
         id: { type: number }
+        nis: { type: string, nullable: true }
         nama_calon: { type: string }
         jenjang: { type: string }
         nama_sekolah_asal: { type: string, nullable: true }
         email: { type: string }
         status: { type: string }
         created_at: { type: string }
-      required: [id, nama_calon, jenjang, nama_sekolah_asal, email, status, created_at]
+      required: [id, nis, nama_calon, jenjang, nama_sekolah_asal, email, status, created_at]
     ApplicationListResponse:
       type: object
       properties:
@@ -488,6 +638,67 @@ components:
               items:
                 $ref: "#/components/schemas/ApplicationFile"
           required: [files]
+    Notification:
+      type: object
+      properties:
+        id: { type: number }
+        application_id: { type: number, nullable: true }
+        type: { type: string }
+        title: { type: string }
+        message: { type: string }
+        jenjang: { type: string }
+        created_at: { type: string }
+        read: { type: boolean }
+        nama_calon: { type: string, nullable: true }
+        nis: { type: string, nullable: true }
+      required: [id, application_id, type, title, message, jenjang, created_at, read, nama_calon, nis]
+    NotificationListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Notification" }
+        unreadCount: { type: number }
+      required: [items, unreadCount]
+    NotificationReadResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        count: { type: number, nullable: true }
+      required: [success]
+    ObservationResponse:
+      type: object
+      properties:
+        jenjang: { type: string }
+        total: { type: number }
+        counts: { type: object, additionalProperties: { type: number } }
+        incompleteDocuments: { type: number }
+        trends:
+          type: array
+          items:
+            type: object
+            properties:
+              date: { type: string }
+              count: { type: number }
+            required: [date, count]
+        breakdowns: { type: object, additionalProperties: true }
+      required: [jenjang, total, counts, incompleteDocuments, trends, breakdowns]
+    MasterDataResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ApplicationDetail" }
+        total: { type: number }
+      required: [items, total]
+    BulkFilesRequest:
+      type: object
+      properties:
+        ids:
+          type: array
+          items: { type: number }
+          maxItems: 100
+      required: [ids]
     ApplicationStatusUpdate:
       type: object
       properties:

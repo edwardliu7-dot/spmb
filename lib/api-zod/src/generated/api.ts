@@ -166,6 +166,7 @@ export const SubmitApplicationResponse = zod.object({
   "success": zod.boolean(),
   "message": zod.string(),
   "id": zod.number(),
+  "nis": zod.string().nullable(),
   "receiptUrl": zod.string()
 })
 
@@ -252,6 +253,7 @@ export const ListApplicationsQueryParams = zod.object({
 export const ListApplicationsResponse = zod.object({
   "items": zod.array(zod.object({
   "id": zod.number(),
+  "nis": zod.string().nullable(),
   "nama_calon": zod.string(),
   "jenjang": zod.string(),
   "nama_sekolah_asal": zod.string().nullable(),
@@ -363,6 +365,7 @@ export const getApplicationResponseTwoHubunganWaliMax = 100;
 
 export const GetApplicationResponse = zod.object({
   "id": zod.number(),
+  "nis": zod.string().nullable(),
   "nama_calon": zod.string(),
   "jenjang": zod.string(),
   "nama_sekolah_asal": zod.string().nullable(),
@@ -454,5 +457,289 @@ export const GetApplicationFileParams = zod.object({
 })
 
 export const GetApplicationFileResponse = zod.unknown()
+
+
+/**
+ * @summary List committee notifications
+ */
+export const listAdminNotificationsQueryLimitDefault = 30;
+export const listAdminNotificationsQueryLimitMax = 100;
+
+
+
+export const ListAdminNotificationsQueryParams = zod.object({
+  "limit": zod.coerce.number().min(1).max(listAdminNotificationsQueryLimitMax).default(listAdminNotificationsQueryLimitDefault)
+})
+
+export const ListAdminNotificationsResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "application_id": zod.number().nullable(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "message": zod.string(),
+  "jenjang": zod.string(),
+  "created_at": zod.string(),
+  "read": zod.boolean(),
+  "nama_calon": zod.string().nullable(),
+  "nis": zod.string().nullable()
+})),
+  "unreadCount": zod.number()
+})
+
+
+/**
+ * @summary Mark all visible notifications as read
+ */
+export const MarkAllAdminNotificationsReadResponse = zod.object({
+  "success": zod.boolean(),
+  "count": zod.number().nullish()
+})
+
+
+/**
+ * @summary Mark a notification as read
+ */
+export const MarkAdminNotificationReadParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const MarkAdminNotificationReadResponse = zod.object({
+  "success": zod.boolean(),
+  "count": zod.number().nullish()
+})
+
+
+/**
+ * @summary Get observation aggregates by level
+ */
+export const GetAdminObservationsQueryParams = zod.object({
+  "jenjang": zod.coerce.string().optional(),
+  "status": zod.coerce.string().optional(),
+  "q": zod.coerce.string().optional(),
+  "from": zod.date().optional(),
+  "to": zod.date().optional()
+})
+
+export const GetAdminObservationsResponse = zod.object({
+  "jenjang": zod.string(),
+  "total": zod.number(),
+  "counts": zod.record(zod.string(), zod.number()),
+  "incompleteDocuments": zod.number(),
+  "trends": zod.array(zod.object({
+  "date": zod.string(),
+  "count": zod.number()
+})),
+  "breakdowns": zod.record(zod.string(), zod.unknown())
+})
+
+
+/**
+ * @summary List master student data
+ */
+export const ListAdminMasterDataQueryParams = zod.object({
+  "jenjang": zod.coerce.string().optional(),
+  "status": zod.coerce.string().optional(),
+  "q": zod.coerce.string().optional(),
+  "from": zod.date().optional(),
+  "to": zod.date().optional()
+})
+
+export const listAdminMasterDataResponseItemsItemTwoNamaCalonMin = 2;
+export const listAdminMasterDataResponseItemsItemTwoNamaCalonMax = 100;
+
+export const listAdminMasterDataResponseItemsItemTwoNamaPanggilanMax = 100;
+
+export const listAdminMasterDataResponseItemsItemTwoTempatLahirMax = 100;
+
+export const listAdminMasterDataResponseItemsItemTwoNisnMax = 10;
+
+
+export const listAdminMasterDataResponseItemsItemTwoNisnRegExp = new RegExp('^[0-9]{10}$');
+export const listAdminMasterDataResponseItemsItemTwoNikAnakMin = 16;
+export const listAdminMasterDataResponseItemsItemTwoNikAnakMax = 16;
+
+
+export const listAdminMasterDataResponseItemsItemTwoNikAnakRegExp = new RegExp('^[0-9]{16}$');
+export const listAdminMasterDataResponseItemsItemTwoAlamatDomisiliMax = 1000;
+
+export const listAdminMasterDataResponseItemsItemTwoAnakKeRegExp = new RegExp('^[0-9]+$');
+export const listAdminMasterDataResponseItemsItemTwoJumlahSaudaraRegExp = new RegExp('^[0-9]+$');
+export const listAdminMasterDataResponseItemsItemTwoStatusAnakMax = 50;
+
+export const listAdminMasterDataResponseItemsItemTwoAgamaMax = 50;
+
+export const listAdminMasterDataResponseItemsItemTwoWargaNegaraMax = 50;
+
+export const listAdminMasterDataResponseItemsItemTwoTinggiBadanRegExp = new RegExp('^[0-9]+([.][0-9]+)?$');
+export const listAdminMasterDataResponseItemsItemTwoBeratBadanRegExp = new RegExp('^[0-9]+([.][0-9]+)?$');
+export const listAdminMasterDataResponseItemsItemTwoRiwayatPenyakitMax = 1000;
+
+export const listAdminMasterDataResponseItemsItemTwoTransportasiMax = 50;
+
+export const listAdminMasterDataResponseItemsItemTwoJarakSekolahMax = 100;
+
+export const listAdminMasterDataResponseItemsItemTwoNamaSekolahAsalMax = 255;
+
+export const listAdminMasterDataResponseItemsItemTwoTahunLulusRegExp = new RegExp('^[0-9]{4}$');
+export const listAdminMasterDataResponseItemsItemTwoAlamatSekolahAsalMax = 1000;
+
+export const listAdminMasterDataResponseItemsItemTwoNomorKkMin = 16;
+export const listAdminMasterDataResponseItemsItemTwoNomorKkMax = 16;
+
+
+export const listAdminMasterDataResponseItemsItemTwoNomorKkRegExp = new RegExp('^[0-9]{16}$');
+export const listAdminMasterDataResponseItemsItemTwoNikAyahMin = 16;
+export const listAdminMasterDataResponseItemsItemTwoNikAyahMax = 16;
+
+
+export const listAdminMasterDataResponseItemsItemTwoNikAyahRegExp = new RegExp('^[0-9]{16}$');
+export const listAdminMasterDataResponseItemsItemTwoNikIbuMin = 16;
+export const listAdminMasterDataResponseItemsItemTwoNikIbuMax = 16;
+
+
+export const listAdminMasterDataResponseItemsItemTwoNikIbuRegExp = new RegExp('^[0-9]{16}$');
+export const listAdminMasterDataResponseItemsItemTwoNomorHpOrangtuaMin = 10;
+export const listAdminMasterDataResponseItemsItemTwoNomorHpOrangtuaMax = 16;
+
+export const listAdminMasterDataResponseItemsItemTwoEmailMax = 254;
+
+
+export const listAdminMasterDataResponseItemsItemTwoEmailRegExp = new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+export const listAdminMasterDataResponseItemsItemTwoNamaAyahMax = 100;
+
+export const listAdminMasterDataResponseItemsItemTwoTtlAyahMax = 150;
+
+export const listAdminMasterDataResponseItemsItemTwoPendidikanAyahMax = 100;
+
+export const listAdminMasterDataResponseItemsItemTwoPekerjaanAyahMax = 100;
+
+export const listAdminMasterDataResponseItemsItemTwoPenghasilanAyahMax = 100;
+
+export const listAdminMasterDataResponseItemsItemTwoInstansiJabatanAyahMax = 150;
+
+export const listAdminMasterDataResponseItemsItemTwoNamaIbuMax = 100;
+
+export const listAdminMasterDataResponseItemsItemTwoTtlIbuMax = 150;
+
+export const listAdminMasterDataResponseItemsItemTwoPendidikanIbuMax = 100;
+
+export const listAdminMasterDataResponseItemsItemTwoPekerjaanIbuMax = 100;
+
+export const listAdminMasterDataResponseItemsItemTwoPenghasilanIbuMax = 100;
+
+export const listAdminMasterDataResponseItemsItemTwoInstansiJabatanIbuMax = 150;
+
+export const listAdminMasterDataResponseItemsItemTwoNamaWaliMax = 100;
+
+export const listAdminMasterDataResponseItemsItemTwoHubunganWaliMax = 100;
+
+
+
+export const ListAdminMasterDataResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "nis": zod.string().nullable(),
+  "nama_calon": zod.string(),
+  "jenjang": zod.string(),
+  "nama_sekolah_asal": zod.string().nullable(),
+  "email": zod.string(),
+  "status": zod.string(),
+  "created_at": zod.string()
+}).and(zod.object({
+  "jenjang": zod.enum(['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']),
+  "nama_calon": zod.string().min(listAdminMasterDataResponseItemsItemTwoNamaCalonMin).max(listAdminMasterDataResponseItemsItemTwoNamaCalonMax),
+  "nama_panggilan": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoNamaPanggilanMax),
+  "jenis_kelamin": zod.enum(['Laki-laki', 'Perempuan']),
+  "tempat_lahir": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoTempatLahirMax),
+  "tanggal_lahir": zod.coerce.date().describe('Usia dihitung pada 1 Juli 2027. Minimum: Playgroup 3 tahun, TK-A 4 tahun, TK-B 5 tahun, SD 6 tahun. Daycare dan SMP tidak memiliki batas usia minimum.'),
+  "nisn": zod.string().max(listAdminMasterDataResponseItemsItemTwoNisnMax).regex(listAdminMasterDataResponseItemsItemTwoNisnRegExp).nullish(),
+  "nik_anak": zod.string().min(listAdminMasterDataResponseItemsItemTwoNikAnakMin).max(listAdminMasterDataResponseItemsItemTwoNikAnakMax).regex(listAdminMasterDataResponseItemsItemTwoNikAnakRegExp),
+  "alamat_domisili": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoAlamatDomisiliMax),
+  "anak_ke": zod.string().regex(listAdminMasterDataResponseItemsItemTwoAnakKeRegExp).describe('Integer from 1 to 20'),
+  "jumlah_saudara": zod.string().regex(listAdminMasterDataResponseItemsItemTwoJumlahSaudaraRegExp).describe('Integer from 0 to 50'),
+  "status_anak": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoStatusAnakMax),
+  "agama": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoAgamaMax),
+  "warga_negara": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoWargaNegaraMax),
+  "tinggi_badan": zod.string().regex(listAdminMasterDataResponseItemsItemTwoTinggiBadanRegExp).describe('Height in centimeters'),
+  "berat_badan": zod.string().regex(listAdminMasterDataResponseItemsItemTwoBeratBadanRegExp).describe('Weight in kilograms'),
+  "riwayat_penyakit": zod.string().max(listAdminMasterDataResponseItemsItemTwoRiwayatPenyakitMax).nullish(),
+  "transportasi": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoTransportasiMax),
+  "jarak_sekolah": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoJarakSekolahMax),
+  "nama_sekolah_asal": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoNamaSekolahAsalMax).nullable().describe('Required for SD and SMP; not required for Playgroup, Daycare, TK-A, or TK-B'),
+  "tahun_lulus": zod.string().regex(listAdminMasterDataResponseItemsItemTwoTahunLulusRegExp).nullish().describe('Graduation year, 1900 or later; required for SD and SMP'),
+  "alamat_sekolah_asal": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoAlamatSekolahAsalMax).nullish().describe('Required for SD and SMP; not required for Playgroup, Daycare, TK-A, or TK-B'),
+  "nomor_kk": zod.string().min(listAdminMasterDataResponseItemsItemTwoNomorKkMin).max(listAdminMasterDataResponseItemsItemTwoNomorKkMax).regex(listAdminMasterDataResponseItemsItemTwoNomorKkRegExp),
+  "nik_ayah": zod.string().min(listAdminMasterDataResponseItemsItemTwoNikAyahMin).max(listAdminMasterDataResponseItemsItemTwoNikAyahMax).regex(listAdminMasterDataResponseItemsItemTwoNikAyahRegExp),
+  "nik_ibu": zod.string().min(listAdminMasterDataResponseItemsItemTwoNikIbuMin).max(listAdminMasterDataResponseItemsItemTwoNikIbuMax).regex(listAdminMasterDataResponseItemsItemTwoNikIbuRegExp).nullable(),
+  "nomor_hp_orangtua": zod.string().min(listAdminMasterDataResponseItemsItemTwoNomorHpOrangtuaMin).max(listAdminMasterDataResponseItemsItemTwoNomorHpOrangtuaMax),
+  "email": zod.string().max(listAdminMasterDataResponseItemsItemTwoEmailMax).regex(listAdminMasterDataResponseItemsItemTwoEmailRegExp),
+  "nama_ayah": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoNamaAyahMax),
+  "ttl_ayah": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoTtlAyahMax),
+  "pendidikan_ayah": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoPendidikanAyahMax),
+  "pekerjaan_ayah": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoPekerjaanAyahMax),
+  "penghasilan_ayah": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoPenghasilanAyahMax),
+  "instansi_jabatan_ayah": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoInstansiJabatanAyahMax),
+  "nama_ibu": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoNamaIbuMax),
+  "ttl_ibu": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoTtlIbuMax),
+  "pendidikan_ibu": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoPendidikanIbuMax),
+  "pekerjaan_ibu": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoPekerjaanIbuMax),
+  "penghasilan_ibu": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoPenghasilanIbuMax),
+  "instansi_jabatan_ibu": zod.string().min(1).max(listAdminMasterDataResponseItemsItemTwoInstansiJabatanIbuMax),
+  "nama_wali": zod.string().max(listAdminMasterDataResponseItemsItemTwoNamaWaliMax).nullish(),
+  "hubungan_wali": zod.string().max(listAdminMasterDataResponseItemsItemTwoHubunganWaliMax).nullish(),
+  "foto_3x4": zod.string().describe('Uploaded JPG or PNG file, maximum 5 MB'),
+  "akte_lahir": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "kartu_keluarga": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "ktp_orangtua": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB')
+})).and(zod.object({
+  "files": zod.array(zod.object({
+  "field": zod.string(),
+  "label": zod.string(),
+  "url": zod.string(),
+  "available": zod.boolean()
+}))
+}))),
+  "total": zod.number()
+})
+
+
+/**
+ * @summary Export master data as XLSX
+ */
+export const ExportAdminMasterDataQueryParams = zod.object({
+  "jenjang": zod.coerce.string().optional(),
+  "status": zod.coerce.string().optional(),
+  "q": zod.coerce.string().optional(),
+  "from": zod.date().optional(),
+  "to": zod.date().optional()
+})
+
+export const ExportAdminMasterDataResponse = zod.unknown()
+
+
+/**
+ * @summary Download one application files as ZIP
+ */
+export const DownloadApplicationFilesZipParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DownloadApplicationFilesZipResponse = zod.unknown()
+
+
+/**
+ * @summary Download selected application files as ZIP
+ */
+export const downloadBulkApplicationFilesZipBodyIdsMax = 100;
+
+
+
+export const DownloadBulkApplicationFilesZipBody = zod.object({
+  "ids": zod.array(zod.number()).max(downloadBulkApplicationFilesZipBodyIdsMax)
+})
+
+export const DownloadBulkApplicationFilesZipResponse = zod.unknown()
 
 

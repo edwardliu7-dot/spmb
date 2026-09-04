@@ -24,12 +24,21 @@ import type {
   ApplicationListResponse,
   ApplicationStatusResponse,
   ApplicationStatusUpdate,
+  BulkFilesRequest,
   CommitteeLogout200,
   CommitteeMe200,
   ErrorResponse,
+  ExportAdminMasterDataParams,
+  GetAdminObservationsParams,
   GetSubmissionStatusParams,
   HealthStatus,
+  ListAdminMasterDataParams,
+  ListAdminNotificationsParams,
   ListApplicationsParams,
+  MasterDataResponse,
+  NotificationListResponse,
+  NotificationReadResponse,
+  ObservationResponse,
   PaymentVerificationInput,
   PaymentVerificationResult,
   StudentApplicationInput,
@@ -899,4 +908,630 @@ export function useGetApplicationFile<TData = Awaited<ReturnType<typeof getAppli
 
 
 
+
+export const getListAdminNotificationsUrl = (params?: ListAdminNotificationsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/notifications?${stringifiedParams}` : `/api/admin/notifications`
+}
+
+/**
+ * @summary List committee notifications
+ */
+export const listAdminNotifications = async (params?: ListAdminNotificationsParams, options?: Parameters<typeof customFetch>[1]): Promise<NotificationListResponse> => {
+
+  return customFetch<NotificationListResponse>(getListAdminNotificationsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListAdminNotificationsQueryKey = (params?: ListAdminNotificationsParams,) => {
+    return [
+    `/api/admin/notifications`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListAdminNotificationsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminNotifications>>, TError = ErrorType<ErrorResponse>>(params?: ListAdminNotificationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAdminNotifications>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAdminNotificationsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminNotifications>>> = ({ signal }) => listAdminNotifications(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminNotifications>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListAdminNotificationsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminNotifications>>>
+export type ListAdminNotificationsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List committee notifications
+ */
+
+export function useListAdminNotifications<TData = Awaited<ReturnType<typeof listAdminNotifications>>, TError = ErrorType<ErrorResponse>>(
+ params?: ListAdminNotificationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAdminNotifications>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListAdminNotificationsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getMarkAllAdminNotificationsReadUrl = () => {
+
+
+
+
+  return `/api/admin/notifications/read-all`
+}
+
+/**
+ * @summary Mark all visible notifications as read
+ */
+export const markAllAdminNotificationsRead = async ( options?: Parameters<typeof customFetch>[1]): Promise<NotificationReadResponse> => {
+
+  return customFetch<NotificationReadResponse>(getMarkAllAdminNotificationsReadUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getMarkAllAdminNotificationsReadMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markAllAdminNotificationsRead>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof markAllAdminNotificationsRead>>, TError,void, TContext> => {
+
+const mutationKey = ['markAllAdminNotificationsRead'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof markAllAdminNotificationsRead>>, void> = () => {
+
+
+          return  markAllAdminNotificationsRead(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MarkAllAdminNotificationsReadMutationResult = NonNullable<Awaited<ReturnType<typeof markAllAdminNotificationsRead>>>
+
+    export type MarkAllAdminNotificationsReadMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Mark all visible notifications as read
+ */
+export const useMarkAllAdminNotificationsRead = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markAllAdminNotificationsRead>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof markAllAdminNotificationsRead>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getMarkAllAdminNotificationsReadMutationOptions(options));
+    }
+
+export const getMarkAdminNotificationReadUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/notifications/${id}/read`
+}
+
+/**
+ * @summary Mark a notification as read
+ */
+export const markAdminNotificationRead = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<NotificationReadResponse> => {
+
+  return customFetch<NotificationReadResponse>(getMarkAdminNotificationReadUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getMarkAdminNotificationReadMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markAdminNotificationRead>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof markAdminNotificationRead>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['markAdminNotificationRead'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof markAdminNotificationRead>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  markAdminNotificationRead(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MarkAdminNotificationReadMutationResult = NonNullable<Awaited<ReturnType<typeof markAdminNotificationRead>>>
+
+    export type MarkAdminNotificationReadMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Mark a notification as read
+ */
+export const useMarkAdminNotificationRead = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markAdminNotificationRead>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof markAdminNotificationRead>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getMarkAdminNotificationReadMutationOptions(options));
+    }
+
+export const getGetAdminObservationsUrl = (params?: GetAdminObservationsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/observations?${stringifiedParams}` : `/api/admin/observations`
+}
+
+/**
+ * @summary Get observation aggregates by level
+ */
+export const getAdminObservations = async (params?: GetAdminObservationsParams, options?: Parameters<typeof customFetch>[1]): Promise<ObservationResponse> => {
+
+  return customFetch<ObservationResponse>(getGetAdminObservationsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminObservationsQueryKey = (params?: GetAdminObservationsParams,) => {
+    return [
+    `/api/admin/observations`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetAdminObservationsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminObservations>>, TError = ErrorType<unknown>>(params?: GetAdminObservationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminObservations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminObservationsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminObservations>>> = ({ signal }) => getAdminObservations(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminObservations>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminObservationsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminObservations>>>
+export type GetAdminObservationsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get observation aggregates by level
+ */
+
+export function useGetAdminObservations<TData = Awaited<ReturnType<typeof getAdminObservations>>, TError = ErrorType<unknown>>(
+ params?: GetAdminObservationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminObservations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminObservationsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListAdminMasterDataUrl = (params?: ListAdminMasterDataParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/master-data?${stringifiedParams}` : `/api/admin/master-data`
+}
+
+/**
+ * @summary List master student data
+ */
+export const listAdminMasterData = async (params?: ListAdminMasterDataParams, options?: Parameters<typeof customFetch>[1]): Promise<MasterDataResponse> => {
+
+  return customFetch<MasterDataResponse>(getListAdminMasterDataUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListAdminMasterDataQueryKey = (params?: ListAdminMasterDataParams,) => {
+    return [
+    `/api/admin/master-data`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListAdminMasterDataQueryOptions = <TData = Awaited<ReturnType<typeof listAdminMasterData>>, TError = ErrorType<unknown>>(params?: ListAdminMasterDataParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAdminMasterData>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAdminMasterDataQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminMasterData>>> = ({ signal }) => listAdminMasterData(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminMasterData>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListAdminMasterDataQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminMasterData>>>
+export type ListAdminMasterDataQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List master student data
+ */
+
+export function useListAdminMasterData<TData = Awaited<ReturnType<typeof listAdminMasterData>>, TError = ErrorType<unknown>>(
+ params?: ListAdminMasterDataParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAdminMasterData>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListAdminMasterDataQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getExportAdminMasterDataUrl = (params?: ExportAdminMasterDataParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/export.xlsx?${stringifiedParams}` : `/api/admin/export.xlsx`
+}
+
+/**
+ * @summary Export master data as XLSX
+ */
+export const exportAdminMasterData = async (params?: ExportAdminMasterDataParams, options?: Parameters<typeof customFetch>[1]): Promise<unknown> => {
+
+  return customFetch<unknown>(getExportAdminMasterDataUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getExportAdminMasterDataQueryKey = (params?: ExportAdminMasterDataParams,) => {
+    return [
+    `/api/admin/export.xlsx`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getExportAdminMasterDataQueryOptions = <TData = Awaited<ReturnType<typeof exportAdminMasterData>>, TError = ErrorType<unknown>>(params?: ExportAdminMasterDataParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportAdminMasterData>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getExportAdminMasterDataQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof exportAdminMasterData>>> = ({ signal }) => exportAdminMasterData(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportAdminMasterData>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ExportAdminMasterDataQueryResult = NonNullable<Awaited<ReturnType<typeof exportAdminMasterData>>>
+export type ExportAdminMasterDataQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Export master data as XLSX
+ */
+
+export function useExportAdminMasterData<TData = Awaited<ReturnType<typeof exportAdminMasterData>>, TError = ErrorType<unknown>>(
+ params?: ExportAdminMasterDataParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportAdminMasterData>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getExportAdminMasterDataQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDownloadApplicationFilesZipUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/applications/${id}/files.zip`
+}
+
+/**
+ * @summary Download one application files as ZIP
+ */
+export const downloadApplicationFilesZip = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getDownloadApplicationFilesZipUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDownloadApplicationFilesZipQueryKey = (id: number,) => {
+    return [
+    `/api/admin/applications/${id}/files.zip`
+    ] as const;
+    }
+
+
+export const getDownloadApplicationFilesZipQueryOptions = <TData = Awaited<ReturnType<typeof downloadApplicationFilesZip>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadApplicationFilesZip>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDownloadApplicationFilesZipQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadApplicationFilesZip>>> = ({ signal }) => downloadApplicationFilesZip(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadApplicationFilesZip>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type DownloadApplicationFilesZipQueryResult = NonNullable<Awaited<ReturnType<typeof downloadApplicationFilesZip>>>
+export type DownloadApplicationFilesZipQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Download one application files as ZIP
+ */
+
+export function useDownloadApplicationFilesZip<TData = Awaited<ReturnType<typeof downloadApplicationFilesZip>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadApplicationFilesZip>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getDownloadApplicationFilesZipQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDownloadBulkApplicationFilesZipUrl = () => {
+
+
+
+
+  return `/api/admin/files.zip`
+}
+
+/**
+ * @summary Download selected application files as ZIP
+ */
+export const downloadBulkApplicationFilesZip = async (bulkFilesRequest: BulkFilesRequest, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getDownloadBulkApplicationFilesZipUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(bulkFilesRequest)
+  }
+);}
+
+
+
+
+
+export const getDownloadBulkApplicationFilesZipMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof downloadBulkApplicationFilesZip>>, TError,{data: BodyType<BulkFilesRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof downloadBulkApplicationFilesZip>>, TError,{data: BodyType<BulkFilesRequest>}, TContext> => {
+
+const mutationKey = ['downloadBulkApplicationFilesZip'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof downloadBulkApplicationFilesZip>>, {data: BodyType<BulkFilesRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  downloadBulkApplicationFilesZip(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DownloadBulkApplicationFilesZipMutationResult = NonNullable<Awaited<ReturnType<typeof downloadBulkApplicationFilesZip>>>
+    export type DownloadBulkApplicationFilesZipMutationBody = BodyType<BulkFilesRequest>
+    export type DownloadBulkApplicationFilesZipMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Download selected application files as ZIP
+ */
+export const useDownloadBulkApplicationFilesZip = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof downloadBulkApplicationFilesZip>>, TError,{data: BodyType<BulkFilesRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof downloadBulkApplicationFilesZip>>,
+        TError,
+        {data: BodyType<BulkFilesRequest>},
+        TContext
+      > => {
+      return useMutation(getDownloadBulkApplicationFilesZipMutationOptions(options));
+    }
 
