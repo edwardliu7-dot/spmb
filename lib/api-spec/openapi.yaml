@@ -302,9 +302,6 @@ components:
         - berat_badan
         - transportasi
         - jarak_sekolah
-        - nama_sekolah_asal
-        - tahun_lulus
-        - alamat_sekolah_asal
         - nomor_kk
         - nik_orangtua
         - nomor_hp_orangtua
@@ -346,9 +343,9 @@ components:
         riwayat_penyakit: { type: string, maxLength: 1000, nullable: true }
         transportasi: { type: string, minLength: 1, maxLength: 50 }
         jarak_sekolah: { type: string, minLength: 1, maxLength: 100 }
-        nama_sekolah_asal: { type: string, minLength: 1, maxLength: 255 }
-        tahun_lulus: { type: string, pattern: "^[0-9]{4}$", description: "Graduation year, 1900 or later" }
-        alamat_sekolah_asal: { type: string, minLength: 1, maxLength: 1000 }
+        nama_sekolah_asal: { type: string, minLength: 1, maxLength: 255, nullable: true, description: "Required for SD and SMP; not required for Playgroup, Daycare, TK-A, or TK-B" }
+        tahun_lulus: { type: string, pattern: "^[0-9]{4}$", nullable: true, description: "Graduation year, 1900 or later; required for SD and SMP" }
+        alamat_sekolah_asal: { type: string, minLength: 1, maxLength: 1000, nullable: true, description: "Required for SD and SMP; not required for Playgroup, Daycare, TK-A, or TK-B" }
         nomor_kk: { type: string, pattern: "^[0-9]{16}$", minLength: 16, maxLength: 16 }
         nik_orangtua: { type: string, pattern: "^[0-9]{16}$", minLength: 16, maxLength: 16 }
         nomor_hp_orangtua: { type: string, minLength: 10, maxLength: 16 }
@@ -410,7 +407,7 @@ components:
         id: { type: number }
         nama_calon: { type: string }
         jenjang: { type: string }
-        nama_sekolah_asal: { type: string }
+        nama_sekolah_asal: { type: string, nullable: true }
         email: { type: string }
         status: { type: string }
         created_at: { type: string }

@@ -10,7 +10,7 @@ export interface ApplicationListItem {
   id: number;
   nama_calon: string;
   jenjang: string;
-  nama_sekolah_asal: string;
+  nama_sekolah_asal: string | null;
   email: string;
   status: string;
   created_at: string;

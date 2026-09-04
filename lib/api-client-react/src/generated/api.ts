@@ -177,9 +177,15 @@ if(studentApplicationInput.riwayat_penyakit !== undefined && studentApplicationI
  }
 formData.append(`transportasi`, studentApplicationInput.transportasi);
 formData.append(`jarak_sekolah`, studentApplicationInput.jarak_sekolah);
-formData.append(`nama_sekolah_asal`, studentApplicationInput.nama_sekolah_asal);
-formData.append(`tahun_lulus`, studentApplicationInput.tahun_lulus);
-formData.append(`alamat_sekolah_asal`, studentApplicationInput.alamat_sekolah_asal);
+if(studentApplicationInput.nama_sekolah_asal !== undefined && studentApplicationInput.nama_sekolah_asal !== null) {
+ formData.append(`nama_sekolah_asal`, studentApplicationInput.nama_sekolah_asal);
+ }
+if(studentApplicationInput.tahun_lulus !== undefined && studentApplicationInput.tahun_lulus !== null) {
+ formData.append(`tahun_lulus`, studentApplicationInput.tahun_lulus);
+ }
+if(studentApplicationInput.alamat_sekolah_asal !== undefined && studentApplicationInput.alamat_sekolah_asal !== null) {
+ formData.append(`alamat_sekolah_asal`, studentApplicationInput.alamat_sekolah_asal);
+ }
 formData.append(`nomor_kk`, studentApplicationInput.nomor_kk);
 formData.append(`nik_orangtua`, studentApplicationInput.nik_orangtua);
 formData.append(`nomor_hp_orangtua`, studentApplicationInput.nomor_hp_orangtua);

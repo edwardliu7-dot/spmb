@@ -91,20 +91,22 @@ export interface StudentApplicationInput {
      */
   jarak_sekolah: string;
   /**
+     * Required for SD and SMP; not required for Playgroup, Daycare, TK-A, or TK-B
      * @minLength 1
      * @maxLength 255
      */
-  nama_sekolah_asal: string;
+  nama_sekolah_asal?: string | null;
   /**
-     * Graduation year, 1900 or later
+     * Graduation year, 1900 or later; required for SD and SMP
      * @pattern ^[0-9]{4}$
      */
-  tahun_lulus: string;
+  tahun_lulus?: string | null;
   /**
+     * Required for SD and SMP; not required for Playgroup, Daycare, TK-A, or TK-B
      * @minLength 1
      * @maxLength 1000
      */
-  alamat_sekolah_asal: string;
+  alamat_sekolah_asal?: string | null;
   /**
      * @minLength 16
      * @maxLength 16

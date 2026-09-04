@@ -39,9 +39,9 @@ function inputField(
   required = true,
 ): string {
   const requiredAttribute = required ? 'required aria-required="true"' : '';
-  const requirementLabel = required
-    ? requiredMark
-    : '<span class="form-board-optional">opsional</span>';
+  const requirementLabel = `<span class="form-board-field-requirement">${
+    required ? requiredMark : '<span class="form-board-optional">opsional</span>'
+  }</span>`;
   const hintMarkup = hint ? `<span class="hint">${hint}</span>` : '';
   let control = '';
   if (kind === 'textarea') {
@@ -115,9 +115,9 @@ const studentFields = [
 ].join('');
 
 const schoolFields = [
-  inputField('nama_sekolah_asal', 'Nama sekolah asal'),
-  inputField('tahun_lulus', 'Tahun lulus', 'number'),
-  inputField('alamat_sekolah_asal', 'Alamat sekolah asal', 'textarea', [], '', true),
+  inputField('nama_sekolah_asal', 'Nama sekolah asal', 'text', [], '', false, false),
+  inputField('tahun_lulus', 'Tahun lulus', 'number', [], '', false, false),
+  inputField('alamat_sekolah_asal', 'Alamat sekolah asal', 'textarea', [], '', true, false),
 ].join('');
 
 const parentFields = [
@@ -221,7 +221,7 @@ root.innerHTML = `
             <div class="form-alert error" id="form-error" role="alert" data-testid="alert-form-error"></div>
             <form id="application-form" novalidate>
               ${section('01', 'Data Calon Peserta Didik', '', studentFields, 'section-student')}
-              ${section('02', 'Data Sekolah Asal', '', schoolFields, 'section-school')}
+               ${section('02', 'Data Sekolah Asal', 'Tidak wajib untuk Playgroup, Daycare, TK-A, dan TK-B.', schoolFields, 'section-school')}
               ${section('03', 'Data Orang Tua & Wali', '', parentFields, 'section-parent')}
               <fieldset class="form-board-section" id="section-upload" data-section="04">
                 <div class="form-board-section-heading">
@@ -297,6 +297,33 @@ const numericRules: Record<string, { min: number; max: number; integer: boolean 
   berat_badan: { min: 2, max: 250, integer: false },
   tahun_lulus: { min: 1900, max: new Date().getFullYear() + 1, integer: true },
 };
+
+const earlyEducationLevels = new Set(['Playgroup', 'Daycare', 'TK-A', 'TK-B']);
+
+function updateSchoolFieldsRequirement(): void {
+  const jenjang = (getFieldControl('jenjang') as HTMLSelectElement | null)?.value || '';
+  const required = !earlyEducationLevels.has(jenjang);
+  const labels: Record<string, string> = {
+    nama_sekolah_asal: 'Nama sekolah asal',
+    tahun_lulus: 'Tahun lulus',
+    alamat_sekolah_asal: 'Alamat sekolah asal',
+  };
+
+  Object.keys(labels).forEach((name) => {
+    const control = getFieldControl(name) as HTMLInputElement | HTMLTextAreaElement | null;
+    const wrapper = control?.closest<HTMLElement>('[data-field]');
+    const requirement = wrapper?.querySelector<HTMLElement>('.form-board-field-requirement');
+    if (!control || !requirement) return;
+    control.required = required;
+    if (required) {
+      control.setAttribute('aria-required', 'true');
+      requirement.innerHTML = requiredMark;
+    } else {
+      control.removeAttribute('aria-required');
+      requirement.innerHTML = '<span class="form-board-optional">opsional</span>';
+    }
+  });
+}
 
 const digitRules: Record<string, number> = {
   nisn: 10,
@@ -444,6 +471,9 @@ form.querySelectorAll<HTMLElement>('input, select, textarea').forEach((control) 
   control.addEventListener('input', () => clearError(control));
   control.addEventListener('change', () => clearError(control));
 });
+
+getFieldControl('jenjang')?.addEventListener('change', updateSchoolFieldsRequirement);
+updateSchoolFieldsRequirement();
 
 document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((input) => {
   input.addEventListener('change', () => {

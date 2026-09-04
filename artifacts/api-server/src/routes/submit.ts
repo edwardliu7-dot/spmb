@@ -125,6 +125,12 @@ const optionalTextFields = new Set<TextField>([
   "hubungan_wali",
 ]);
 const requiredTextFields = textFields.filter((field) => !optionalTextFields.has(field));
+const schoolTextFields = new Set<TextField>([
+  "nama_sekolah_asal",
+  "tahun_lulus",
+  "alamat_sekolah_asal",
+]);
+const earlyEducationLevels = new Set(["Playgroup", "Daycare", "TK-A", "TK-B"]);
 const validFieldValues: Partial<Record<TextField, readonly string[]>> = {
   status_anak: ["Anak kandung", "Anak tiri", "Anak angkat"],
   agama: ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu"],
@@ -299,9 +305,12 @@ function handleUpload(request: Request, response: Parameters<typeof uploadMiddle
 }
 
 router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, response): Promise<void> => {
-  const invalidFields = requiredTextFields.filter((field) => !getValue(request, field));
   const email = getValue(request, "email");
   const jenjang = getValue(request, "jenjang");
+  const schoolDataRequired = !earlyEducationLevels.has(jenjang);
+  const invalidFields = requiredTextFields
+    .filter((field) => !schoolTextFields.has(field) || schoolDataRequired)
+    .filter((field) => !getValue(request, field));
   const jenisKelamin = getValue(request, "jenis_kelamin");
   const validLevels = allJenjang;
   const validGenders = ["Laki-laki", "Perempuan"];
@@ -310,7 +319,12 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
       const value = getValue(request, field);
       // Nullish optional values are accepted by the generated contract
       // schema; an empty string would still fail patterns such as NISN.
-      return [field, optionalTextFields.has(field) && !value ? null : value];
+       return [
+         field,
+         (optionalTextFields.has(field) || (schoolTextFields.has(field) && !schoolDataRequired)) && !value
+           ? null
+           : value,
+       ];
     }),
     // The generated multipart contract represents uploads as strings. Use
     // their original names for contract validation while Multer keeps the
@@ -331,6 +345,7 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
   };
   const numericFields = Object.keys(numericRules);
   const invalidNumbers = numericFields.filter((field) => {
+    if (!schoolDataRequired && field === "tahun_lulus") return false;
     const value = Number(getValue(request, field as TextField));
     const rule = numericRules[field];
     return (
@@ -435,9 +450,9 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
       riwayat_penyakit: getValue(request, "riwayat_penyakit") || null,
       transportasi: getValue(request, "transportasi"),
       jarak_sekolah: getValue(request, "jarak_sekolah"),
-      nama_sekolah_asal: getValue(request, "nama_sekolah_asal"),
-      tahun_lulus: Number(getValue(request, "tahun_lulus")),
-      alamat_sekolah_asal: getValue(request, "alamat_sekolah_asal"),
+       nama_sekolah_asal: getValue(request, "nama_sekolah_asal") || null,
+       tahun_lulus: getValue(request, "tahun_lulus") ? Number(getValue(request, "tahun_lulus")) : null,
+       alamat_sekolah_asal: getValue(request, "alamat_sekolah_asal") || null,
       nomor_kk: getValue(request, "nomor_kk"),
       nik_orangtua: getValue(request, "nik_orangtua"),
       nomor_hp_orangtua: getValue(request, "nomor_hp_orangtua"),
