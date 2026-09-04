@@ -1,9 +1,32 @@
 import { healthCheck, submitApplication } from '@workspace/api-client-react';
 import './index.css';
+import './form-board.css';
 
 type FieldKind = 'text' | 'email' | 'date' | 'number' | 'textarea' | 'select';
 
-const requiredMark = '<span class="req" aria-hidden="true">*</span>';
+type IconName = 'bell' | 'calendar' | 'check' | 'chevron' | 'clipboard' | 'file' | 'file-check' | 'folder' | 'info' | 'lock' | 'menu' | 'shield' | 'upload';
+
+const icons: Record<IconName, string> = {
+  bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>',
+  check: '<path d="m5 12 4 4L19 6"/>',
+  chevron: '<path d="m6 9 6 6 6-6"/>',
+  clipboard: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 12h6M9 16h4"/>',
+  file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>',
+  'file-check': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 15l2 2 4-4"/>',
+  folder: '<path d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z"/><path d="M3 9h18"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+  lock: '<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  shield: '<path d="M12 3 20 6v6c0 5-3.4 8.5-8 10-4.6-1.5-8-5-8-10V6z"/><path d="m8 12 2.5 2.5L16 9"/>',
+  upload: '<path d="M12 16V4M7 9l5-5 5 5M5 20h14"/>',
+};
+
+function icon(name: IconName): string {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${icons[name]}</svg>`;
+}
+
+const requiredMark = '<span class="form-board-required" aria-hidden="true">*</span>';
 
 function inputField(
   name: string,
@@ -19,17 +42,17 @@ function inputField(
   if (kind === 'textarea') {
     control = `<textarea id="${name}" name="${name}" ${required} placeholder="Tulis ${label.toLowerCase()}"></textarea>`;
   } else if (kind === 'select') {
-    control = `<select id="${name}" name="${name}" ${required} data-testid="select-${name}">
+    control = `<span class="form-board-select-wrap"><select id="${name}" name="${name}" ${required} data-testid="select-${name}">
       <option value="">Pilih ${label.toLowerCase()}</option>
       ${options.map((option) => `<option value="${option}">${option}</option>`).join('')}
-    </select>`;
+    </select>${icon('chevron')}</span>`;
   } else {
     const inputMode = ['number'].includes(kind) ? ' inputmode="numeric"' : '';
     const placeholder =
       kind === 'date' ? '' : ` placeholder="Tulis ${label.toLowerCase()}"`;
     control = `<input id="${name}" name="${name}" type="${kind}" ${required}${inputMode}${placeholder} data-testid="input-${name}" />`;
   }
-  return `<div class="field${span ? ' span-2' : ''}" data-field="${name}">
+  return `<div class="form-board-field${span ? ' form-board-field-span' : ''}" data-field="${name}">
     <label for="${name}">${label} ${requiredMark} ${hintMarkup}</label>
     ${control}
     <span class="error-message" aria-live="polite"></span>
@@ -37,25 +60,29 @@ function inputField(
 }
 
 function section(index: string, title: string, description: string, content: string, id: string): string {
-  return `<fieldset class="field-section" id="${id}" data-section="${index}">
-    <div class="section-heading">
-      <span class="section-index">${index}</span>
-      <div><h3>${title}</h3><p>${description}</p></div>
+  return `<fieldset class="form-board-section" id="${id}" data-section="${index}">
+    <div class="form-board-section-heading">
+      <span class="form-board-section-index">${index}</span>
+      <div class="form-board-section-copy">
+        <div class="form-board-section-kicker"><span>Tahap berikutnya</span><span class="form-board-section-rule"></span></div>
+        <h3>${title}</h3><p>${description}</p>
+      </div>
+      <span class="form-board-section-check"><span></span></span>
     </div>
-    <div class="field-grid">${content}</div>
+    <div class="form-board-field-grid">${content}</div>
   </fieldset>`;
 }
 
 function fileField(name: string, label: string, detail: string): string {
-  return `<div class="upload-box" data-upload="${name}">
-     <div class="upload-copy">
+  return `<div class="form-board-upload" data-upload="${name}">
+     <div class="form-board-upload-icon">${icon('upload')}</div>
+     <div class="form-board-upload-copy">
        <strong>${label} ${requiredMark}</strong>
-      <span data-file-name="${name}">${detail}</span>
+       <small data-file-name="${name}">${detail}</small>
     </div>
-    <div class="upload-action">
-      <span class="choose-file">Pilih berkas</span>
+     <label class="form-board-upload-button" for="${name}">Pilih berkas
        <input id="${name}" name="${name}" type="file" accept=".pdf,.jpg,.jpeg,.png" required aria-required="true" data-testid="input-file-${name}" />
-    </div>
+     </label>
   </div>`;
 }
 
@@ -123,73 +150,104 @@ if (window.location.pathname.replace(/\/+$/, '') === '/panitia') {
   if (!root) throw new Error('Elemen root tidak ditemukan.');
 
 root.innerHTML = `
-  <div class="app-shell">
-    <header class="topbar">
-      <a class="brand" href="/" data-testid="link-home">
-        <span class="brand-mark" aria-hidden="true">S</span>
-        <span class="brand-copy"><span class="brand-name">SPMB</span><span class="brand-sub">Penerimaan murid baru</span></span>
-      </a>
-      <div class="topbar-note"><span class="health-dot" id="health-dot" aria-hidden="true"></span><span id="health-status" data-testid="status-health">Memeriksa layanan</span></div>
+  <div class="form-board-shell">
+    <header class="form-board-topbar">
+      <div class="form-board-topbar-inner">
+        <div class="form-board-brand-group">
+          <button type="button" class="form-board-menu-button" aria-label="Buka navigasi" aria-expanded="false">${icon('menu')}</button>
+          <a class="form-board-brand" href="#form-board-content" data-testid="link-home" aria-label="SPMB">
+            <span class="form-board-brand-mark">S</span>
+            <span><strong>SPMB</strong><small>Penerimaan murid baru</small></span>
+          </a>
+        </div>
+        <nav class="form-board-nav" aria-label="Navigasi pendaftaran">
+          <button type="button" class="form-board-nav-active" data-notice="Anda sedang berada di formulir pendaftaran.">Pendaftaran</button>
+          <button type="button" data-notice="Status pengajuan dapat dicek setelah formulir dikirim.">Status pengajuan</button>
+          <button type="button" data-notice="Panduan pendaftaran akan membantu Anda menyiapkan dokumen.">Panduan</button>
+        </nav>
+        <div class="form-board-topbar-actions">
+          <button type="button" class="form-board-icon-button" aria-label="Notifikasi" data-notice="Tidak ada notifikasi baru.">${icon('bell')}<span></span></button>
+          <span class="form-board-service-status"><i id="health-dot"></i><span id="health-status" data-testid="status-health">Memeriksa layanan</span></span>
+        </div>
+      </div>
     </header>
 
-    <section class="hero" aria-labelledby="page-title">
-      <div class="hero-inner">
-        <div class="eyebrow">Tahun ajaran 2027 / 2028</div>
-        <h1 id="page-title">Satu langkah kecil menuju <em>sekolah baru.</em></h1>
-        <p class="hero-intro">Lengkapi data calon peserta didik dengan tenang. Kami menyimpan pengajuan Anda dengan aman untuk membantu proses penerimaan murid baru berjalan jelas dan tertata.</p>
-        <div class="hero-meta"><span class="meta-pill">Pengajuan baru</span><span class="meta-pill">Waktu pengisian sekitar 10 menit</span></div>
+    <main id="form-board-content" class="form-board-main">
+      <div class="form-board-intro">
+        <div class="form-board-intro-copy">
+          <div class="form-board-eyebrow"><span></span>Ruang pendaftaran · tahun ajaran 2027 / 2028</div>
+          <h1 id="page-title">Mulai dari data yang <em>paling penting.</em></h1>
+          <p>Isi pengajuan dengan tenang. Setiap bagian tersusun sebagai catatan yang jelas untuk membantu panitia meninjau data calon peserta didik.</p>
+        </div>
+        <div class="form-board-date">
+          <div class="form-board-date-mark">${icon('calendar')}<span>BARU</span></div>
+          <div><strong>Pengajuan baru</strong><small>Disiapkan untuk Anda</small></div>
+        </div>
       </div>
-    </section>
 
-    <main class="main-layout">
-      <aside class="progress-panel" aria-label="Kemajuan formulir">
-        <p class="progress-title">Kemajuan pengisian</p>
-        <ol class="progress-list">
-          <li><button class="progress-item is-active" type="button" data-go-section="section-student" data-testid="button-progress-student"><span class="progress-number">01</span><span class="progress-label">Calon peserta didik<small>Identitas utama</small></span></button></li>
-          <li><button class="progress-item" type="button" data-go-section="section-school" data-testid="button-progress-school"><span class="progress-number">02</span><span class="progress-label">Sekolah asal<small>Riwayat pendidikan</small></span></button></li>
-          <li><button class="progress-item" type="button" data-go-section="section-parent" data-testid="button-progress-parent"><span class="progress-number">03</span><span class="progress-label">Orang tua & wali<small>Kontak keluarga</small></span></button></li>
-          <li><button class="progress-item" type="button" data-go-section="section-upload" data-testid="button-progress-upload"><span class="progress-number">04</span><span class="progress-label">Upload berkas<small>Dokumen pendukung</small></span></button></li>
-        </ol>
-      </aside>
-
-      <section class="form-card" aria-label="Formulir pendaftaran SPMB">
-        <div class="form-top">
-          <div><h2>Formulir pengajuan</h2><p>Mohon isi sesuai dokumen resmi yang Anda miliki.</p></div>
-          <div class="required-note"><b>*</b> Wajib diisi</div>
-        </div>
-        <div class="form-body" id="form-body">
-          <div class="form-alert error" id="form-error" role="alert" data-testid="alert-form-error"></div>
-          <form id="application-form" novalidate>
-            ${section('01', 'Data Calon Peserta Didik', 'Ceritakan identitas dan keseharian calon peserta didik.', studentFields, 'section-student')}
-            ${section('02', 'Data Sekolah Asal', 'Informasi pendidikan terakhir calon peserta didik.', schoolFields, 'section-school')}
-            ${section('03', 'Data Orang Tua & Wali', 'Kontak keluarga untuk komunikasi proses penerimaan.', parentFields, 'section-parent')}
-            <fieldset class="field-section" id="section-upload" data-section="04">
-              <div class="section-heading"><span class="section-index">04</span><div><h3>Upload Berkas</h3><p>Siapkan dokumen yang terbaca jelas. Berkas dapat berupa PDF, JPG, atau PNG.</p></div></div>
-              <div class="upload-grid">${uploadFields}</div>
-            </fieldset>
-            <div class="submit-area">
-              <div class="consent-row">
-                <input id="consent" name="consent" type="checkbox" required data-testid="input-consent" />
-                <label for="consent">Saya memastikan data yang diisi <b>benar dan dapat dipertanggungjawabkan</b>.</label>
-              </div>
-              <div class="submit-row">
-                <span class="submit-info">Periksa kembali data sebelum mengirim.<br />Pengajuan akan diproses oleh panitia SPMB.</span>
-                <button class="submit-button" type="submit" id="submit-button" data-testid="button-submit-application">Kirim pengajuan</button>
-              </div>
-            </div>
-          </form>
-        </div>
-        <div class="success-view" id="success-view" aria-live="polite" data-testid="status-submission-success">
-          <div class="success-mark" aria-hidden="true">OK</div>
-          <h2>Pengajuan sudah diterima.</h2>
-          <p>Terima kasih. Data Anda telah masuk ke sistem SPMB. Simpan nomor pengajuan ini untuk referensi Anda.</p>
-          <span class="success-id" id="submission-id"></span>
-          <button class="reset-button" type="button" id="reset-button" data-testid="button-new-application">Buat pengajuan baru</button>
-        </div>
+      <section class="form-board-stats" aria-label="Ringkasan formulir">
+        <div class="form-board-stat"><div><span>TAHAP PENGISIAN</span>${icon('clipboard')}</div><strong>04</strong><small>identitas, sekolah, keluarga, berkas</small></div>
+        <div class="form-board-stat"><div><span>WAKTU PENGISIAN</span>${icon('file-check')}</div><strong>10<span class="form-board-stat-unit">mnt</span></strong><small>siapkan dokumen resmi di dekat Anda</small></div>
+        <div class="form-board-stat"><div><span>DOKUMEN PENDUKUNG</span>${icon('folder')}</div><strong>05</strong><small>PDF, JPG, atau PNG · maksimal 5 MB</small></div>
       </section>
-    </main>
 
-    <footer class="footer"><p>SPMB 2027/2028 · Layanan pengajuan penerimaan murid baru</p><span class="footer-code">FORM / 01</span></footer>
+      <div class="form-board-workspace">
+        <aside class="form-board-sidebar" aria-label="Kemajuan formulir">
+          <div class="form-board-sidebar-head">
+            <div><div class="form-board-panel-kicker">${icon('file')}Alur pengajuan</div><h2>Lengkapi satu<br /><em>per satu.</em></h2></div>
+            <span class="form-board-progress-count">01<span>/04</span></span>
+          </div>
+          <ol class="form-board-step-list">
+            <li><button class="form-board-step progress-item form-board-step-active is-active" type="button" data-go-section="section-student" data-testid="button-progress-student"><span class="form-board-step-number">01</span><span><strong>Calon peserta didik</strong><small>Identitas utama</small></span></button></li>
+            <li><button class="form-board-step progress-item" type="button" data-go-section="section-school" data-testid="button-progress-school"><span class="form-board-step-number">02</span><span><strong>Sekolah asal</strong><small>Riwayat pendidikan</small></span></button></li>
+            <li><button class="form-board-step progress-item" type="button" data-go-section="section-parent" data-testid="button-progress-parent"><span class="form-board-step-number">03</span><span><strong>Orang tua & wali</strong><small>Kontak keluarga</small></span></button></li>
+            <li><button class="form-board-step progress-item" type="button" data-go-section="section-upload" data-testid="button-progress-upload"><span class="form-board-step-number">04</span><span><strong>Upload berkas</strong><small>Dokumen pendukung</small></span></button></li>
+          </ol>
+          <div class="form-board-sidebar-note">${icon('lock')}<div><strong>Data tersimpan aman</strong><p>Informasi Anda hanya digunakan untuk proses penerimaan murid baru.</p></div></div>
+          <div class="form-board-sidebar-help">${icon('info')}<span>Wajib diisi ditandai dengan <b>*</b></span></div>
+        </aside>
+
+        <section class="form-board-form-panel" aria-label="Formulir pendaftaran SPMB">
+          <div class="form-board-form-header">
+            <div><div class="form-board-panel-kicker">${icon('file-check')}Formulir pengajuan</div><h2>Data calon peserta didik</h2><p>Mohon isi sesuai dokumen resmi yang Anda miliki.</p></div>
+            <span class="form-board-draft-badge"><i></i>Draft baru</span>
+          </div>
+          <div class="form-body" id="form-body">
+            <div class="form-alert error" id="form-error" role="alert" data-testid="alert-form-error"></div>
+            <form id="application-form" novalidate>
+              ${section('01', 'Data Calon Peserta Didik', 'Ceritakan identitas dan keseharian calon peserta didik.', studentFields, 'section-student')}
+              ${section('02', 'Data Sekolah Asal', 'Informasi pendidikan terakhir calon peserta didik.', schoolFields, 'section-school')}
+              ${section('03', 'Data Orang Tua & Wali', 'Kontak keluarga untuk komunikasi proses penerimaan.', parentFields, 'section-parent')}
+              <fieldset class="form-board-section" id="section-upload" data-section="04">
+                <div class="form-board-section-heading">
+                  <span class="form-board-section-index">04</span>
+                  <div class="form-board-section-copy"><div class="form-board-section-kicker"><span>Tahap berikutnya</span><span class="form-board-section-rule"></span></div><h3>Upload Berkas</h3><p>Siapkan dokumen yang terbaca jelas. Berkas dapat berupa PDF, JPG, atau PNG.</p></div>
+                  <span class="form-board-section-check"><span></span></span>
+                </div>
+                <div class="form-board-upload-grid">${uploadFields}</div>
+              </fieldset>
+              <div class="form-board-submit-area">
+                <label class="form-board-consent"><input id="consent" name="consent" type="checkbox" required data-testid="input-consent" /><span>Saya memastikan data yang diisi <b>benar dan dapat dipertanggungjawabkan</b>.</span></label>
+                <div class="form-board-submit-row">
+                  <div class="form-board-submit-info">${icon('shield')}<span>Periksa kembali data sebelum mengirim.<small>Pengajuan akan diproses oleh panitia SPMB.</small></span></div>
+                  <button class="form-board-submit-button submit-button" type="submit" id="submit-button" data-testid="button-submit-application"><span class="submit-label">Kirim pengajuan</span>${icon('check')}</button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="success-view" id="success-view" aria-live="polite" data-testid="status-submission-success">
+            <div class="success-mark" aria-hidden="true">${icon('check')}</div>
+            <h2>Pengajuan sudah diterima.</h2>
+            <p>Terima kasih. Data Anda telah masuk ke sistem SPMB. Simpan nomor pengajuan ini untuk referensi Anda.</p>
+            <span class="success-id" id="submission-id"></span>
+            <button class="reset-button" type="button" id="reset-button" data-testid="button-new-application">Buat pengajuan baru</button>
+          </div>
+        </section>
+      </div>
+
+      <footer class="form-board-footer"><span>SPMB 2027/2028 · Ruang pendaftaran</span><span>${icon('lock')} Data pendaftar tersimpan aman</span></footer>
+    </main>
+    <div class="form-board-notice" id="form-notice" role="status" aria-live="polite" hidden>${icon('check')}<span></span></div>
   </div>
 `;
 
@@ -201,7 +259,11 @@ const successView = document.getElementById('success-view') as HTMLDivElement;
 const submissionId = document.getElementById('submission-id') as HTMLSpanElement;
 const resetButton = document.getElementById('reset-button') as HTMLButtonElement;
 const healthStatus = document.getElementById('health-status') as HTMLSpanElement;
-const healthDot = document.getElementById('health-dot') as HTMLSpanElement;
+const healthDot = document.getElementById('health-dot') as HTMLElement;
+const formNotice = document.getElementById('form-notice') as HTMLDivElement;
+const formNoticeText = formNotice.querySelector('span') as HTMLSpanElement;
+const menuButton = document.querySelector<HTMLButtonElement>('.form-board-menu-button');
+const navigation = document.querySelector<HTMLElement>('.form-board-nav');
 
 function setError(field: HTMLElement, message: string): void {
   const wrapper = field.closest<HTMLElement>('[data-field]');
@@ -251,18 +313,47 @@ function updateProgress(): void {
   const marker = window.scrollY + 165;
   let activeIndex = 0;
   sections.forEach((sectionElement, index) => {
-    if (sectionElement.offsetTop <= marker) activeIndex = index;
+    const active = sectionElement.offsetTop <= marker;
+    if (active) activeIndex = index;
     const required = Array.from(sectionElement.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('[required]'));
     const complete = required.length > 0 && required.every((control) =>
       control instanceof HTMLInputElement && control.type === 'checkbox'
         ? control.checked
         : Boolean(control.value.trim()),
     );
+    const isCurrent = sectionElement.offsetTop <= marker && (index === sections.length - 1 || sections[index + 1].offsetTop > marker);
+    sectionElement.classList.toggle('form-board-section-active', isCurrent);
+    const kicker = sectionElement.querySelector<HTMLElement>('.form-board-section-kicker span');
+    if (kicker) kicker.textContent = isCurrent ? 'Sedang diisi' : 'Tahap berikutnya';
+    sectionElement.querySelector('.form-board-section-check > span')?.classList.toggle('form-board-section-dot', isCurrent);
     const item = document.querySelector<HTMLElement>(`[data-go-section="${sectionElement.id}"]`);
     item?.classList.toggle('is-complete', complete && index < activeIndex);
+    item?.classList.toggle('form-board-step-complete', complete && index < activeIndex);
   });
-  document.querySelectorAll<HTMLElement>('.progress-item').forEach((item, index) => item.classList.toggle('is-active', index === activeIndex));
+  document.querySelectorAll<HTMLElement>('.progress-item').forEach((item, index) => {
+    item.classList.toggle('is-active', index === activeIndex);
+    item.classList.toggle('form-board-step-active', index === activeIndex);
+  });
 }
+
+function showNotice(message: string): void {
+  formNoticeText.textContent = message;
+  formNotice.hidden = false;
+  window.setTimeout(() => { formNotice.hidden = true; }, 2800);
+}
+
+menuButton?.addEventListener('click', () => {
+  const open = navigation?.classList.toggle('form-board-nav-open') ?? false;
+  menuButton.setAttribute('aria-expanded', String(open));
+});
+
+document.querySelectorAll<HTMLButtonElement>('[data-notice]').forEach((button) => {
+  button.addEventListener('click', () => {
+    showNotice(button.dataset.notice || '');
+    navigation?.classList.remove('form-board-nav-open');
+    menuButton?.setAttribute('aria-expanded', 'false');
+  });
+});
 
 document.querySelectorAll<HTMLElement>('[data-go-section]').forEach((button) => {
   button.addEventListener('click', () => {
@@ -280,6 +371,7 @@ document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((input
     const file = input.files?.[0];
     const label = document.querySelector<HTMLElement>(`[data-file-name="${input.name}"]`);
     if (label) label.textContent = file ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB` : 'Belum ada berkas dipilih';
+    if (file) showNotice(`${input.closest<HTMLElement>('[data-upload]')?.querySelector('strong')?.textContent?.replace(' *', '') || 'Berkas'} berhasil dipilih.`);
     updateProgress();
   });
 });
@@ -289,7 +381,7 @@ form.addEventListener('submit', async (event) => {
   if (!validateForm()) return;
   submitButton.disabled = true;
   submitButton.classList.add('is-loading');
-  submitButton.textContent = 'Mengirim pengajuan';
+  submitButton.querySelector('.submit-label')!.textContent = 'Mengirim pengajuan';
   errorAlert.className = 'form-alert error';
   try {
     const formData = new FormData(form);
@@ -311,13 +403,16 @@ form.addEventListener('submit', async (event) => {
     errorAlert.className = 'form-alert error is-visible';
     submitButton.disabled = false;
     submitButton.classList.remove('is-loading');
-    submitButton.textContent = 'Kirim pengajuan';
+    submitButton.querySelector('.submit-label')!.textContent = 'Kirim pengajuan';
   }
 });
 
 resetButton.addEventListener('click', () => {
   successView.classList.remove('is-visible');
   formBody.classList.remove('is-hidden');
+  submitButton.disabled = false;
+  submitButton.classList.remove('is-loading');
+  submitButton.querySelector('.submit-label')!.textContent = 'Kirim pengajuan';
   updateProgress();
   document.getElementById('section-student')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
