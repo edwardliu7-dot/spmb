@@ -165,6 +165,34 @@ export const SubmitApplicationResponse = zod.object({
 
 
 /**
+ * Uses Groq Vision for preliminary recognition of a payment proof image. This does not confirm that funds were received.
+ * @summary Screen a payment proof before registration
+ */
+export const VerifyPaymentBody = zod.object({
+  "bukti_bayar": zod.string().describe('Payment proof image for AI screening, JPG or PNG, maximum 5 MB')
+})
+
+export const verifyPaymentResponseConfidenceMin = 0;
+export const verifyPaymentResponseConfidenceMax = 1;
+
+
+
+export const VerifyPaymentResponse = zod.object({
+  "success": zod.boolean(),
+  "status": zod.enum(['verified', 'needs_review', 'rejected']),
+  "message": zod.string(),
+  "confidence": zod.number().min(verifyPaymentResponseConfidenceMin).max(verifyPaymentResponseConfidenceMax),
+  "reason": zod.string(),
+  "details": zod.object({
+  "amount": zod.string().nullable(),
+  "transactionReference": zod.string().nullable(),
+  "recipient": zod.string().nullable(),
+  "transactionDate": zod.string().nullable()
+})
+})
+
+
+/**
  * @summary Get the signed-in committee user
  */
 export const CommitteeMeResponse = zod.object({

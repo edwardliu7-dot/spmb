@@ -225,6 +225,40 @@ export interface StudentApplicationInput {
   bukti_bayar: string;
 }
 
+export interface PaymentVerificationInput {
+  /** Payment proof image for AI screening, JPG or PNG, maximum 5 MB */
+  bukti_bayar: string;
+}
+
+export type PaymentVerificationResultStatus = typeof PaymentVerificationResultStatus[keyof typeof PaymentVerificationResultStatus];
+
+
+export const PaymentVerificationResultStatus = {
+  verified: 'verified',
+  needs_review: 'needs_review',
+  rejected: 'rejected',
+} as const;
+
+export type PaymentVerificationResultDetails = {
+  amount: string | null;
+  transactionReference: string | null;
+  recipient: string | null;
+  transactionDate: string | null;
+};
+
+export interface PaymentVerificationResult {
+  success: boolean;
+  status: PaymentVerificationResultStatus;
+  message: string;
+  /**
+     * @minimum 0
+     * @maximum 1
+     */
+  confidence: number;
+  reason: string;
+  details: PaymentVerificationResultDetails;
+}
+
 export interface SubmissionResult {
   success: boolean;
   message: string;

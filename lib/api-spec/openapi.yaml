@@ -69,6 +69,49 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /payment/verify:
+    post:
+      operationId: verifyPayment
+      tags: [applications]
+      summary: Screen a payment proof before registration
+      description: Uses Groq Vision for preliminary recognition of a payment proof image. This does not confirm that funds were received.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/PaymentVerificationInput"
+      responses:
+        "200":
+          description: Payment proof screening result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentVerificationResult"
+        "400":
+          description: Invalid or missing payment proof
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Too many verification attempts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: AI verification service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: AI verification is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /auth/me:
     get:
       operationId: committeeMe
@@ -329,6 +372,30 @@ components:
         kartu_keluarga: { type: string, description: "Uploaded PDF, JPG, or PNG file, maximum 5 MB" }
         ktp_orangtua: { type: string, description: "Uploaded PDF, JPG, or PNG file, maximum 5 MB" }
         bukti_bayar: { type: string, description: "Uploaded PDF, JPG, or PNG file, maximum 5 MB" }
+    PaymentVerificationInput:
+      type: object
+      required: [bukti_bayar]
+      properties:
+        bukti_bayar:
+          type: string
+          description: Payment proof image for AI screening, JPG or PNG, maximum 5 MB
+    PaymentVerificationResult:
+      type: object
+      properties:
+        success: { type: boolean }
+        status: { type: string, enum: [verified, needs_review, rejected] }
+        message: { type: string }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+        reason: { type: string }
+        details:
+          type: object
+          properties:
+            amount: { type: string, nullable: true }
+            transactionReference: { type: string, nullable: true }
+            recipient: { type: string, nullable: true }
+            transactionDate: { type: string, nullable: true }
+          required: [amount, transactionReference, recipient, transactionDate]
+      required: [success, status, message, confidence, reason, details]
     SubmissionResult:
       type: object
       properties:

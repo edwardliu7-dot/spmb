@@ -386,6 +386,272 @@
   animation: form-board-rise 0.5s 0.16s cubic-bezier(0.22, 0.8, 0.25, 1) both;
 }
 
+.form-board-shell .is-hidden {
+  display: none !important;
+}
+
+.form-board-payment-gate {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.82fr);
+  gap: 30px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 30px 34px;
+  border: 1px solid #d6d2c6;
+  border-radius: 18px;
+  background: #f8f5ec;
+  box-shadow: 0 15px 45px #223d3912;
+  animation: form-board-rise 0.5s 0.16s cubic-bezier(0.22, 0.8, 0.25, 1) both;
+}
+
+.form-board-payment-copy {
+  max-width: 560px;
+}
+
+.form-board-payment-copy h2 {
+  margin: 12px 0 10px;
+  color: #173f43;
+  font: 600 clamp(28px, 3vw, 43px)/0.98 "Fraunces", Georgia, serif;
+  letter-spacing: -0.055em;
+}
+
+.form-board-payment-copy h2 em {
+  color: #b55341;
+  font-style: normal;
+}
+
+.form-board-payment-copy p {
+  max-width: 540px;
+  margin: 0;
+  color: #68776e;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.form-board-payment-copy small {
+  display: block;
+  margin-top: 12px;
+  color: #9b9b8f;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.form-board-payment-form {
+  display: grid;
+  gap: 12px;
+}
+
+.form-board-payment-dropzone {
+  display: grid;
+  min-height: 155px;
+  padding: 22px;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  border: 1px dashed #a5beb0;
+  border-radius: 12px;
+  background: #edf2e9;
+  color: #3d7068;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.form-board-payment-dropzone:hover,
+.form-board-payment-dropzone:focus-within {
+  border-color: #527d75;
+  background: #e4eee6;
+  transform: translateY(-1px);
+}
+
+.form-board-payment-dropzone-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 4px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f8f5ec;
+  color: #4d8474;
+}
+
+.form-board-payment-dropzone-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.form-board-payment-dropzone strong {
+  font-size: 13px;
+}
+
+.form-board-payment-dropzone > span:not(.form-board-payment-dropzone-icon) {
+  color: #8c948a;
+  font-size: 10px;
+}
+
+.form-board-payment-dropzone input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.form-board-payment-button,
+.form-board-payment-continue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 8px;
+  background: #1f5a5b;
+  color: #f8f3e8;
+  font-size: 11px;
+  font-weight: 700;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.form-board-payment-button {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.form-board-payment-button:hover,
+.form-board-payment-continue:hover {
+  background: #16494c;
+  transform: translateY(-1px);
+}
+
+.form-board-payment-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+  transform: none;
+}
+
+.form-board-payment-button svg,
+.form-board-payment-continue svg {
+  width: 15px;
+  height: 15px;
+}
+
+.form-board-payment-button.is-loading::after {
+  content: " …";
+}
+
+.form-board-payment-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  color: #929188;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.form-board-payment-privacy svg {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  color: #6c9484;
+}
+
+.form-board-payment-error {
+  min-height: 16px;
+  color: #984131;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.form-board-payment-result {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 16px;
+  border: 1px solid #a5c6ae;
+  border-radius: 12px;
+  background: #edf5ea;
+}
+
+.form-board-payment-result-mark {
+  display: grid;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: #1f5a5b;
+  color: #edbe52;
+}
+
+.form-board-payment-result-mark svg {
+  width: 16px;
+  height: 16px;
+}
+
+.form-board-payment-result strong {
+  color: #1e5b54;
+  font-size: 13px;
+}
+
+.form-board-payment-result p {
+  margin: 4px 0 10px;
+  color: #68776e;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.form-board-payment-result dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.form-board-payment-result dl div {
+  min-width: 0;
+}
+
+.form-board-payment-result dt {
+  color: #8b968b;
+  font: 700 8px/1.2 "IBM Plex Mono", monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.form-board-payment-result dd {
+  overflow: hidden;
+  margin: 4px 0 0;
+  color: #3d5e59;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.form-board-payment-continue {
+  padding: 9px 12px;
+  font-size: 10px;
+}
+
+.form-board-payment-gate.is-invalid .form-board-payment-dropzone {
+  border-color: #b55341;
+  background: #b553411c;
+}
+
+.form-board-payment-gate.is-collapsed .form-board-payment-copy,
+.form-board-payment-gate.is-collapsed .form-board-payment-form {
+  display: none;
+}
+
+.form-board-payment-gate.is-collapsed {
+  grid-template-columns: 1fr;
+  padding: 16px 20px;
+}
+
+.form-board-payment-gate.is-collapsed .form-board-payment-result {
+  grid-column: 1;
+}
+
 .form-board-sidebar,
 .form-board-form-panel {
   overflow: hidden;
@@ -1231,6 +1497,24 @@
     grid-template-columns: 1fr;
   }
 
+  .form-board-payment-gate {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 24px 20px;
+  }
+
+  .form-board-payment-copy {
+    max-width: none;
+  }
+
+  .form-board-payment-result {
+    grid-column: 1;
+  }
+
+  .form-board-payment-result dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .form-board-stat {
     border-right: 0;
     border-bottom: 1px solid #d6d2c6;
@@ -1313,6 +1597,19 @@
 
   .form-board-form-header {
     display: block;
+  }
+
+  .form-board-payment-gate {
+    padding: 21px 17px;
+  }
+
+  .form-board-payment-result {
+    gap: 10px;
+    padding: 13px;
+  }
+
+  .form-board-payment-result dl {
+    gap: 10px 7px;
   }
 
   .form-board-draft-badge {

@@ -29,6 +29,8 @@ import type {
   ErrorResponse,
   HealthStatus,
   ListApplicationsParams,
+  PaymentVerificationInput,
+  PaymentVerificationResult,
   StudentApplicationInput,
   SubmissionResult
 } from './api.schemas';
@@ -262,6 +264,80 @@ export const useSubmitApplication = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getSubmitApplicationMutationOptions(options));
+    }
+
+export const getVerifyPaymentUrl = () => {
+
+
+
+
+  return `/api/payment/verify`
+}
+
+/**
+ * Uses Groq Vision for preliminary recognition of a payment proof image. This does not confirm that funds were received.
+ * @summary Screen a payment proof before registration
+ */
+export const verifyPayment = async (paymentVerificationInput: PaymentVerificationInput, options?: Parameters<typeof customFetch>[1]): Promise<PaymentVerificationResult> => {
+    const formData = new FormData();
+formData.append(`bukti_bayar`, paymentVerificationInput.bukti_bayar);
+
+  return customFetch<PaymentVerificationResult>(getVerifyPaymentUrl(),
+  {
+    ...options,
+    method: 'POST'
+    ,
+    body: formData
+  }
+);}
+
+
+
+
+
+export const getVerifyPaymentMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyPayment>>, TError,{data: BodyType<PaymentVerificationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof verifyPayment>>, TError,{data: BodyType<PaymentVerificationInput>}, TContext> => {
+
+const mutationKey = ['verifyPayment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyPayment>>, {data: BodyType<PaymentVerificationInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  verifyPayment(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VerifyPaymentMutationResult = NonNullable<Awaited<ReturnType<typeof verifyPayment>>>
+    export type VerifyPaymentMutationBody = BodyType<PaymentVerificationInput>
+    export type VerifyPaymentMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Screen a payment proof before registration
+ */
+export const useVerifyPayment = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyPayment>>, TError,{data: BodyType<PaymentVerificationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof verifyPayment>>,
+        TError,
+        {data: BodyType<PaymentVerificationInput>},
+        TContext
+      > => {
+      return useMutation(getVerifyPaymentMutationOptions(options));
     }
 
 export const getCommitteeMeUrl = () => {
