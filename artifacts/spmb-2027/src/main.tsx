@@ -141,7 +141,7 @@ const schoolFields = [
 const parentFields = [
   inputField('nomor_kk', 'Nomor Kartu Keluarga'),
   inputField('nik_ayah', 'NIK ayah'),
-  inputField('nomor_hp_orangtua', 'Nomor HP orang tua', 'text', [], 'Nomor yang aktif menerima informasi'),
+  inputField('nomor_hp_orangtua', 'Nomor WhatsApp orang tua', 'text', [], 'Nomor WhatsApp yang aktif menerima informasi'),
   inputField('email', 'Email orang tua', 'email'),
   inputField('nama_ayah', 'Nama lengkap ayah'),
   inputField('ttl_ayah', 'Tempat, tanggal lahir ayah'),
@@ -663,7 +663,7 @@ async function validateForm(scope: ParentNode = form): Promise<boolean> {
           markInvalid(control, `${getFieldLabel(input.name)} harus berada di antara ${numericRule.min} dan ${numericRule.max}${numericRule.integer ? ' dan berupa bilangan bulat' : ''}.`);
         }
       } else if (input.name === 'nomor_hp_orangtua' && !isValidPhone(value)) {
-        markInvalid(control, 'Masukkan nomor HP Indonesia yang aktif, misalnya 081234567890.');
+        markInvalid(control, 'Masukkan nomor WhatsApp Indonesia yang aktif, misalnya 081234567890.');
       } else if (input.name === 'tanggal_lahir') {
         const birthDate = new Date(`${value}T00:00:00.000Z`);
         const today = new Date();
