@@ -161,11 +161,16 @@ function getValue(request: Request, field: TextField): string {
 function getErrorCode(error: unknown): string | null {
   if (!error || typeof error !== "object") return null;
   const code = (error as { code?: unknown }).code;
-  return typeof code === "string" ? code : null;
+  if (typeof code === "string") return code;
+  const cause = (error as { cause?: unknown }).cause;
+  return cause ? getErrorCode(cause) : null;
 }
 
 function getSubmissionFailureMessage(error: unknown): string {
   const code = getErrorCode(error);
+  if (code === "23502") {
+    return "Database pendaftaran belum disinkronkan dengan formulir terbaru. Kolom sekolah asal harus boleh kosong untuk Playgroup, Daycare, TK-A, dan TK-B.";
+  }
   if (code === "42P01" || code === "42703") {
     return "Struktur database pendaftaran belum sinkron. Jalankan migrasi database lalu coba lagi.";
   }
