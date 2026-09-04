@@ -15,7 +15,11 @@ const currentDirectory = process.cwd();
 const packageRoot = path.basename(currentDirectory) === "api-server" && path.basename(path.dirname(currentDirectory)) === "artifacts"
   ? currentDirectory
   : path.resolve(currentDirectory, "artifacts/api-server");
+const workspaceRoot = path.basename(currentDirectory) === "api-server" && path.basename(path.dirname(currentDirectory)) === "artifacts"
+  ? path.resolve(currentDirectory, "../..")
+  : currentDirectory;
 const templatePath = path.join(packageRoot, "assets", "bukti-formulir-spmb-template.pdf");
+const schoolLogoPath = path.join(workspaceRoot, "lib", "logo tisa.png");
 const uploadRoot = path.resolve(packageRoot, "uploads");
 
 type TopRect = {
@@ -279,10 +283,23 @@ export async function createSpmbReceipt(application: Pendaftar): Promise<Uint8Ar
   const document = await PDFDocument.load(await readFile(templatePath));
   const regularFont = await document.embedFont(StandardFonts.Helvetica);
   const boldFont = await document.embedFont(StandardFonts.HelveticaBold);
+  const schoolLogo = await document.embedPng(await readFile(schoolLogoPath));
   const page1 = document.getPage(0);
   const page2 = document.getPage(1);
   const page7 = document.getPage(6);
 
+  clearRect(page1, { x: 135, top: 32, width: 335, height: 39 });
+  drawCenteredText(page1, "TISA Islamic School", { x: 135, top: 32, width: 335, height: 39 }, boldFont, 27);
+  clearRect(page1, { x: 62, top: 32, width: 78, height: 76 });
+  const page1LogoSize = schoolLogo.scaleToFit(70, 70);
+  page1.drawImage(schoolLogo, {
+    x: 101 - page1LogoSize.width / 2,
+    y: page1.getHeight() - 32 - 76 + (76 - page1LogoSize.height) / 2,
+    width: page1LogoSize.width,
+    height: page1LogoSize.height,
+  });
+  clearRect(page1, { x: 220, top: 128, width: 160, height: 17 });
+  drawCenteredText(page1, "TISA Islamic School", { x: 220, top: 128, width: 160, height: 17 }, boldFont, 10);
   clearRect(page1, { x: 220, top: 142, width: 160, height: 17 });
   drawCenteredText(page1, "TP. 2027 / 2028", { x: 220, top: 142, width: 160, height: 17 }, boldFont, 10);
 
@@ -385,6 +402,15 @@ export async function createSpmbReceipt(application: Pendaftar): Promise<Uint8Ar
   for (const attachment of attachments) {
     await drawAttachment(document, document.getPage(attachment.pageIndex), attachment, regularFont);
   }
+
+  clearRect(page7, { x: 70, top: 112, width: 78, height: 78 });
+  const page7LogoSize = schoolLogo.scaleToFit(72, 72);
+  page7.drawImage(schoolLogo, {
+    x: 109 - page7LogoSize.width / 2,
+    y: page7.getHeight() - 112 - 78 + (78 - page7LogoSize.height) / 2,
+    width: page7LogoSize.width,
+    height: page7LogoSize.height,
+  });
 
   const statementValues = [
     { rect: { x: 214, top: 223, width: 340, height: 17 }, value: `: ${textValue(application.nama_ibu)}` },
