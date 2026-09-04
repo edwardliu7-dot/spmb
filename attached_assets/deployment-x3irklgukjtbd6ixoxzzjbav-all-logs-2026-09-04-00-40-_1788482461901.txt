@@ -1,0 +1,305 @@
+2026-Sep-04 00:30:27 Docker 29.6.1 with BuildKit and Buildx detected on deployment server (localhost).
+2026-Sep-04 00:30:27 Starting deployment of edwardliu7-dot/spmb:main to localhost.
+2026-Sep-04 00:30:28 Preparing container with helper image: docker.io/coollabsio/coolify-helper:1.0.16
+2026-Sep-04 00:30:28 [DEBUG] [CMD]: docker stop --timeout=30 x3irklgukjtbd6ixoxzzjbav
+2026-Sep-04 00:30:28 [DEBUG] Error response from daemon: No such container: x3irklgukjtbd6ixoxzzjbav
+2026-Sep-04 00:30:29 [DEBUG] [CMD]: docker run -d --network 'coolify' --name x3irklgukjtbd6ixoxzzjbav  --rm -v /root/.docker/buildx:/root/.docker/buildx -v /var/run/docker.sock:/var/run/docker.sock docker.io/coollabsio/coolify-helper:1.0.16
+2026-Sep-04 00:30:29 [DEBUG] ae3fda23718f4f1ed994c2570a215ceac189e9e80890530a9551fe2557cf2b3c
+2026-Sep-04 00:30:39 [DEBUG] [CMD]: docker exec x3irklgukjtbd6ixoxzzjbav bash -c 'GIT_SSH_COMMAND="ssh -o ConnectTimeout=30 -p 22 -o Port=22 -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git ls-remote '\''https://x-access-token:<REDACTED>@github.com/edwardliu7-dot/spmb.git'\'' '\''refs/heads/main'\'''
+2026-Sep-04 00:30:39 [DEBUG] 0c2abdea7d90205dbd539efd6e535009e0d213ec	refs/heads/main
+2026-Sep-04 00:30:39 Image not found (5c8i99hcyvaqffvxrntkknib:0c2abdea7d90205dbd539efd6e535009e0d213ec). Building new image.
+2026-Sep-04 00:30:40 ----------------------------------------
+2026-Sep-04 00:30:40 Importing edwardliu7-dot/spmb:main (commit sha 0c2abdea7d90205dbd539efd6e535009e0d213ec) to /artifacts/x3irklgukjtbd6ixoxzzjbav.
+2026-Sep-04 00:30:40 [DEBUG] [CMD]: docker exec x3irklgukjtbd6ixoxzzjbav bash -c 'git -c '\''url.https://x-access-token:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 clone --depth=1 --recurse-submodules --shallow-submodules -b '\''main'\'' '\''https:<REDACTED>@github.com/edwardliu7-dot/spmb.git'\'' '\''/artifacts/x3irklgukjtbd6ixoxzzjbav'\'' && cd '\''/artifacts/x3irklgukjtbd6ixoxzzjbav'\'' && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git -c '\''url.https://x-access-token:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 fetch --depth=1 origin '\''0c2abdea7d90205dbd539efd6e535009e0d213ec'\'' && git -c '\''url.https:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 -c advice.detachedHead=false checkout '\''0c2abdea7d90205dbd539efd6e535009e0d213ec'\'' >/dev/null 2>&1 && cd '\''/artifacts/x3irklgukjtbd6ixoxzzjbav'\'' && if [ -f .gitmodules ]; then git -c '\''url.https:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 submodule sync && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git -c '\''url.https:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 submodule update --init --recursive --depth=1; fi && cd '\''/artifacts/x3irklgukjtbd6ixoxzzjbav'\'' && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git -c '\''url.https:<REDACTED>@github.com/.insteadOf=https://github.com/'\'' -c http.version=HTTP/1.1 lfs pull'
+2026-Sep-04 00:<REDACTED>@157.10.161.229:5432/postgres'\'' --env '\''SESSION_SECRET=fXK2f91hBn/pp71ivmcIiMRSM/2u1nq4vRxkVCbyQaD6Z1/KrrBqSRqkD9w1PnLKxGdw9mFVb1dxG5voC4IdsQ=='\'' --env '\''BASE_PATH=/'\'' --env '\''PORT=5000'\'' --env '\''NODE_ENV=production'\'' --env '\''RAILPACK_DEPLOY_APT_PACKAGES=curl wget'\'' --env '\''COOLIFY_URL=https://spmbtisa.157.10.161.229.sslip.io:<REDACTED>@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-04 00:30:59 [DEBUG] #2 resolve ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-04 00:31:00 [DEBUG] #2 resolve ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6 0.4s done
+2026-Sep-04 00:31:00 [DEBUG] #2 DONE 0.4s
+2026-Sep-04 00:31:00 [DEBUG] #2 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Sep-04 00:31:00 [DEBUG] #2 CACHED
+2026-Sep-04 00:31:02 [DEBUG] #3 load build definition from railpack-plan.json
+2026-Sep-04 00:31:03 [DEBUG] #3 transferring dockerfile:
+2026-Sep-04 00:31:03 [DEBUG] #3 transferring dockerfile: 4.72kB 0.0s done
+2026-Sep-04 00:31:03 [DEBUG] #3 DONE 1.0s
+2026-Sep-04 00:31:04 [DEBUG] #4 loading .
+2026-Sep-04 00:31:04 [DEBUG] #4 DONE 0.0s
+2026-Sep-04 00:31:04 [DEBUG] 
+2026-Sep-04 00:31:04 [DEBUG] #5 [railpack] secrets hash
+2026-Sep-04 00:31:04 [DEBUG] #5 DONE 0.0s
+2026-Sep-04 00:31:04 [DEBUG] 
+2026-Sep-04 00:31:04 [DEBUG] #6 docker-image://ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17
+2026-Sep-04 00:31:04 [DEBUG] #6 resolve ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17
+2026-Sep-04 00:31:05 [DEBUG] #6 resolve ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17 1.3s done
+2026-Sep-04 00:31:05 [DEBUG] #6 DONE 1.3s
+2026-Sep-04 00:31:05 [DEBUG] 
+2026-Sep-04 00:31:05 [DEBUG] #7 install apt packages: curl wget
+2026-Sep-04 00:31:05 [DEBUG] #7 CACHED
+2026-Sep-04 00:31:05 [DEBUG] 
+2026-Sep-04 00:31:05 [DEBUG] #8 docker-image://ghcr.io/railwayapp/railpack-builder:mise-2026.3.17
+2026-Sep-04 00:31:05 [DEBUG] #8 resolve ghcr.io/railwayapp/railpack-builder:mise-2026.3.17 1.3s done
+2026-Sep-04 00:31:05 [DEBUG] #8 DONE 1.4s
+2026-Sep-04 00:31:05 [DEBUG] 
+2026-Sep-04 00:31:05 [DEBUG] #9 copy /usr/local/bin/mise
+2026-Sep-04 00:31:05 [DEBUG] #9 CACHED
+2026-Sep-04 00:31:05 [DEBUG] 
+2026-Sep-04 00:31:05 [DEBUG] #10 mkdir /etc/mise
+2026-Sep-04 00:31:05 [DEBUG] #10 CACHED
+2026-Sep-04 00:31:05 [DEBUG] 
+2026-Sep-04 00:31:05 [DEBUG] #11 create mise config
+2026-Sep-04 00:31:05 [DEBUG] #11 CACHED
+2026-Sep-04 00:31:05 [DEBUG] 
+2026-Sep-04 00:31:05 [DEBUG] #12 copy /etc/mise/config.toml
+2026-Sep-04 00:31:05 [DEBUG] #12 CACHED
+2026-Sep-04 00:31:05 [DEBUG] 
+2026-Sep-04 00:31:05 [DEBUG] #13 install mise packages: node, pnpm
+2026-Sep-04 00:31:05 [DEBUG] #13 CACHED
+2026-Sep-04 00:31:05 [DEBUG] 
+2026-Sep-04 00:31:05 [DEBUG] #14 copy /mise/shims
+2026-Sep-04 00:31:05 [DEBUG] #14 CACHED
+2026-Sep-04 00:31:05 [DEBUG] 
+2026-Sep-04 00:31:05 [DEBUG] #15 copy /mise/installs
+2026-Sep-04 00:31:05 [DEBUG] #15 CACHED
+2026-Sep-04 00:31:05 [DEBUG] 
+2026-Sep-04 00:31:05 [DEBUG] #16 copy /root/.local/state/mise
+2026-Sep-04 00:31:05 [DEBUG] #16 CACHED
+2026-Sep-04 00:31:05 [DEBUG] 
+2026-Sep-04 00:31:05 [DEBUG] #5 [railpack] secrets hash
+2026-Sep-04 00:31:05 [DEBUG] #5 CACHED
+2026-Sep-04 00:31:05 [DEBUG] 
+2026-Sep-04 00:31:05 [DEBUG] #4 loading .
+2026-Sep-04 00:31:07 [DEBUG] #4 transferring context:
+2026-Sep-04 00:31:07 [DEBUG] #4 ...
+2026-Sep-04 00:31:07 [DEBUG] 
+2026-Sep-04 00:31:07 [DEBUG] #17 [railpack] loading secrets
+2026-Sep-04 00:31:07 [DEBUG] #17 resolve docker.io/library/alpine:latest 3.0s done
+2026-Sep-04 00:31:07 [DEBUG] #17 DONE 3.0s
+2026-Sep-04 00:31:07 [DEBUG] 
+2026-Sep-04 00:31:07 [DEBUG] #4 loading .
+2026-Sep-04 00:31:07 [DEBUG] #4 transferring context: 1.36MB 0.2s done
+2026-Sep-04 00:31:08 [DEBUG] #4 DONE 3.0s
+2026-Sep-04 00:31:08 [DEBUG] #13 install mise packages: node, pnpm
+2026-Sep-04 00:31:08 [DEBUG] #13 CACHED
+2026-Sep-04 00:31:08 [DEBUG] 
+2026-Sep-04 00:31:08 [DEBUG] #18 [railpack] copy secrets hash
+2026-Sep-04 00:31:08 [DEBUG] #18 CACHED
+2026-Sep-04 00:31:08 [DEBUG] 
+2026-Sep-04 00:31:08 [DEBUG] #19 [railpack] hash used secrets
+2026-Sep-04 00:31:08 [DEBUG] #19 CACHED
+2026-Sep-04 00:31:08 [DEBUG] 
+2026-Sep-04 00:31:08 [DEBUG] #20 [railpack] copy used secrets hash
+2026-Sep-04 00:31:08 [DEBUG] #20 CACHED
+2026-Sep-04 00:31:08 [DEBUG] 
+2026-Sep-04 00:31:08 [DEBUG] #21 copy / /app
+2026-Sep-04 00:31:10 [DEBUG] #21 DONE 1.7s
+2026-Sep-04 00:31:11 [DEBUG] #22 mkdir -p /app/node_modules/.cache
+2026-Sep-04 00:31:13 [DEBUG] #22 DONE 2.3s
+2026-Sep-04 00:31:14 [DEBUG] #23 pnpm add -g node-gyp
+2026-Sep-04 00:31:16 [DEBUG] #23 2.363 Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-Sep-04 00:31:17 [DEBUG] #23 3.021 Packages: +20
+2026-Sep-04 00:31:17 [DEBUG] #23 3.021 ++++++++++++++++++++
+2026-Sep-04 00:31:17 [DEBUG] #23 3.361 Progress: resolved 20, reused 0, downloaded 11, added 7
+2026-Sep-04 00:31:17 [DEBUG] #23 3.484 Progress: resolved 20, reused 0, downloaded 20, added 20, done
+2026-Sep-04 00:31:18 [DEBUG] #23 4.517
+2026-Sep-04 00:31:18 [DEBUG] #23 4.517 /pnpm/global/5:
+2026-Sep-04 00:31:18 [DEBUG] #23 4.517 + node-gyp 13.0.2
+2026-Sep-04 00:31:18 [DEBUG] #23 4.517
+2026-Sep-04 00:31:18 [DEBUG] #23 4.566 Done in 3.2s using pnpm v9.15.9
+2026-Sep-04 00:31:20 [DEBUG] #23 DONE 6.5s
+2026-Sep-04 00:31:20 [DEBUG] #24 pnpm install --frozen-lockfile --prefer-offline
+2026-Sep-04 00:31:23 [DEBUG] #24 2.221 Scope: all 9 workspace projects
+2026-Sep-04 00:31:23 [DEBUG] #24 2.348 Lockfile is up to date, resolution step is skipped
+2026-Sep-04 00:31:23 [DEBUG] #24 2.707 Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-Sep-04 00:31:23 [DEBUG] #24 2.903 Packages: +501
+2026-Sep-04 00:31:23 [DEBUG] #24 2.903 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2026-Sep-04 00:31:24 [DEBUG] #24 3.743 Progress: resolved 501, reused 3, downloaded 9, added 0
+2026-Sep-04 00:31:25 [DEBUG] #24 4.741 Progress: resolved 501, reused 3, downloaded 18, added 5
+2026-Sep-04 00:31:26 [DEBUG] #24 5.894 Progress: resolved 501, reused 3, downloaded 18, added 6
+2026-Sep-04 00:31:27 [DEBUG] #24 6.901 Progress: resolved 501, reused 3, downloaded 19, added 12
+2026-Sep-04 00:31:28 [DEBUG] #24 7.903 Progress: resolved 501, reused 3, downloaded 98, added 88
+2026-Sep-04 00:31:29 [DEBUG] #24 8.904 Progress: resolved 501, reused 3, downloaded 139, added 128
+2026-Sep-04 00:31:30 [DEBUG] #24 9.906 Progress: resolved 501, reused 3, downloaded 219, added 217
+2026-Sep-04 00:31:31 [DEBUG] #24 10.91 Progress: resolved 501, reused 3, downloaded 246, added 237
+2026-Sep-04 00:31:32 [DEBUG] #24 11.91 Progress: resolved 501, reused 3, downloaded 268, added 255
+2026-Sep-04 00:31:33 [DEBUG] #24 12.92 Progress: resolved 501, reused 3, downloaded 288, added 277
+2026-Sep-04 00:31:34 [DEBUG] #24 13.92 Progress: resolved 501, reused 3, downloaded 290, added 282
+2026-Sep-04 00:31:36 [DEBUG] #24 15.18 Progress: resolved 501, reused 3, downloaded 290, added 283
+2026-Sep-04 00:31:36 [DEBUG] #24 16.18 Progress: resolved 501, reused 3, downloaded 310, added 300
+2026-Sep-04 00:31:38 [DEBUG] #24 17.27 Progress: resolved 501, reused 3, downloaded 311, added 300
+2026-Sep-04 00:31:39 [DEBUG] #24 18.27 Progress: resolved 501, reused 3, downloaded 312, added 304
+2026-Sep-04 00:31:41 [DEBUG] 
+2026-Sep-04 00:31:41 [DEBUG] #24 20.65 Progress: resolved 501, reused 3, downloaded 313, added 304
+2026-Sep-04 00:31:42 [DEBUG] #24 21.65 Progress: resolved 501, reused 3, downloaded 316, added 307
+2026-Sep-04 00:31:43 [DEBUG] #24 22.65 Progress: resolved 501, reused 3, downloaded 329, added 316
+2026-Sep-04 00:31:44 [DEBUG] #24 23.65 Progress: resolved 501, reused 3, downloaded 350, added 341
+2026-Sep-04 00:31:45 [DEBUG] #24 24.65 Progress: resolved 501, reused 3, downloaded 364, added 353
+2026-Sep-04 00:31:46 [DEBUG] #24 25.81 Progress: resolved 501, reused 3, downloaded 365, added 353
+2026-Sep-04 00:31:47 [DEBUG] #24 26.81 Progress: resolved 501, reused 3, downloaded 383, added 373
+2026-Sep-04 00:31:48 [DEBUG] #24 27.81 Progress: resolved 501, reused 3, downloaded 402, added 398
+2026-Sep-04 00:31:50 [DEBUG] #24 29.82 Progress: resolved 501, reused 3, downloaded 402, added 399
+2026-Sep-04 00:31:51 [DEBUG] #24 30.82 Progress: resolved 501, reused 3, downloaded 441, added 430
+2026-Sep-04 00:31:52 [DEBUG] #24 31.82 Progress: resolved 501, reused 3, downloaded 463, added 453
+2026-Sep-04 00:31:53 [DEBUG] #24 32.82 Progress: resolved 501, reused 3, downloaded 467, added 456
+2026-Sep-04 00:31:54 [DEBUG] #24 33.82 Progress: resolved 501, reused 3, downloaded 473, added 463
+2026-Sep-04 00:31:55 [DEBUG] #24 34.82 Progress: resolved 501, reused 3, downloaded 489, added 478
+2026-Sep-04 00:31:57 [DEBUG] #24 35.83 Progress: resolved 501, reused 3, downloaded 492, added 482
+2026-Sep-04 00:31:57 [DEBUG] #24 36.66 Progress: resolved 501, reused 3, downloaded 498, added 501, done
+2026-Sep-04 00:31:58 [DEBUG] #24 37.26 .../esbuild@0.27.3/node_modules/esbuild postinstall$ node install.js
+2026-Sep-04 00:31:58 [DEBUG] #24 37.26 .../esbuild@0.18.20/node_modules/esbuild postinstall$ node install.js
+2026-Sep-04 00:31:58 [DEBUG] #24 37.26 .../esbuild@0.28.2/node_modules/esbuild postinstall$ node install.js
+2026-Sep-04 00:31:58 [DEBUG] #24 37.27 .../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+2026-Sep-04 00:31:58 [DEBUG] #24 38.00 .../esbuild@0.27.3/node_modules/esbuild postinstall: Done
+2026-Sep-04 00:31:58 [DEBUG] 
+2026-Sep-04 00:31:58 [DEBUG] #24 38.00 .../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+2026-Sep-04 00:31:58 [DEBUG] #24 38.00 .../esbuild@0.28.2/node_modules/esbuild postinstall: Done
+2026-Sep-04 00:31:58 [DEBUG] #24 38.00 .../esbuild@0.18.20/node_modules/esbuild postinstall: Done
+2026-Sep-04 00:32:02 [DEBUG] #24 41.87
+2026-Sep-04 00:32:02 [DEBUG] #24 41.87 dependencies:
+2026-Sep-04 00:32:02 [DEBUG] #24 41.87 + @replit/connectors-sdk 0.4.1
+2026-Sep-04 00:32:02 [DEBUG] #24 41.87
+2026-Sep-04 00:32:02 [DEBUG] #24 41.87 devDependencies:
+2026-Sep-04 00:32:02 [DEBUG] #24 41.87 + prettier 3.9.6
+2026-Sep-04 00:32:02 [DEBUG] #24 41.87 + typescript 5.9.3
+2026-Sep-04 00:32:02 [DEBUG] #24 41.87
+2026-Sep-04 00:32:03 [DEBUG] #24 42.00 . preinstall$ sh -c 'rm -f package-lock.json yarn.lock; case "$npm_config_user_agent" in pnpm/*) ;; *) echo "Use pnpm instead" >&2; exit 1 ;; esac'
+2026-Sep-04 00:32:03 [DEBUG] #24 42.04 . preinstall: Done
+2026-Sep-04 00:32:06 [DEBUG] #24 42.35 Done in 40.4s using pnpm v9.15.9
+2026-Sep-04 00:32:12 [DEBUG] #24 DONE 51.6s
+2026-Sep-04 00:32:12 [DEBUG] 
+2026-Sep-04 00:32:12 [DEBUG] #25 copy / /app
+2026-Sep-04 00:32:16 [DEBUG] #25 DONE 3.9s
+2026-Sep-04 00:32:16 [DEBUG] #26 pnpm run build
+2026-Sep-04 00:32:21 [DEBUG] #26 5.033
+2026-Sep-04 00:32:21 [DEBUG] #26 5.033 > workspace@0.0.0 build /app
+2026-Sep-04 00:32:21 [DEBUG] #26 5.033 > pnpm run typecheck && pnpm -r --if-present run build
+2026-Sep-04 00:32:21 [DEBUG] #26 5.033
+2026-Sep-04 00:32:22 [DEBUG] #26 5.475
+2026-Sep-04 00:32:22 [DEBUG] #26 5.475 > workspace@0.0.0 typecheck /app
+2026-Sep-04 00:32:22 [DEBUG] #26 5.475 > pnpm run typecheck:libs && pnpm -r --filter "./artifacts/**" --filter "./scripts" --if-present run typecheck
+2026-Sep-04 00:32:22 [DEBUG] #26 5.475
+2026-Sep-04 00:32:22 [DEBUG] #26 5.866
+2026-Sep-04 00:32:22 [DEBUG] #26 5.866 > workspace@0.0.0 typecheck:libs /app
+2026-Sep-04 00:32:22 [DEBUG] #26 5.866 > tsc --build
+2026-Sep-04 00:32:22 [DEBUG] #26 5.866
+2026-Sep-04 00:32:33 [DEBUG] #26 17.19 Scope: 4 of 9 workspace projects
+2026-Sep-04 00:32:33 [DEBUG] #26 17.20 artifacts/api-server typecheck$ tsc -p tsconfig.json --noEmit
+2026-Sep-04 00:32:33 [DEBUG] #26 17.20 artifacts/mockup-sandbox typecheck$ tsc -p tsconfig.json --noEmit
+2026-Sep-04 00:32:33 [DEBUG] #26 17.20 artifacts/spmb-2027 typecheck$ tsc -p tsconfig.json --noEmit
+2026-Sep-04 00:32:33 [DEBUG] #26 17.20 scripts typecheck$ tsc -p tsconfig.json --noEmit
+2026-Sep-04 00:32:40 [DEBUG] #26 24.17 scripts typecheck: Done
+2026-Sep-04 00:32:49 [DEBUG] #26 32.62 artifacts/api-server typecheck: Done
+2026-Sep-04 00:33:07 [DEBUG] #26 50.45 artifacts/spmb-2027 typecheck: Done
+2026-Sep-04 00:33:11 [DEBUG] #26 55.26 artifacts/mockup-sandbox typecheck: Done
+2026-Sep-04 00:33:12 [DEBUG] #26 55.81 Scope: 8 of 9 workspace projects
+2026-Sep-04 00:33:12 [DEBUG] #26 55.81 artifacts/mockup-sandbox build$ vite build
+2026-Sep-04 00:33:12 [DEBUG] 
+2026-Sep-04 00:33:14 [DEBUG] #26 57.79 artifacts/mockup-sandbox build: vite v7.3.6 building client environment for production...
+2026-Sep-04 00:33:14 [DEBUG] #26 58.06 artifacts/mockup-sandbox build: transforming...
+2026-Sep-04 00:33:21 [DEBUG] #26 65.38 artifacts/mockup-sandbox build: ✓ 1678 modules transformed.
+2026-Sep-04 00:33:22 [DEBUG] #26 65.62 artifacts/mockup-sandbox build: rendering chunks...
+2026-Sep-04 00:33:22 [DEBUG] #26 65.85 artifacts/mockup-sandbox build: computing gzip size...
+2026-Sep-04 00:33:22 [DEBUG] #26 65.90 artifacts/mockup-sandbox build: dist/index.html                                              4.42 kB │ gzip:  1.23 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.90 artifacts/mockup-sandbox build: dist/assets/index-phvPs_N3.css                             121.52 kB │ gzip: 21.25 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.90 artifacts/mockup-sandbox build: dist/assets/chevron-down-BSpLvKGv.js                         0.13 kB │ gzip:  0.14 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.91 artifacts/mockup-sandbox build: dist/assets/refresh-cw-I7elJl9_.js                           0.32 kB │ gzip:  0.23 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.91 artifacts/mockup-sandbox build: dist/assets/file-check-2-D_B5MuAY.js                         0.34 kB │ gzip:  0.24 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.91 artifacts/mockup-sandbox build: dist/assets/flag-Bhg8Hbt8.js                                 0.38 kB │ gzip:  0.27 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.91 artifacts/mockup-sandbox build: dist/assets/sparkles-aAW8VtEL.js                             0.49 kB │ gzip:  0.28 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.92 artifacts/mockup-sandbox build: dist/assets/sliders-horizontal-DOjBC4OO.js                   0.69 kB │ gzip:  0.38 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.92 artifacts/mockup-sandbox build: dist/assets/users-DaXRFX5g.js                                0.83 kB │ gzip:  0.45 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.92 artifacts/mockup-sandbox build: dist/assets/x-DkwmiV5o.js                                    2.44 kB │ gzip:  1.24 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.92 artifacts/mockup-sandbox build: dist/assets/CommitteeDashboardVariant-DG5fhQRL.js           26.80 kB │ gzip:  7.41 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.92 artifacts/mockup-sandbox build: dist/assets/CommitteeDashboardQueueVariant-DY0Rv7K7.js      29.44 kB │ gzip:  8.13 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.93 artifacts/mockup-sandbox build: dist/assets/CommitteeDashboard-XPLuugNj.js                  30.44 kB │ gzip:  8.77 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.93 artifacts/mockup-sandbox build: dist/assets/CommitteeDashboardCalendarVariant-BfSM4Biu.js   33.08 kB │ gzip:  8.81 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.93 artifacts/mockup-sandbox build: dist/assets/index-A-7YRAUD.js                              190.04 kB │ gzip: 60.42 kB
+2026-Sep-04 00:33:22 [DEBUG] #26 65.93 artifacts/mockup-sandbox build: ✓ built in 8.05s
+2026-Sep-04 00:33:22 [DEBUG] #26 66.00 artifacts/mockup-sandbox build: Done
+2026-Sep-04 00:33:22 [DEBUG] #26 66.01 artifacts/api-server build$ node ./build.mjs
+2026-Sep-04 00:33:22 [DEBUG] #26 66.01 artifacts/spmb-2027 build$ vite build --config vite.config.ts
+2026-Sep-04 00:33:23 [DEBUG] #26 66.78 artifacts/spmb-2027 build: vite v7.3.6 building client environment for production...
+2026-Sep-04 00:33:23 [DEBUG] #26 66.94 artifacts/spmb-2027 build: transforming...
+2026-Sep-04 00:33:25 [DEBUG] #26 68.62 artifacts/api-server build:   dist/index.mjs                       2.6mb ⚠️
+2026-Sep-04 00:33:25 [DEBUG] #26 68.63 artifacts/api-server build:   dist/pino-worker.mjs               153.4kb
+2026-Sep-04 00:33:25 [DEBUG] #26 68.63 artifacts/api-server build:   dist/pino-file.mjs                 142.0kb
+2026-Sep-04 00:33:25 [DEBUG] #26 68.63 artifacts/api-server build:   dist/pino-pretty.mjs               114.4kb
+2026-Sep-04 00:33:25 [DEBUG] #26 68.63 artifacts/api-server build:   dist/thread-stream-worker.mjs        7.3kb
+2026-Sep-04 00:33:25 [DEBUG] #26 68.63 artifacts/api-server build:   dist/index.mjs.map                   4.5mb
+2026-Sep-04 00:33:25 [DEBUG] #26 68.63 artifacts/api-server build:   dist/pino-worker.mjs.map           256.9kb
+2026-Sep-04 00:33:25 [DEBUG] #26 68.63 artifacts/api-server build:   dist/pino-file.mjs.map             229.0kb
+2026-Sep-04 00:33:25 [DEBUG] #26 68.63 artifacts/api-server build:   dist/pino-pretty.mjs.map           203.6kb
+2026-Sep-04 00:33:25 [DEBUG] #26 68.63 artifacts/api-server build:   dist/thread-stream-worker.mjs.map   12.0kb
+2026-Sep-04 00:33:25 [DEBUG] #26 68.63 artifacts/api-server build: ⚡ Done in 2406ms
+2026-Sep-04 00:33:25 [DEBUG] #26 68.66 artifacts/api-server build: Done
+2026-Sep-04 00:33:25 [DEBUG] #26 68.72 artifacts/spmb-2027 build: ✓ 68 modules transformed.
+2026-Sep-04 00:33:25 [DEBUG] #26 68.84 artifacts/spmb-2027 build: rendering chunks...
+2026-Sep-04 00:33:25 [DEBUG] 
+2026-Sep-04 00:33:25 [DEBUG] #26 68.87 artifacts/spmb-2027 build: computing gzip size...
+2026-Sep-04 00:33:25 [DEBUG] #26 68.89 artifacts/spmb-2027 build: dist/public/index.html                   1.05 kB │ gzip: 0.44 kB
+2026-Sep-04 00:33:25 [DEBUG] #26 68.89 artifacts/spmb-2027 build: dist/public/assets/index-_Pb55Gzg.css   26.73 kB │ gzip: 6.03 kB
+2026-Sep-04 00:33:25 [DEBUG] #26 68.89 artifacts/spmb-2027 build: dist/public/assets/index-CF0-I3LD.js    20.85 kB │ gzip: 7.27 kB
+2026-Sep-04 00:33:25 [DEBUG] #26 68.89 artifacts/spmb-2027 build: dist/public/assets/panitia-BKxwId1f.js  21.03 kB │ gzip: 6.40 kB
+2026-Sep-04 00:33:25 [DEBUG] #26 68.90 artifacts/spmb-2027 build: ✓ built in 2.07s
+2026-Sep-04 00:33:25 [DEBUG] #26 68.93 artifacts/spmb-2027 build: Done
+2026-Sep-04 00:33:27 [DEBUG] #26 DONE 70.5s
+2026-Sep-04 00:34:41 [DEBUG] #27 copy /app/node_modules
+2026-Sep-04 00:35:05 [DEBUG] #27 ...
+2026-Sep-04 00:35:05 [DEBUG] 
+2026-Sep-04 00:35:05 [DEBUG] #28 copy /root/.cache
+2026-Sep-04 00:35:10 [DEBUG] #28 ...
+2026-Sep-04 00:35:10 [DEBUG] 
+2026-Sep-04 00:35:10 [DEBUG] #27 copy /app/node_modules
+2026-Sep-04 00:35:10 [DEBUG] #27 DONE 28.4s
+2026-Sep-04 00:35:10 [DEBUG] #28 copy /root/.cache
+2026-Sep-04 00:35:10 [DEBUG] #28 DONE 5.4s
+2026-Sep-04 00:35:11 [DEBUG] #29 copy /app
+2026-Sep-04 00:35:24 [DEBUG] #29 DONE 13.1s
+2026-Sep-04 00:35:25 [DEBUG] #30 [railpack] merge $packages:apt:runtime, $packages:mise, $build, $build
+2026-Sep-04 00:35:27 [DEBUG] #30 DONE 2.6s
+2026-Sep-04 00:35:29 [DEBUG] #31 exporting to oci image format
+2026-Sep-04 00:35:29 [DEBUG] #31 exporting layers
+2026-Sep-04 00:36:33 [DEBUG] #31 exporting layers 64.7s done
+2026-Sep-04 00:36:34 [DEBUG] #31 exporting manifest sha256:8bfc1394d220926b886dcbe2efa60c4ede67661889e3ad504371df20fdcb17c0
+2026-Sep-04 00:36:34 [DEBUG] #31 exporting manifest sha256:8bfc1394d220926b886dcbe2efa60c4ede67661889e3ad504371df20fdcb17c0 0.4s done
+2026-Sep-04 00:36:34 [DEBUG] #31 exporting config sha256:4c5794ad23179fa9c0d545fb748b82ed61af48d28036dde75940a15dbec64ea8
+2026-Sep-04 00:36:34 [DEBUG] #31 exporting config sha256:4c5794ad23179fa9c0d545fb748b82ed61af48d28036dde75940a15dbec64ea8 0.3s done
+2026-Sep-04 00:36:34 [DEBUG] #31 sending tarball
+2026-Sep-04 00:37:41 [DEBUG] #31 ...
+2026-Sep-04 00:37:41 [DEBUG] 
+2026-Sep-04 00:37:41 [DEBUG] #32 importing to docker
+2026-Sep-04 00:37:41 [DEBUG] #32 DONE 0.0s
+2026-Sep-04 00:37:41 [DEBUG] 
+2026-Sep-04 00:37:41 [DEBUG] #31 exporting to oci image format
+2026-Sep-04 00:37:41 [DEBUG] #31 sending tarball 66.5s done
+2026-Sep-04 00:37:41 [DEBUG] #31 DONE 132.0s
+2026-Sep-04 00:37:46 [DEBUG] Creating .env file with runtime variables for container.
+2026-Sep-04 00:37:47 ----------------------------------------
+2026-Sep-04 00:37:48 Rolling update started.
+2026-Sep-04 00:37:51 [DEBUG] [CMD]: docker exec x3irklgukjtbd6ixoxzzjbav bash -c 'COOLIFY_URL='\''https://spmbtisa.157.10.161.229.sslip.io'\'' COOLIFY_FQDN='\''spmbtisa.157.10.161.229.sslip.io'\'' COOLIFY_BRANCH='\''main'\'' COOLIFY_RESOURCE_UUID='\''5c8i99hcyvaqffvxrntkknib'\''  docker compose --project-name 5c8i99hcyvaqffvxrntkknib --project-directory /artifacts/x3irklgukjtbd6ixoxzzjbav -f /artifacts/x3irklgukjtbd6ixoxzzjbav/docker-compose.yaml up --build -d'
+2026-Sep-04 00:37:51 [DEBUG] Container 5c8i99hcyvaqffvxrntkknib-003024469223 Creating
+2026-Sep-04 00:37:56 [DEBUG] 5c8i99hcyvaqffvxrntkknib-003024469223 Your kernel does not support memory swappiness capabilities or the cgroup is not mounted. Memory swappiness discarded.
+2026-Sep-04 00:37:56 [DEBUG] Container 5c8i99hcyvaqffvxrntkknib-003024469223 Created
+2026-Sep-04 00:37:56 [DEBUG] Container 5c8i99hcyvaqffvxrntkknib-003024469223 Starting
+2026-Sep-04 00:37:59 [DEBUG] Container 5c8i99hcyvaqffvxrntkknib-003024469223 Started
+2026-Sep-04 00:37:59 New container started.
+2026-Sep-04 00:37:59 Waiting for healthcheck to pass on the new container.
+2026-Sep-04 00:37:59 Healthcheck URL (inside the container): GET: http://localhost:5000/
+2026-Sep-04 00:38:00 Waiting for the start period (5 seconds) before starting healthcheck.
+2026-Sep-04 00:38:07 [DEBUG] [CMD]: docker inspect --format='{{json .State.Health.Status}}' 5c8i99hcyvaqffvxrntkknib-003024469223
+2026-Sep-04 00:38:07 [DEBUG] "unhealthy"
+2026-Sep-04 00:38:11 [DEBUG] [CMD]: docker inspect --format='{{json .State.Health.Log}}' 5c8i99hcyvaqffvxrntkknib-003024469223
+2026-Sep-04 00:38:11 [DEBUG] []
+2026-Sep-04 00:38:11 Attempt 1 of 10 | Healthcheck status: "unhealthy"
+2026-Sep-04 00:38:11 New container is unhealthy.
+2026-Sep-04 00:38:11 ----------------------------------------
+2026-Sep-04 00:38:11 Container logs:
+2026-Sep-04 00:38:15 ----------------------------------------
+2026-Sep-04 00:38:15 Removing old containers.
+2026-Sep-04 00:38:15 New container is not healthy, rolling back to the old container.
+2026-Sep-04 00:38:19 [DEBUG] [CMD]: docker stop --timeout=30 5c8i99hcyvaqffvxrntkknib-003024469223
+2026-Sep-04 00:38:19 [DEBUG] 5c8i99hcyvaqffvxrntkknib-003024469223
+2026-Sep-04 00:38:21 [DEBUG] [CMD]: bash -c 'if command -v timeout >/dev/null 2>&1; then output=$(timeout -k 10s 60s docker rm -f '\''5c8i99hcyvaqffvxrntkknib-003024469223'\'' 2>&1); exit_code=$?; else output='\'''\''; exit_code=124; fi; if [ "$exit_code" -eq 124 ]; then echo '\''__COOLIFY_CONTAINER_REMOVE_TIMEOUT__'\''; elif [ "$exit_code" -ne 0 ] && printf '\''%s'\'' "$output" | grep -q '\''No such container:'\''; then exit 0; elif [ "$exit_code" -ne 0 ]; then printf '\''%s\n'\'' "$output" >&2; else printf '\''%s\n'\'' "$output"; fi; exit $exit_code'
+2026-Sep-04 00:38:21 [DEBUG] 5c8i99hcyvaqffvxrntkknib-003024469223
+2026-Sep-04 00:38:21 Rolling update completed.
+2026-Sep-04 00:38:22 Gracefully shutting down build container: x3irklgukjtbd6ixoxzzjbav
+2026-Sep-04 00:38:23 [DEBUG] [CMD]: docker stop --timeout=30 x3irklgukjtbd6ixoxzzjbav
+2026-Sep-04 00:38:23 [DEBUG] x3irklgukjtbd6ixoxzzjbav
