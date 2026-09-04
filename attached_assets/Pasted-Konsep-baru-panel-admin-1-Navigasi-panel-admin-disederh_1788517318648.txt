@@ -1,0 +1,232 @@
+Konsep baru panel admin
+1. Navigasi panel admin disederhanakan
+Menu yang dipertahankan:
+
+Dashboard
+Data pendaftar
+Observasi per jenjang
+Master data
+Notifikasi
+Keluar
+Menu Agenda rapat dan Arsip pengajuan dihilangkan dari panel.
+
+Sebaiknya yang dihapus terlebih dahulu adalah menu dan fiturnya dari alur admin, bukan langsung menghapus data pendaftar secara permanen. Data lama tetap bisa menjadi bagian dari master data dan laporan.
+
+2. Fitur notifikasi admin diperbaiki
+Saat ini notifikasi masih berupa placeholder. Notifikasi baru sebaiknya berisi kejadian yang memang perlu ditindaklanjuti panitia:
+
+Jenis notifikasi
+Pendaftar baru masuk
+Ada berkas baru yang perlu diperiksa
+Pengajuan membutuhkan perbaikan
+Ada pengajuan yang belum diverifikasi
+Pengajuan diterima atau ditolak
+Pengajuan baru pada jenjang yang menjadi tanggung jawab admin
+Tampilan
+Pada header panel:
+
+Ikon lonceng dengan jumlah notifikasi belum dibaca
+Panel dropdown saat ikon diklik
+Setiap notifikasi menampilkan:
+Jenis kejadian
+Nomor pengajuan
+Nama pendaftar
+Jenjang
+Waktu kejadian
+Tombol Lihat pendaftar
+Tombol Tandai semua sudah dibaca
+Notifikasi harus mengikuti kewenangan akun. Admin Playgroup hanya melihat notifikasi Playgroup, sedangkan admin utama dapat melihat semua jenjang.
+
+Cara kerja yang disarankan
+Notifikasi disimpan agar status dibaca/tidak dibaca tidak hilang setelah refresh.
+Panel melakukan pengecekan berkala, misalnya setiap 30–60 detik.
+Setiap perubahan status dari panitia dicatat dengan waktu dan akun yang melakukan perubahan.
+3. Data observasi per jenjang
+Buat halaman khusus Observasi per jenjang dengan pilihan:
+
+Semua jenjang
+Playgroup
+Daycare
+TK-A
+TK-B
+SD
+SMP
+Ringkasan yang ditampilkan
+Untuk setiap jenjang:
+
+Total pendaftar
+Pendaftar baru
+Sudah diverifikasi
+Perlu perbaikan
+Diterima
+Ditolak
+Berkas belum lengkap
+Tren jumlah pendaftar berdasarkan tanggal
+Data observasi tambahan
+Jika dibutuhkan untuk kebutuhan sekolah:
+
+Jenis kelamin
+Kelompok usia per 1 Juli 2027
+Asal sekolah
+Kecamatan atau wilayah domisili
+Status kelengkapan dokumen
+Jumlah pendaftar berdasarkan periode
+Data sensitif seperti NIK dan kontak orang tua tidak perlu ditampilkan pada grafik ringkasan. Data tersebut hanya masuk ke halaman master data dan file ekspor yang memiliki akses terbatas.
+
+Filter
+Jenjang
+Status
+Rentang tanggal pengajuan
+Kelengkapan dokumen
+Asal sekolah
+Pencarian nama atau nomor pengajuan
+Filter yang digunakan di observasi juga dapat dipakai ketika mengunduh Excel atau ZIP.
+
+4. Master data pendaftar
+Master data menjadi halaman data utama setelah seluruh proses pendaftaran selesai.
+
+Kolom utama:
+
+Nomor induk internal
+Nomor pengajuan
+Nama calon peserta didik
+Jenjang
+NIK anak
+NISN
+Jenis kelamin
+Tempat dan tanggal lahir
+Alamat domisili
+Nama orang tua atau wali
+Nomor WhatsApp orang tua
+Email
+Asal sekolah
+Status pengajuan
+Tanggal pengajuan
+Kelengkapan berkas
+Status master data
+Master data tetap dapat menampilkan pendaftar dengan seluruh status:
+
+Baru
+Diverifikasi
+Perlu Perbaikan
+Diterima
+Ditolak
+Dengan demikian, status Ditolak tidak otomatis dihapus dari master data, karena tetap dibutuhkan untuk observasi dan histori penerimaan.
+
+5. Tentang NIK otomatis
+Bagian ini perlu dibedakan dengan jelas.
+
+NIK anak yang sekarang ada di formulir adalah NIK resmi dari dokumen kependudukan. NIK resmi tidak boleh dibuat secara otomatis oleh sistem karena harus berasal dari Dukcapil.
+
+Untuk kebutuhan master data, saya menyarankan membuat identitas internal baru, misalnya:
+
+Nomor Induk Pendaftar
+ID Master Pendaftar
+atau NIK Internal Pendaftar
+Contoh format:
+
+TISA-2027-SD-000014
+
+Atau jika harus numerik:
+
+2027000014
+
+Aturan yang disarankan
+Dibuat otomatis oleh server saat pengajuan berhasil disimpan.
+Bersifat unik dan tidak berubah.
+Tidak menggantikan NIK anak.
+Tidak digunakan sebagai NIK resmi kependudukan.
+Tetap sama meskipun status pengajuan berubah.
+Jika ada pengajuan ganda dengan NIK anak yang sama, sistem memberikan tanda duplikat untuk diperiksa, bukan otomatis menggabungkannya.
+Dengan pendekatan ini, master data memiliki nomor internal yang aman tanpa mencampuradukkan identitas sekolah dengan NIK resmi.
+
+6. Download master data ke Excel
+Admin dapat mengunduh file .xlsx dari halaman master data.
+
+Pilihan ekspor:
+
+Semua data yang boleh diakses akun
+Berdasarkan jenjang
+Berdasarkan status
+Berdasarkan rentang tanggal
+Berdasarkan hasil filter saat ini
+Contoh nama file:
+
+master-data-spmb-2027-sd.xlsx
+
+Isi Excel dapat terdiri dari:
+
+Master Pendaftar
+Ringkasan per Jenjang
+Ringkasan Status
+Kelengkapan Dokumen
+Akses ekspor wajib tetap mengikuti batas jenjang akun admin di server. Jadi admin SD tidak dapat memanipulasi URL untuk mengunduh data SMP.
+
+7. Download seluruh berkas dalam ZIP
+Admin dapat memilih salah satu dari dua cara:
+
+Pilihan A — ZIP satu pendaftar
+Dari halaman detail pendaftar:
+
+SPMB-000014_Nama-Pendaftar.zip
+
+Isi folder:
+
+SPMB-000014_Nama-Pendaftar/
+├── pas-foto-3x4.jpg
+├── akta-kelahiran.pdf
+├── kartu-keluarga.pdf
+├── ktp-orang-tua.pdf
+├── bukti-pembayaran.pdf
+└── manifest.txt
+
+Pilihan B — ZIP banyak pendaftar
+Dari daftar pendaftar, admin dapat memilih:
+
+Pendaftar tertentu
+Semua hasil filter
+Satu jenjang
+Satu status
+Struktur ZIP:
+
+spmb-2027-sd-berkas.zip
+├── SPMB-000014_Nama-Pendaftar/
+│   ├── pas-foto-3x4.jpg
+│   └── ...
+├── SPMB-000015_Nama-Pendaftar/
+│   ├── pas-foto-3x4.jpg
+│   └── ...
+└── manifest.csv
+
+manifest.csv berisi:
+
+Nomor pengajuan
+Nomor induk internal
+Nama
+Jenjang
+Status
+Daftar berkas yang tersedia
+Daftar berkas yang belum tersedia
+Jika ada berkas yang belum tersedia, proses ZIP tetap berjalan dan mencatat keterangannya di manifest.
+
+Untuk ZIP besar, proses sebaiknya dibuat sebagai pekerjaan ekspor di server agar halaman admin tidak timeout.
+
+8. Keamanan yang wajib diterapkan
+Karena master data dan ZIP berisi dokumen sensitif:
+
+Semua endpoint ekspor wajib memerlukan login panitia.
+Hak akses jenjang diperiksa di server.
+Path file asli tidak pernah dikirim ke browser.
+Nama file dan folder harus dibersihkan dari karakter berbahaya.
+Download dicatat dalam audit log.
+ZIP tidak boleh bisa diakses hanya dengan menebak URL.
+Data NIK, KK, dan dokumen tidak boleh masuk ke notifikasi ringkas.
+Urutan implementasi yang paling aman
+Hapus menu Agenda Rapat dan Arsip dari panel.
+Bangun notifikasi nyata dengan status dibaca/tidak dibaca.
+Tambahkan halaman Observasi per jenjang.
+Tambahkan nomor induk internal otomatis.
+Tambahkan ekspor master data ke Excel.
+Tambahkan ZIP berkas satu pendaftar.
+Tambahkan ZIP massal berdasarkan pilihan/filter.
+Tambahkan audit log dan pengujian hak akses.
