@@ -334,15 +334,24 @@
 }
 
 .form-board-contact-socials a {
+   display: inline-grid;
+   width: 25px;
+   height: 25px;
+   place-items: center;
+   border-radius: 7px;
   color: #3d7068;
   text-decoration: none;
 }
 
+.form-board-contact-socials a svg {
+   width: 17px;
+   height: 17px;
+}
+
 .form-board-contact-socials a:hover,
 .form-board-contact-socials a:focus-visible {
+   background: #dfead9;
   color: #173f43;
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .form-board-date {

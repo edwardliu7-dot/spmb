@@ -38,6 +38,16 @@ Formulir pendaftaran siswa baru untuk tahun ajaran 2027/2028 dengan penyimpanan 
 
 Pengguna dapat mengisi formulir pendaftaran SPMB dalam empat bagian, mengunggah lima berkas persyaratan, mengirim data, dan menerima konfirmasi keberhasilan.
 
+## Aturan usia pendaftaran
+
+- Usia dihitung pada 1 Juli 2027.
+- Playgroup: minimal 3 tahun.
+- TK-A: minimal 4 tahun.
+- TK-B: minimal 5 tahun.
+- SD: minimal 6 tahun.
+- SMP tidak memiliki batas usia minimum.
+- Daycare tidak memiliki batas usia minimum yang ditetapkan.
+
 ## User preferences
 
 - Gunakan Bahasa Indonesia pada antarmuka.

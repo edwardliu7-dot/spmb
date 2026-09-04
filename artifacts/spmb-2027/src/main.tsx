@@ -5,7 +5,7 @@ import './form-board.css';
 
 type FieldKind = 'text' | 'email' | 'date' | 'number' | 'textarea' | 'select';
 
-type IconName = 'bell' | 'calendar' | 'check' | 'chevron' | 'clipboard' | 'file' | 'file-check' | 'folder' | 'info' | 'lock' | 'menu' | 'shield' | 'upload';
+type IconName = 'bell' | 'calendar' | 'check' | 'chevron' | 'clipboard' | 'file' | 'file-check' | 'folder' | 'info' | 'instagram' | 'lock' | 'menu' | 'shield' | 'tiktok' | 'upload' | 'youtube';
 
 const icons: Record<IconName, string> = {
   bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
@@ -17,10 +17,13 @@ const icons: Record<IconName, string> = {
   'file-check': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 15l2 2 4-4"/>',
   folder: '<path d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z"/><path d="M3 9h18"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+  instagram: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/>',
   lock: '<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
   menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
   shield: '<path d="M12 3 20 6v6c0 5-3.4 8.5-8 10-4.6-1.5-8-5-8-10V6z"/><path d="m8 12 2.5 2.5L16 9"/>',
+  tiktok: '<path d="M15 3v10.4a4.6 4.6 0 1 1-3.2-4.4"/><path d="M15 3c.5 2.7 2.1 4.5 5 4.9"/>',
   upload: '<path d="M12 16V4M7 9l5-5 5 5M5 20h14"/>',
+  youtube: '<path d="M21.6 7.2a2.6 2.6 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4a2.6 2.6 0 0 0-1.8 1.8A27 27 0 0 0 2 12a27 27 0 0 0 .4 4.8 2.6 2.6 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.6 2.6 0 0 0 1.8-1.8A27 27 0 0 0 22 12a27 27 0 0 0-.4-4.8Z"/><path d="m10 9 5 3-5 3Z" fill="currentColor" stroke="none"/>',
 };
 
 function icon(name: IconName): string {
@@ -93,12 +96,18 @@ function fileField(name: string, label: string, detail: string): string {
 }
 
 const studentFields = [
-  inputField('jenjang', 'Jenjang yang dituju', 'select', ['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']),
+  inputField(
+    'jenjang',
+    'Jenjang yang dituju',
+    'select',
+    ['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP'],
+    'Usia minimum pada 1 Juli 2027: PG 3 tahun, TK-A 4 tahun, TK-B 5 tahun, SD 6 tahun; Daycare dan SMP tanpa batas minimum',
+  ),
   inputField('nama_calon', 'Nama lengkap calon peserta didik'),
   inputField('nama_panggilan', 'Nama panggilan'),
   inputField('jenis_kelamin', 'Jenis kelamin', 'select', ['Laki-laki', 'Perempuan']),
   inputField('tempat_lahir', 'Tempat lahir'),
-  inputField('tanggal_lahir', 'Tanggal lahir', 'date'),
+  inputField('tanggal_lahir', 'Tanggal lahir', 'date', [], 'Usia dihitung pada 1 Juli 2027'),
   inputField('nisn', 'NISN', 'text', [], '10 digit bila sudah memiliki', false, false),
   inputField('nik_anak', 'NIK anak'),
   inputField('alamat_domisili', 'Alamat domisili saat ini', 'textarea', [], '', true),
@@ -197,10 +206,10 @@ root.innerHTML = `
             </div>
             <div class="form-board-contact-details">
               <span class="form-board-contact-item"><span class="form-board-contact-label">Kantor</span><span>Kp. Cimahi RT.07/04, Sukamahi, Kec. Cikarang Pusat, Kab. Bekasi, Jawa Barat</span></span>
-              <a class="form-board-contact-item" href="tel:+6281299876500"><span class="form-board-contact-label">Telepon</span><span>+62 812 9987 6500</span></a>
+              <a class="form-board-contact-item" href="tel:+6288807842958"><span class="form-board-contact-label">Telepon</span><span>+62 888 0784 2958</span></a>
               <a class="form-board-contact-item" href="mailto:tsislamics@gmail.com"><span class="form-board-contact-label">Email</span><span>tsislamics@gmail.com</span></a>
               <span class="form-board-contact-item"><span class="form-board-contact-label">Jam layanan</span><span>08:00–14:00 WIB</span></span>
-              <span class="form-board-contact-socials"><span class="form-board-contact-label">Bantuan di</span><a href="https://www.instagram.com/tisa.islamicschool/" target="_blank" rel="noreferrer">Instagram @tisa.islamicschool</a><a href="https://www.youtube.com/@TisaIslamicSchool" target="_blank" rel="noreferrer">YouTube @TisaIslamicSchool</a><a href="https://www.tiktok.com/@tisaislamic" target="_blank" rel="noreferrer">TikTok @tisaislamic</a></span>
+              <span class="form-board-contact-socials"><span class="form-board-contact-label">Bantuan di</span><a href="https://www.instagram.com/tisa.islamicschool/" target="_blank" rel="noreferrer" aria-label="Instagram @tisa.islamicschool" title="Instagram @tisa.islamicschool">${icon('instagram')}</a><a href="https://www.youtube.com/@TisaIslamicSchool" target="_blank" rel="noreferrer" aria-label="YouTube @TisaIslamicSchool" title="YouTube @TisaIslamicSchool">${icon('youtube')}</a><a href="https://www.tiktok.com/@tisaislamic" target="_blank" rel="noreferrer" aria-label="TikTok @tisaislamic" title="TikTok @tisaislamic">${icon('tiktok')}</a></span>
             </div>
           </div>
         </div>
@@ -476,6 +485,25 @@ const numericRules: Record<string, { min: number; max: number; integer: boolean 
 };
 
 const earlyEducationLevels = new Set(['Playgroup', 'Daycare', 'TK-A', 'TK-B']);
+const minimumAgeByLevel: Record<string, number> = {
+  Playgroup: 3,
+  'TK-A': 4,
+  'TK-B': 5,
+  SD: 6,
+};
+
+function getMinimumAgeError(level: string, birthDateValue: string): string | null {
+  const minimumAge = minimumAgeByLevel[level];
+  if (!minimumAge || !/^\d{4}-\d{2}-\d{2}$/.test(birthDateValue)) return null;
+
+  const birthDate = new Date(`${birthDateValue}T00:00:00.000Z`);
+  if (Number.isNaN(birthDate.getTime())) return null;
+
+  const latestAllowedBirthDate = Date.UTC(2027 - minimumAge, 6, 1);
+  return birthDate.getTime() <= latestAllowedBirthDate
+    ? null
+    : `Untuk jenjang ${level}, calon peserta didik harus berusia minimal ${minimumAge} tahun pada 1 Juli 2027.`;
+}
 
 function updateSchoolFieldsRequirement(): void {
   const jenjang = (getFieldControl('jenjang') as HTMLSelectElement | null)?.value || '';
@@ -571,6 +599,12 @@ async function validateForm(scope: ParentNode = form): Promise<boolean> {
         const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
         if (Number.isNaN(birthDate.getTime()) || birthDate.getTime() > todayUtc || birthDate.getUTCFullYear() < 1900) {
           markInvalid(control, 'Tanggal lahir harus valid dan tidak boleh melebihi hari ini.');
+        } else {
+          const level = (scope.querySelector('#jenjang') as HTMLSelectElement | null)?.value
+            || (getFieldControl('jenjang') as HTMLSelectElement | null)?.value
+            || '';
+          const ageError = getMinimumAgeError(level, value);
+          if (ageError) markInvalid(control, ageError);
         }
       }
     }
@@ -759,10 +793,13 @@ function showSubmissionError(error: unknown): void {
     ? data.fields.filter((field): field is string => typeof field === 'string')
     : [];
   const normalizedFields = [...new Set(fields.map((field) => field.split(':', 1)[0]))];
+  const serverError = typeof data?.error === 'string' ? data.error : '';
   normalizedFields.forEach((name) => {
     const control = getFieldControl(name);
     if (control) {
-      const message = name.includes('nik') || name === 'nomor_kk'
+      const message = name === 'tanggal_lahir' && serverError.includes('berusia minimal')
+        ? serverError
+        : name.includes('nik') || name === 'nomor_kk'
         ? `${getFieldLabel(name)} harus berupa angka dengan panjang yang benar.`
         : name.includes('file') || ['foto_3x4', 'akte_lahir', 'kartu_keluarga', 'ktp_orangtua', 'bukti_bayar'].includes(name)
           ? 'Berkas ini perlu diperiksa dan diunggah ulang.'
@@ -780,11 +817,10 @@ function showSubmissionError(error: unknown): void {
     if (invalidSectionIndex >= 0) goToSection(invalidSectionIndex);
     firstField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   } else {
-    errorAlert.textContent = typeof data?.error === 'string'
-      ? data.error
-      : typeof candidate.message === 'string'
+    errorAlert.textContent = serverError
+      || (typeof candidate.message === 'string'
         ? candidate.message
-        : 'Pengajuan belum dapat dikirim. Silakan coba lagi.';
+        : 'Pengajuan belum dapat dikirim. Silakan coba lagi.');
   }
   errorAlert.className = 'form-alert error is-visible';
 }

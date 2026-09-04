@@ -132,6 +132,12 @@ const schoolTextFields = new Set<TextField>([
   "alamat_sekolah_asal",
 ]);
 const earlyEducationLevels = new Set(["Playgroup", "Daycare", "TK-A", "TK-B"]);
+const minimumAgeByLevel: Record<string, number> = {
+  Playgroup: 3,
+  "TK-A": 4,
+  "TK-B": 5,
+  SD: 6,
+};
 const validFieldValues: Partial<Record<TextField, readonly string[]>> = {
   status_anak: ["Anak kandung", "Anak tiri", "Anak angkat"],
   agama: ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu"],
@@ -231,6 +237,17 @@ function isDigits(value: string, length: number): boolean {
 function isValidPhoneNumber(value: string): boolean {
   const normalized = value.replace(/[^\d+]/g, "");
   return /^(?:\+62|62|0)8\d{8,12}$/.test(normalized);
+}
+
+function getMinimumAgeError(level: string, birthDateValue: string): string | null {
+  const minimumAge = minimumAgeByLevel[level];
+  if (!minimumAge) return null;
+
+  const birthDate = new Date(`${birthDateValue}T00:00:00.000Z`);
+  const latestAllowedBirthDate = Date.UTC(2027 - minimumAge, 6, 1);
+  return birthDate.getTime() <= latestAllowedBirthDate
+    ? null
+    : `Untuk jenjang ${level}, calon peserta didik harus berusia minimal ${minimumAge} tahun pada 1 Juli 2027.`;
 }
 
 function getFileSignatureError(file: Express.Multer.File, bytes: Buffer): string | null {
@@ -375,6 +392,7 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
     if (value && !allowedValues?.includes(value)) invalidFormats.push(field);
   }
   const birthDate = getValue(request, "tanggal_lahir");
+  let ageRequirementError: string | null = null;
   if (!isValidDate(birthDate)) {
     invalidFormats.push("tanggal_lahir");
   } else {
@@ -383,6 +401,9 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
     const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
     if (parsedBirthDate.getTime() > todayUtc || parsedBirthDate.getUTCFullYear() < 1900) {
       invalidFormats.push("tanggal_lahir");
+    } else {
+      ageRequirementError = getMinimumAgeError(jenjang, birthDate);
+      if (ageRequirementError) invalidFormats.push("tanggal_lahir");
     }
   }
   if (getValue(request, "nama_wali") !== "" && getValue(request, "hubungan_wali") === "") {
@@ -422,6 +443,8 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
           ? `${documentLabels[missingFiles[0]]} wajib diunggah.`
           : invalidNumbers.length
             ? `Nilai ${invalidNumbers[0].replaceAll("_", " ")} berada di luar batas yang diperbolehkan.`
+            : ageRequirementError
+              ? ageRequirementError
             : "Mohon lengkapi semua kolom dan pastikan format data sudah benar.",
       fields: [...new Set([...invalidFields, ...invalidNumbers, ...invalidFileFields, ...invalidFormatFields])],
     });
