@@ -444,6 +444,7 @@ type DraftState = {
 
 let activeSectionIndex = 0;
 let cachedFileMetadata: Record<string, CachedFileMetadata> = {};
+let sectionNavigationInProgress = false;
 
 function readDraft(): DraftState | null {
   try {
@@ -784,6 +785,40 @@ function goToSection(index: number, shouldScroll = true): void {
   }
 }
 
+async function navigateToSection(index: number): Promise<void> {
+  const targetIndex = Math.min(Math.max(index, 0), sectionIds.length - 1);
+  if (sectionNavigationInProgress) return;
+
+  // Going back is always allowed so the user can correct an earlier section.
+  if (targetIndex <= activeSectionIndex) {
+    goToSection(targetIndex);
+    return;
+  }
+
+  sectionNavigationInProgress = true;
+  try {
+    // Validate every section before the requested destination. This prevents
+    // the sidebar from bypassing the same checks enforced by "Lanjut".
+    for (let sectionIndex = 0; sectionIndex < targetIndex; sectionIndex += 1) {
+      const section = document.getElementById(sectionIds[sectionIndex]);
+      if (!section) continue;
+
+      if (activeSectionIndex !== sectionIndex) {
+        goToSection(sectionIndex, false);
+      }
+
+      if (!(await validateForm(section))) {
+        goToSection(sectionIndex);
+        return;
+      }
+    }
+
+    goToSection(targetIndex);
+  } finally {
+    sectionNavigationInProgress = false;
+  }
+}
+
 function updateProgress(): void {
   const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-section]'));
   const activeIndex = Math.min(activeSectionIndex, sections.length - 1);
@@ -924,7 +959,7 @@ document.querySelectorAll<HTMLButtonElement>('[data-notice]').forEach((button) =
 document.querySelectorAll<HTMLElement>('[data-go-section]').forEach((button) => {
   button.addEventListener('click', () => {
     const index = sectionIds.indexOf(button.dataset.goSection || '');
-    if (index >= 0) goToSection(index);
+    if (index >= 0) void navigateToSection(index);
   });
 });
 
