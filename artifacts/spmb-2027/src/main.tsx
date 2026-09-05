@@ -173,6 +173,7 @@ const uploadFieldNames = ['foto_3x4', 'akte_lahir', 'kartu_keluarga', 'ktp_orang
 const draftStorageKey = 'spmb-2027-form-draft';
 const draftFilesDatabase = 'spmb-2027-draft-files';
 const draftFilesStore = 'files';
+const draftFilesDatabaseVersion = 2;
 const draftStorageTimeoutMs = 5000;
 const submissionTimeoutMs = 120000;
 
@@ -524,12 +525,14 @@ function openDraftFilesDatabase(): Promise<IDBDatabase> {
       reject(new Error('Penyimpanan berkas lokal tidak tersedia.'));
       return;
     }
-    const request = window.indexedDB.open(draftFilesDatabase, 1);
+    const request = window.indexedDB.open(draftFilesDatabase, draftFilesDatabaseVersion);
     const timeoutId = window.setTimeout(() => {
       reject(new Error('Penyimpanan berkas lokal terlalu lama merespons.'));
     }, draftStorageTimeoutMs);
     request.onupgradeneeded = () => {
-      request.result.createObjectStore(draftFilesStore);
+      if (!request.result.objectStoreNames.contains(draftFilesStore)) {
+        request.result.createObjectStore(draftFilesStore);
+      }
     };
     request.onsuccess = () => {
       window.clearTimeout(timeoutId);
@@ -550,10 +553,55 @@ async function cacheDraftFile(name: string, file: File): Promise<void> {
   const database = await openDraftFilesDatabase();
   await new Promise<void>((resolve, reject) => {
     const transaction = database.transaction(draftFilesStore, 'readwrite');
-    transaction.objectStore(draftFilesStore).put(file, name);
+    transaction.objectStore(draftFilesStore).put({
+      blob: file,
+      name: file.name,
+      type: file.type,
+      lastModified: file.lastModified,
+    }, name);
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error || new Error('Berkas tidak dapat disimpan sementara.'));
   }).finally(() => database.close());
+}
+
+function restoreCachedFile(value: unknown, name: string): File | null {
+  let blob: Blob | null = null;
+  let metadata = cachedFileMetadata[name];
+
+  if (typeof File !== 'undefined' && value instanceof File) {
+    return value;
+  }
+  if (typeof Blob !== 'undefined' && value instanceof Blob) {
+    blob = value;
+  } else if (value && typeof value === 'object') {
+    const record = value as {
+      blob?: unknown;
+      name?: unknown;
+      type?: unknown;
+      lastModified?: unknown;
+    };
+    if (typeof Blob !== 'undefined' && record.blob instanceof Blob) {
+      blob = record.blob;
+      metadata = {
+        name: typeof record.name === 'string' ? record.name : metadata?.name || name,
+        size: record.blob.size,
+        type: typeof record.type === 'string' ? record.type : metadata?.type || record.blob.type,
+        lastModified: typeof record.lastModified === 'number'
+          ? record.lastModified
+          : metadata?.lastModified || Date.now(),
+      };
+    }
+  }
+
+  if (!blob) return null;
+  try {
+    return new File([blob], metadata?.name || name, {
+      type: metadata?.type || blob.type || 'application/octet-stream',
+      lastModified: metadata?.lastModified || Date.now(),
+    });
+  } catch {
+    return null;
+  }
 }
 
 async function getCachedDraftFile(name: string): Promise<File | null> {
@@ -566,7 +614,7 @@ async function getCachedDraftFile(name: string): Promise<File | null> {
       }, draftStorageTimeoutMs);
       request.onsuccess = () => {
         window.clearTimeout(timeoutId);
-        resolve(request.result instanceof File ? request.result : null);
+        resolve(restoreCachedFile(request.result, name));
       };
       request.onerror = () => {
         window.clearTimeout(timeoutId);

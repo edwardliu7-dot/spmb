@@ -1,6 +1,12 @@
 import { createInsertSchema } from "drizzle-zod";
-import { date, integer, pgTable, real, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { customType, date, integer, pgTable, real, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { z } from "zod/v4";
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType() {
+    return "bytea";
+  },
+});
 
 export const pendaftarTable = pgTable("pendaftar", {
   id: serial("id").primaryKey(),
@@ -53,6 +59,18 @@ export const pendaftarTable = pgTable("pendaftar", {
   bukti_bayar_path: text("bukti_bayar_path"),
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const applicationFileTable = pgTable("application_file", {
+  id: serial("id").primaryKey(),
+  application_id: integer("application_id").notNull().references(() => pendaftarTable.id, { onDelete: "cascade" }),
+  field: text("field").notNull(),
+  original_name: text("original_name").notNull(),
+  mime_type: text("mime_type").notNull(),
+  data: bytea("data").notNull(),
+  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  applicationFieldUnique: uniqueIndex("application_file_application_field_unique").on(table.application_id, table.field),
+}));
 
 export const committeeNotificationTable = pgTable("committee_notification", {
   id: serial("id").primaryKey(),

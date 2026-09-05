@@ -20,6 +20,18 @@ legacy records with a read-compatible fallback, and migrate additive columns
 and feature tables separately rather than assuming a successful health check
 means the full schema is current.
 
+New multipart submissions also require the additive `application_file` table
+with its `bytea` data column. The API deliberately fails the whole submission
+transaction if this table is absent, rather than silently returning to
+container-only storage.
+
+**Why:** A successful `pendaftar` insert without its files would recreate the
+original failure mode where database paths outlive their file contents.
+
+**How to apply:** Synchronize `application_file` on the external Coolify
+database before deploying the new upload flow. Existing path-only records
+remain readable only when their legacy files still exist.
+
 Post-insert work is also schema-sensitive: generating a server-side NIS and
 creating committee notifications happen after the base pendaftar insert.
 

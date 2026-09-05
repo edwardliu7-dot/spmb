@@ -1,4 +1,4 @@
-- [SPMB runtime decisions](spmb-runtime.md) — PostgreSQL uses the secure runtime-managed DATABASE_URL; uploads persist on disk with paths in the database.
+- [SPMB runtime decisions](spmb-runtime.md) — PostgreSQL uses the secure runtime-managed DATABASE_URL; new uploads persist as bytea data with legacy path fallback.
 - [SPMB multipart validation](spmb-submit-validation.md) — validate generated multipart contracts with upload placeholders plus separate Multer file checks.
 - [Committee access](committee-access.md) — panel sessions use signed HTTP-only cookies and server-enforced jenjang scopes for the four fixed accounts.
 - [Publish lockfile compatibility](publish-lockfile.md) — validate frozen installs with the same pnpm major/minor version used by the publish builder.
@@ -7,3 +7,4 @@
 - [SPMB external database sync](spmb-external-db-schema.md) — runtime may use an external DATABASE_URL whose schema lags behind the nullable school fields in the source model.
 - [SPMB OpenAPI numeric schemas](spmb-openapi-numeric.md) — this workspace's Orval/Zod combination rejects generated zod.int(); use compatible number schemas unless the toolchain is upgraded.
 - [SPMB submit and receipt flow](spmb-submit-receipt-flow.md) — submission returns a receipt URL; PDF generation is lazy and runs only when that URL is opened.
+- [SPMB Safari upload draft](spmb-safari-upload.md) — Safari can restore IndexedDB uploads as Blob or cross-realm File while metadata still looks valid.

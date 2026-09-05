@@ -199,12 +199,30 @@ Detail field dan response tersedia di `lib/api-spec/openapi.yaml`.
 
 - Data pendaftar disimpan di PostgreSQL pada tabel `pendaftar`.
 - Setiap pengajuan dikenali dengan nomor pengajuan yang dibuat server.
-- Berkas diunggah ke penyimpanan server pada `artifacts/api-server/uploads/`
-  atau lokasi upload yang dikonfigurasi runtime.
-- Database menyimpan path relatif berkas, bukan isi berkas.
+- Berkas baru disimpan sebagai data `bytea` di tabel `application_file`,
+  bersama nama asli dan MIME type.
+- Kolom path pada tabel `pendaftar` tetap dipertahankan sebagai fallback untuk
+  berkas lama yang masih berada di filesystem.
 - Path server asli tidak boleh dikirim ke browser.
 - Notifikasi, riwayat perubahan status, dan audit panitia disimpan pada tabel
   terkait.
+
+### Deployment di Coolify
+
+Berkas baru tidak lagi bergantung pada filesystem container. Sebelum deploy,
+sinkronkan schema database agar tabel `application_file` tersedia.
+
+`UPLOADS_DIRECTORY` hanya diperlukan bila masih ada berkas lama yang ingin
+dibaca dari filesystem. Jika digunakan di Coolify, arahkan ke persistent
+volume, misalnya:
+
+```text
+UPLOADS_DIRECTORY=/data/uploads
+```
+
+Berkas lama yang sudah hilang dari container tidak dapat dipulihkan dari
+database karena sebelumnya database hanya menyimpan path. Jika container atau
+backup lama masih tersedia, migrasikan berkas lama sebelum menghapusnya.
 
 ## Catatan keamanan
 

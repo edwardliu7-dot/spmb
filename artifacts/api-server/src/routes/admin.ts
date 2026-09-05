@@ -1,4 +1,5 @@
 import { Router } from "express";
+import path from "node:path";
 import { canAccessJenjang, requireCommitteeAuth } from "../middlewares/committee-auth";
 import {
   getObservationRows,
@@ -9,7 +10,8 @@ import {
   markNotificationRead,
   recordCommitteeAudit,
 } from "../lib/spmb-database";
-import { createXlsx, createZip, readExistingFile } from "../lib/export-files";
+import { createXlsx, createZip } from "../lib/export-files";
+import { getApplicationFileFields, readApplicationFile } from "../lib/application-files";
 import { resolveStoredUpload } from "./applications";
 import { createSpmbReceipt } from "../lib/spmb-receipt";
 
@@ -17,11 +19,11 @@ const router = Router();
 router.use("/admin", requireCommitteeAuth);
 
 const documentFields = [
-  { key: "foto_3x4_path", file: "foto-3x4" },
-  { key: "akte_lahir_path", file: "akta-kelahiran" },
-  { key: "kartu_keluarga_path", file: "kartu-keluarga" },
-  { key: "ktp_orangtua_path", file: "ktp-orang-tua" },
-  { key: "bukti_bayar_path", file: "bukti-pembayaran" },
+  { key: "foto_3x4_path", field: "foto_3x4", file: "foto-3x4" },
+  { key: "akte_lahir_path", field: "akte_lahir", file: "akta-kelahiran" },
+  { key: "kartu_keluarga_path", field: "kartu_keluarga", file: "kartu-keluarga" },
+  { key: "ktp_orangtua_path", field: "ktp_orangtua", file: "ktp-orang-tua" },
+  { key: "bukti_bayar_path", field: "bukti_bayar", file: "bukti-pembayaran" },
 ] as const;
 
 function queryString(value: unknown): string | undefined {
@@ -162,8 +164,15 @@ router.get("/admin/observations", async (request, response) => {
   try {
     const rows = await getObservationRows(queryFilters(request.query as Record<string, unknown>, user.allowedJenjang));
     const statuses = ["Baru", "Diverifikasi", "Perlu Perbaikan", "Diterima", "Ditolak"];
+    const storedFieldsByApplication = new Map<number, Set<string>>();
+    await Promise.all(rows.map(async (row) => {
+      storedFieldsByApplication.set(row.id, await getApplicationFileFields(row.id));
+    }));
     const completeDocuments = (row: typeof rows[number]) =>
-      documentFields.filter(({ key }) => Boolean(row[key] && resolveStoredUpload(row[key]!))).length;
+      documentFields.filter(({ key, field }) =>
+        storedFieldsByApplication.get(row.id)?.has(field)
+        || Boolean(row[key] && resolveStoredUpload(row[key]!)),
+      ).length;
     return response.json({
       jenjang: queryString(request.query.jenjang) || "Semua",
       total: rows.length,
@@ -234,12 +243,11 @@ async function createApplicationZip(id: number, user: NonNullable<Express.Reques
   const available: string[] = [];
   const missing: string[] = [];
   for (const document of documentFields) {
-    const filePath = typeof item[document.key] === "string" ? resolveStoredUpload(item[document.key]!) : null;
-    const data = await readExistingFile(filePath);
-    if (data) {
+    const storedFile = await readApplicationFile(item.id, document.field, item[document.key]);
+    if (storedFile) {
       available.push(document.file);
-      const extension = filePath?.split(".").pop()?.toLowerCase() || "bin";
-      entries.push({ name: `${folder}/${document.file}.${safeFilePart(extension)}`, data });
+      const extension = path.extname(storedFile.originalName).replace(".", "").toLowerCase() || "bin";
+      entries.push({ name: `${folder}/${document.file}.${safeFilePart(extension)}`, data: storedFile.data });
     } else {
       missing.push(document.file);
     }
@@ -322,12 +330,11 @@ router.post("/admin/files.zip", async (request, response) => {
       const available: string[] = [];
       const missing: string[] = [];
       for (const document of documentFields) {
-        const filePath = typeof item[document.key] === "string" ? resolveStoredUpload(item[document.key]!) : null;
-        const data = await readExistingFile(filePath);
-        if (data) {
+        const storedFile = await readApplicationFile(item.id, document.field, item[document.key]);
+        if (storedFile) {
           available.push(document.file);
-          const extension = filePath?.split(".").pop()?.toLowerCase() || "bin";
-          entries.push({ name: `${folder}/${document.file}.${safeFilePart(extension)}`, data });
+          const extension = path.extname(storedFile.originalName).replace(".", "").toLowerCase() || "bin";
+          entries.push({ name: `${folder}/${document.file}.${safeFilePart(extension)}`, data: storedFile.data });
         } else {
           missing.push(document.file);
         }

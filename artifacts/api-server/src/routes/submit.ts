@@ -1,9 +1,9 @@
 import { Router, type NextFunction, type Request, type Response } from "express";
 import multer from "multer";
 import path from "node:path";
-import { readFile, unlink } from "node:fs/promises";
 import { SubmitApplicationBody } from "@workspace/api-zod";
-import { getPendaftar, getPublicPendaftarStatus, insertPendaftar, uploadsDirectory } from "../lib/spmb-database";
+import { getPendaftar, getPublicPendaftarStatus, insertPendaftar } from "../lib/spmb-database";
+import { type ApplicationFileInput } from "../lib/application-files";
 import { allJenjang } from "../middlewares/committee-auth";
 import { createReceiptToken, createSpmbReceipt, isValidReceiptToken } from "../lib/spmb-receipt";
 
@@ -37,20 +37,8 @@ class UnsupportedFileTypeError extends Error {
   }
 }
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, callback) => callback(null, uploadsDirectory),
-  filename: (_req, file, callback) => {
-    const extension = path.extname(file.originalname).toLowerCase();
-    const safeBaseName = path
-      .basename(file.originalname, extension)
-      .replace(/[^a-zA-Z0-9_-]/g, "-")
-      .slice(0, 48);
-    callback(null, `${Date.now()}-${safeBaseName || "dokumen"}${extension}`);
-  },
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: maxFileSize,
     files: documentFields.length,
@@ -284,8 +272,7 @@ async function validateUploadedFiles(request: Request): Promise<string[]> {
     const file = getUploadedFile(request, field);
     if (!file) continue;
     try {
-      const bytes = await readFile(file.path);
-      const error = getFileSignatureError(file, bytes);
+      const error = getFileSignatureError(file, file.buffer);
       if (error) invalidFiles.push(`${field}: ${error}`);
     } catch {
       invalidFiles.push(`${field}: Berkas tidak dapat dibaca.`);
@@ -295,12 +282,8 @@ async function validateUploadedFiles(request: Request): Promise<string[]> {
 }
 
 async function removeUploadedFiles(request: Request) {
-  for (const field of documentFields) {
-    const file = getUploadedFile(request, field);
-    if (file) {
-      await unlink(file.path).catch(() => undefined);
-    }
-  }
+  // Multer uses memoryStorage: there are no temporary files to clean up.
+  void request;
 }
 
 function handleUpload(request: Request, response: Parameters<typeof uploadMiddleware>[1], next: Parameters<typeof uploadMiddleware>[2]) {
@@ -481,10 +464,17 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
   }
 
   try {
-    const uploadedPath = (field: (typeof documentFields)[number]) => {
+    const uploadedFiles: ApplicationFileInput[] = documentFields.flatMap((field) => {
       const file = getUploadedFile(request, field);
-      return file ? path.relative(path.resolve(uploadsDirectory, ".."), file.path) : null;
-    };
+      return file
+        ? [{
+            field,
+            originalName: file.originalname,
+            mimeType: file.mimetype,
+            data: file.buffer,
+          }]
+        : [];
+    });
     const values = {
       jenjang,
       nama_calon: getValue(request, "nama_calon"),
@@ -527,14 +517,14 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
       instansi_jabatan_ibu: getValue(request, "instansi_jabatan_ibu"),
       nama_wali: getValue(request, "nama_wali") || null,
       hubungan_wali: getValue(request, "hubungan_wali") || null,
-      foto_3x4_path: uploadedPath("foto_3x4"),
-      akte_lahir_path: uploadedPath("akte_lahir"),
-      kartu_keluarga_path: uploadedPath("kartu_keluarga"),
-      ktp_orangtua_path: uploadedPath("ktp_orangtua"),
-      bukti_bayar_path: uploadedPath("bukti_bayar"),
+      foto_3x4_path: null,
+      akte_lahir_path: null,
+      kartu_keluarga_path: null,
+      ktp_orangtua_path: null,
+      bukti_bayar_path: null,
     };
 
-    const result = await insertPendaftar(values);
+    const result = await insertPendaftar(values, uploadedFiles);
     const id = Number(result.id);
     request.log.info({ applicationId: id }, "SPMB application submitted");
 

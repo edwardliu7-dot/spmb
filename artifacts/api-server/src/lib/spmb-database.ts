@@ -1,7 +1,5 @@
-import { mkdirSync } from "node:fs";
 import { unlink } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import {
   and,
   desc,
@@ -13,6 +11,7 @@ import {
 } from "drizzle-orm";
 import {
   db,
+  applicationFileTable,
   applicationStatusHistoryTable,
   committeeAuditLogTable,
   committeeNotificationReadTable,
@@ -21,15 +20,11 @@ import {
   type InsertPendaftar,
   type Pendaftar,
 } from "@workspace/db";
+import type { ApplicationFileInput } from "./application-files";
 import { logger } from "./logger";
+import { resolveStoredUpload, uploadsDirectory } from "./upload-storage";
 
-const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
-const packageRoot = path.basename(moduleDirectory) === "lib"
-  ? path.resolve(moduleDirectory, "../..")
-  : path.resolve(moduleDirectory, "..");
-export const uploadsDirectory = path.join(packageRoot, "uploads");
-
-mkdirSync(uploadsDirectory, { recursive: true });
+export { uploadsDirectory } from "./upload-storage";
 
 const storedDocumentFields = [
   "foto_3x4_path",
@@ -72,19 +67,38 @@ async function getSchemaMetadata(): Promise<SchemaMetadata> {
   return schemaMetadataPromise;
 }
 
-export async function insertPendaftar(values: InsertPendaftar) {
+export async function insertPendaftar(values: InsertPendaftar, files: ApplicationFileInput[] = []) {
   const { pendaftarColumns, tables } = await getSchemaMetadata();
   const compatibleValues = Object.fromEntries(
     Object.entries(values).filter(([key]) => pendaftarColumns.has(key)),
   ) as InsertPendaftar;
-  const [created] = await db
-    .insert(pendaftarTable)
-    .values(compatibleValues)
-    .returning({ id: pendaftarTable.id });
+  const created = await db.transaction(async (tx) => {
+    const [inserted] = await tx
+      .insert(pendaftarTable)
+      .values(compatibleValues)
+      .returning({ id: pendaftarTable.id });
 
-  if (!created) {
-    throw new Error("Pendaftar tidak berhasil dibuat.");
-  }
+    if (!inserted) {
+      throw new Error("Pendaftar tidak berhasil dibuat.");
+    }
+
+    if (files.length) {
+      if (!tables.has("application_file")) {
+        const error = new Error("Tabel penyimpanan berkas belum tersedia.");
+        Object.assign(error, { code: "42P01" });
+        throw error;
+      }
+      await tx.insert(applicationFileTable).values(files.map((file) => ({
+        application_id: inserted.id,
+        field: file.field,
+        original_name: file.originalName,
+        mime_type: file.mimeType || "application/octet-stream",
+        data: file.data,
+      })));
+    }
+
+    return inserted;
+  });
 
   if (tables.has("committee_notification")) {
     try {
@@ -249,10 +263,7 @@ export async function getPublicPendaftarStatus(id: number) {
 }
 
 function resolveStoredUploadForDeletion(relativePath: unknown): string | null {
-  if (typeof relativePath !== "string" || !relativePath || path.isAbsolute(relativePath)) return null;
-  const root = path.resolve(uploadsDirectory);
-  const filePath = path.resolve(path.dirname(root), relativePath);
-  return filePath.startsWith(`${root}${path.sep}`) ? filePath : null;
+  return resolveStoredUpload(relativePath);
 }
 
 export async function deletePendaftar(id: number, deletedBy: string) {

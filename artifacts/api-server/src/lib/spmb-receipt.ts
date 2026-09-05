@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { createHmac } from "node:crypto";
@@ -12,6 +11,7 @@ import {
   type PDFPage,
 } from "pdf-lib";
 import type { Pendaftar } from "@workspace/db";
+import { readApplicationFile, type ApplicationDocumentField } from "./application-files";
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.basename(moduleDirectory) === "lib"
@@ -20,8 +20,6 @@ const packageRoot = path.basename(moduleDirectory) === "lib"
 const workspaceRoot = path.resolve(packageRoot, "../..");
 const templatePath = path.join(packageRoot, "assets", "bukti-formulir-spmb-template.pdf");
 const schoolLogoPath = path.join(workspaceRoot, "lib", "logo tisa.png");
-const uploadRoot = path.resolve(packageRoot, "uploads");
-const legacyUploadRoot = path.resolve(packageRoot, "artifacts/api-server/uploads");
 
 type TopRect = {
   x: number;
@@ -32,6 +30,7 @@ type TopRect = {
 
 type ImageAttachment = {
   pageIndex: number;
+  field: ApplicationDocumentField;
   path: string | null;
   label: string;
   box: TopRect;
@@ -215,14 +214,6 @@ function drawCenteredText(
   });
 }
 
-function resolveUpload(relativePath: string | null): string | null {
-  if (!relativePath) return null;
-  const candidates = [uploadRoot, legacyUploadRoot]
-    .map((root) => path.resolve(path.dirname(root), relativePath))
-    .filter((resolved) => resolved.startsWith(`${uploadRoot}${path.sep}`) || resolved.startsWith(`${legacyUploadRoot}${path.sep}`));
-  return candidates.find((candidate) => existsSync(candidate)) ?? null;
-}
-
 function getReceiptSecret(): string {
   const secret = process.env.SESSION_SECRET;
   if (!secret) throw new Error("SESSION_SECRET is required to create a receipt token.");
@@ -247,19 +238,20 @@ function splitCombinedValue(value: string): { institution: string; position: str
 async function drawAttachment(
   document: PDFDocument,
   page: PDFPage,
+  applicationId: number,
   attachment: ImageAttachment,
   font: PDFFont,
 ): Promise<void> {
   clearRect(page, attachment.box);
-  const filePath = resolveUpload(attachment.path);
-  if (!filePath) {
+  const file = await readApplicationFile(applicationId, attachment.field, attachment.path);
+  if (!file) {
     drawCenteredText(page, `${attachment.label} belum tersedia`, attachment.box, font, 10);
     return;
   }
 
   try {
-    const bytes = await readFile(filePath);
-    const extension = path.extname(filePath).toLowerCase();
+    const bytes = file.data;
+    const extension = path.extname(file.originalName).toLowerCase();
     if (extension === ".jpg" || extension === ".jpeg" || extension === ".png") {
       const image: PDFImage = extension === ".png"
         ? await document.embedPng(bytes)
@@ -377,10 +369,10 @@ export async function createSpmbReceipt(application: Pendaftar): Promise<Uint8Ar
   });
 
   clearRect(page1, { x: 458, top: 303, width: 99, height: 82 });
-  const photoPath = resolveUpload(application.foto_3x4_path);
-  if (photoPath) {
-    const photoBytes = await readFile(photoPath);
-    const photoExtension = path.extname(photoPath).toLowerCase();
+  const photoFile = await readApplicationFile(application.id, "foto_3x4", application.foto_3x4_path);
+  if (photoFile) {
+    const photoBytes = photoFile.data;
+    const photoExtension = path.extname(photoFile.originalName).toLowerCase();
     if (photoExtension === ".png" || photoExtension === ".jpg" || photoExtension === ".jpeg") {
       const photo = photoExtension === ".png"
         ? await document.embedPng(photoBytes)
@@ -404,13 +396,13 @@ export async function createSpmbReceipt(application: Pendaftar): Promise<Uint8Ar
   drawCenteredText(page2, `${textValue(application.nama_ayah)} / ${textValue(application.nama_ibu)}`, { x: 320, top: 185, width: 240, height: 21 }, regularFont, 9);
 
   const attachments: ImageAttachment[] = [
-    { pageIndex: 2, path: application.akte_lahir_path, label: "Akta kelahiran", box: { x: 42, top: 119, width: 512, height: 253 } },
-    { pageIndex: 3, path: application.kartu_keluarga_path, label: "Kartu Keluarga", box: { x: 42, top: 102, width: 512, height: 271 } },
-    { pageIndex: 4, path: application.bukti_bayar_path, label: "Bukti pembayaran", box: { x: 42, top: 116, width: 512, height: 271 } },
-    { pageIndex: 5, path: application.ktp_orangtua_path, label: "KTP orang tua", box: { x: 42, top: 135, width: 512, height: 270 } },
+    { pageIndex: 2, field: "akte_lahir", path: application.akte_lahir_path, label: "Akta kelahiran", box: { x: 42, top: 119, width: 512, height: 253 } },
+    { pageIndex: 3, field: "kartu_keluarga", path: application.kartu_keluarga_path, label: "Kartu Keluarga", box: { x: 42, top: 102, width: 512, height: 271 } },
+    { pageIndex: 4, field: "bukti_bayar", path: application.bukti_bayar_path, label: "Bukti pembayaran", box: { x: 42, top: 116, width: 512, height: 271 } },
+    { pageIndex: 5, field: "ktp_orangtua", path: application.ktp_orangtua_path, label: "KTP orang tua", box: { x: 42, top: 135, width: 512, height: 270 } },
   ];
   for (const attachment of attachments) {
-    await drawAttachment(document, document.getPage(attachment.pageIndex), attachment, regularFont);
+    await drawAttachment(document, document.getPage(attachment.pageIndex), application.id, attachment, regularFont);
   }
 
   clearRect(page7, { x: 70, top: 112, width: 78, height: 78 });

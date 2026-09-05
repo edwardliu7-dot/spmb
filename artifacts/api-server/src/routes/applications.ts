@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { existsSync } from "node:fs";
-import path from "node:path";
-import { deletePendaftar, getPendaftar, listPendaftar, updatePendaftarStatus, uploadsDirectory } from "../lib/spmb-database";
+import { deletePendaftar, getPendaftar, listPendaftar, updatePendaftarStatus } from "../lib/spmb-database";
+import { getApplicationFile, getApplicationFileFields, type ApplicationDocumentField } from "../lib/application-files";
+import { resolveStoredUpload } from "../lib/upload-storage";
 import { canAccessJenjang, committeeStatuses, requireAdministrator, requireCommitteeAuth } from "../middlewares/committee-auth";
 
 const router = Router();
@@ -21,22 +21,7 @@ function parseId(value: string | string[]) {
   return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
 
-const uploadRoot = path.resolve(uploadsDirectory);
-const legacyUploadRoot = path.resolve(path.dirname(uploadRoot), "artifacts/api-server/uploads");
-
-export function resolveStoredUpload(relativePath: string): string | null {
-  const roots = [uploadRoot, legacyUploadRoot];
-  for (const root of roots) {
-    const filePath = path.resolve(path.dirname(root), relativePath);
-    if (
-      filePath.startsWith(`${root}${path.sep}`)
-      && existsSync(filePath)
-    ) {
-      return filePath;
-    }
-  }
-  return null;
-}
+export { resolveStoredUpload } from "../lib/upload-storage";
 
 router.get("/applications", async (request, response) => {
   try {
@@ -66,19 +51,21 @@ router.get("/applications/:id/files/:field", async (request, response) => {
   }
   const column = Object.entries(documentFields).find(([, item]) => item.field === field)?.[0] as keyof typeof documentFields | undefined;
   const relativePath = column && application?.[column];
+  const storedFile = await getApplicationFile(id, field as ApplicationDocumentField);
+  if (storedFile) {
+    response.setHeader("Content-Type", storedFile.mimeType || "application/octet-stream");
+    response.setHeader("Content-Disposition", `inline; filename*=UTF-8''${encodeURIComponent(storedFile.originalName)}`);
+    return response.send(storedFile.data);
+  }
+
   if (!relativePath || typeof relativePath !== "string") {
     return response.status(404).json({ error: "Berkas belum tersedia." });
   }
 
   const filePath = resolveStoredUpload(relativePath);
-  if (!filePath) {
-    return response.status(404).json({ error: "Berkas tidak ditemukan." });
-  }
-
+  if (!filePath) return response.status(404).json({ error: "Berkas tidak ditemukan." });
   return response.sendFile(filePath, (error) => {
-    if (error && !response.headersSent) {
-      response.status(404).json({ error: "Berkas tidak ditemukan." });
-    }
+    if (error && !response.headersSent) response.status(404).json({ error: "Berkas tidak ditemukan." });
   });
 });
 
@@ -92,13 +79,15 @@ router.get("/applications/:id", async (request, response) => {
       return response.status(404).json({ error: "Pendaftar tidak ditemukan." });
     }
 
+    const storedFields = await getApplicationFileFields(id);
     const files = Object.entries(documentFields).map(([column, item]) => {
       const relativePath = application[column as keyof typeof application];
       return {
-      field: item.field,
-      label: item.label,
-      url: `/api/applications/${id}/files/${item.field}`,
-        available: typeof relativePath === "string" && Boolean(resolveStoredUpload(relativePath)),
+        field: item.field,
+        label: item.label,
+        url: `/api/applications/${id}/files/${item.field}`,
+        available: storedFields.has(item.field as ApplicationDocumentField)
+          || (typeof relativePath === "string" && Boolean(resolveStoredUpload(relativePath))),
       };
     });
 

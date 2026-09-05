@@ -1,6 +1,6 @@
 # Formulir SPMB 2027/2028
 
-Formulir pendaftaran siswa baru untuk tahun ajaran 2027/2028 dengan penyimpanan data di PostgreSQL dan berkas upload di server.
+Formulir pendaftaran siswa baru untuk tahun ajaran 2027/2028 dengan penyimpanan data dan berkas upload di PostgreSQL.
 
 ## Run & Operate
 
@@ -24,7 +24,7 @@ Formulir pendaftaran siswa baru untuk tahun ajaran 2027/2028 dengan penyimpanan 
 - `artifacts/spmb-2027/` — Vite-served frontend application
 - `artifacts/api-server/src/routes/submit.ts` — multipart submission endpoint
 - `artifacts/api-server/src/lib/spmb-database.ts` — PostgreSQL insert helper
-- `artifacts/api-server/uploads/` — uploaded documents
+- `artifacts/api-server/uploads/` — legacy uploaded documents
 - `lib/db/src/schema/pendaftar.ts` — PostgreSQL schema tabel `pendaftar`
 - `lib/api-spec/openapi.yaml` — API contract source of truth
 
@@ -32,7 +32,7 @@ Formulir pendaftaran siswa baru untuk tahun ajaran 2027/2028 dengan penyimpanan 
 
 - The public form is intentionally implemented with vanilla HTML, CSS, and JavaScript even though the Vite artifact scaffold supports React.
 - PostgreSQL uses the workspace's runtime-managed `DATABASE_URL`; the credential is never hardcoded in source.
-- Uploaded files are stored on disk and only their relative paths are persisted in `pendaftar`.
+- New uploaded files are stored as byte data in PostgreSQL; legacy filesystem paths remain readable as a compatibility fallback.
 
 ## Product
 
@@ -56,6 +56,9 @@ Pengguna dapat mengisi formulir pendaftaran SPMB dalam empat bagian, mengunggah 
 ## Gotchas
 
 - Server membutuhkan secret `DATABASE_URL` yang mengarah ke PostgreSQL.
+- Untuk deployment Coolify, sinkronkan tabel `application_file` pada database yang ditunjuk `DATABASE_URL` sebelum menerima pengajuan baru.
+- `UPLOADS_DIRECTORY` hanya diperlukan untuk membaca berkas lama dari filesystem; berkas baru tidak lagi disimpan di container.
+- Berkas lama yang sudah hilang dari container tidak dapat dipulihkan dari path database saja.
 
 ## Pointers
 
