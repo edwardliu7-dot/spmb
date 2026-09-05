@@ -485,6 +485,27 @@ export const UpdateApplicationStatusResponse = zod.object({
 
 
 /**
+ * @summary Update the status of multiple applications
+ */
+export const bulkUpdateApplicationStatusBodyIdsMax = 100;
+
+
+
+export const BulkUpdateApplicationStatusBody = zod.object({
+  "ids": zod.array(zod.number()).min(1).max(bulkUpdateApplicationStatusBodyIdsMax),
+  "status": zod.enum(['Baru', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima'])
+})
+
+export const BulkUpdateApplicationStatusResponse = zod.object({
+  "success": zod.boolean(),
+  "message": zod.string(),
+  "updatedCount": zod.number(),
+  "ids": zod.array(zod.number()),
+  "status": zod.string()
+})
+
+
+/**
  * @summary Open an uploaded application document
  */
 export const GetApplicationFileParams = zod.object({

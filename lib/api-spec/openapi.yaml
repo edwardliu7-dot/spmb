@@ -331,6 +331,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /applications/status:
+    patch:
+      operationId: bulkUpdateApplicationStatus
+      tags: [applications]
+      summary: Update the status of multiple applications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkApplicationStatusUpdate"
+      responses:
+        "200":
+          description: Bulk status update result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkApplicationStatusResponse"
+        "400":
+          description: Invalid IDs or status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Committee authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /applications/{id}/files/{field}:
     get:
       operationId: getApplicationFile
@@ -805,6 +835,29 @@ components:
           type: string
           enum: [Baru, "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima]
       required: [status]
+    BulkApplicationStatusUpdate:
+      type: object
+      properties:
+        ids:
+          type: array
+          items: { type: number }
+          minItems: 1
+          maxItems: 100
+        status:
+          type: string
+          enum: [Baru, "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima]
+      required: [ids, status]
+    BulkApplicationStatusResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        updatedCount: { type: number }
+        ids:
+          type: array
+          items: { type: number }
+        status: { type: string }
+      required: [success, message, updatedCount, ids, status]
     ApplicationStatusResponse:
       type: object
       properties:

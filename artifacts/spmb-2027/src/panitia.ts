@@ -260,6 +260,12 @@ function renderLegacyDashboard(user: AuthUser) {
             </label>
             <button class="refresh-button" type="submit">Terapkan</button>
           </form>
+          <div class="bulk-status-toolbar" id="bulk-status-toolbar" hidden>
+            <label class="bulk-select-all"><input id="select-all-applications" type="checkbox" /><span>Pilih semua hasil</span></label>
+            <span class="bulk-selected-count" id="selected-application-count">0 dipilih</span>
+            <label class="bulk-status-field"><span>Ubah status menjadi</span><select id="bulk-status-select"><option value="">Pilih status…</option>${statusChoices.map((status) => `<option value="${escapeHtml(status)}">${escapeHtml(status)}</option>`).join("")}</select></label>
+            <button class="bulk-status-button" id="bulk-status-button" type="button" disabled>Ubah status terpilih</button>
+          </div>
           <div class="committee-list" id="application-list" aria-live="polite" aria-busy="false"></div>
         </div>
 
@@ -282,6 +288,13 @@ const filterForm = document.getElementById("committee-filter-form") as HTMLFormE
 const searchInput = document.getElementById("search-input") as HTMLInputElement;
 const levelFilter = document.getElementById("level-filter") as HTMLSelectElement;
 const statusFilter = document.getElementById("status-filter") as HTMLSelectElement;
+const bulkStatusToolbar = document.getElementById("bulk-status-toolbar") as HTMLDivElement;
+const selectAllApplications = document.getElementById("select-all-applications") as HTMLInputElement;
+const selectedApplicationCount = document.getElementById("selected-application-count") as HTMLSpanElement;
+const bulkStatusSelect = document.getElementById("bulk-status-select") as HTMLSelectElement;
+const bulkStatusButton = document.getElementById("bulk-status-button") as HTMLButtonElement;
+let visibleApplicationIds: number[] = [];
+const selectedApplicationIds = new Set<number>();
 
 function setListMessage(message: string, variant = "") {
   listElement.innerHTML = `<div class="list-message ${variant}"><span aria-hidden="true">—</span><p>${escapeHtml(message)}</p></div>`;
@@ -296,17 +309,32 @@ function renderStats(items: ApplicationListItem[], total: number) {
   if (acceptedElement) acceptedElement.textContent = String(items.filter((item) => item.status === "Diterima").length);
 }
 
+function syncBulkStatusToolbar(): void {
+  const visibleIds = new Set(visibleApplicationIds);
+  const selectedVisibleCount = [...selectedApplicationIds].filter((id) => visibleIds.has(id)).length;
+  const hasVisibleItems = visibleApplicationIds.length > 0;
+  bulkStatusToolbar.hidden = !hasVisibleItems;
+  selectedApplicationCount.textContent = `${selectedVisibleCount} dipilih`;
+  selectAllApplications.checked = hasVisibleItems && selectedVisibleCount === visibleApplicationIds.length;
+  selectAllApplications.indeterminate = selectedVisibleCount > 0 && selectedVisibleCount < visibleApplicationIds.length;
+  bulkStatusButton.disabled = selectedVisibleCount === 0 || !bulkStatusSelect.value;
+}
+
 function renderList(items: ApplicationListItem[], total: number) {
   renderStats(items, total);
+  visibleApplicationIds = items.map((item) => item.id);
+  selectedApplicationIds.clear();
   const countElement = document.getElementById("list-count");
   if (countElement) countElement.textContent = `${total} pengajuan`;
   if (!items.length) {
     setListMessage("Belum ada pengajuan yang sesuai dengan pencarian.", "is-empty");
+    syncBulkStatusToolbar();
     return;
   }
 
   listElement.innerHTML = items.map((item) => `
-    <button class="application-row" type="button" data-application-id="${item.id}">
+    <div class="application-row" role="button" tabindex="0" data-application-id="${item.id}">
+       <input class="application-select" type="checkbox" data-select-application-id="${item.id}" aria-label="Pilih ${escapeHtml(item.nama_calon)}" />
       <span class="application-avatar">${escapeHtml(item.nama_calon.slice(0, 1).toUpperCase())}</span>
       <span class="application-row-main">
         <strong>${escapeHtml(item.nama_calon)}</strong>
@@ -317,12 +345,31 @@ function renderList(items: ApplicationListItem[], total: number) {
         <small>${escapeHtml(formatDate(item.created_at))}</small>
       </span>
       <span class="row-chevron" aria-hidden="true">→</span>
-    </button>
+    </div>
   `).join("");
 
-  listElement.querySelectorAll<HTMLButtonElement>("[data-application-id]").forEach((row) => {
-    row.addEventListener("click", () => loadDetail(Number(row.dataset.applicationId)));
+  listElement.querySelectorAll<HTMLElement>("[data-application-id]").forEach((row) => {
+    const openDetail = (event: Event) => {
+      if ((event.target as HTMLElement).closest("[data-select-application-id]")) return;
+      void loadDetail(Number(row.dataset.applicationId));
+    };
+    row.addEventListener("click", openDetail);
+    row.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openDetail(event);
+      }
+    });
   });
+  listElement.querySelectorAll<HTMLInputElement>("[data-select-application-id]").forEach((checkbox) => {
+    checkbox.addEventListener("change", () => {
+      const id = Number(checkbox.dataset.selectApplicationId);
+      if (checkbox.checked) selectedApplicationIds.add(id);
+      else selectedApplicationIds.delete(id);
+      syncBulkStatusToolbar();
+    });
+  });
+  syncBulkStatusToolbar();
 }
 
 async function loadList() {
@@ -425,6 +472,8 @@ function renderDashboard(user: AuthUser) {
   const allowedLevels = user.allowedJenjang;
   let selectedId: number | null = null;
   let selectedApplication: ApplicationDetail | null = null;
+  let visibleApplicationIds: number[] = [];
+  const selectedApplicationIds = new Set<number>();
   let noticeTimer: number | undefined;
 
   root.innerHTML = `
@@ -501,8 +550,14 @@ function renderDashboard(user: AuthUser) {
                 <label><span class="sr-only">Filter jenjang</span><select id="level-filter"><option value="Semua">Semua jenjang</option>${allowedLevels.map((level) => `<option value="${escapeHtml(level)}">${escapeHtml(level)}</option>`).join("")}</select></label>
                 <label><span class="sr-only">Filter status</span><select id="status-filter"><option value="Semua">Semua status</option>${statuses.map((status) => `<option value="${escapeHtml(status)}">${escapeHtml(status)}</option>`).join("")}</select></label>
                 <button class="ledger-clear-button" id="clear-filters" type="button">Bersihkan</button>
-              </form>
-              <div class="ledger-subheading"><span>◫ Antrean verifikasi</span><small>PRIORITAS · TERBARU</small></div>
+               </form>
+               <div class="bulk-status-toolbar" id="bulk-status-toolbar" hidden>
+                 <label class="bulk-select-all"><input id="select-all-applications" type="checkbox" /><span>Pilih semua hasil</span></label>
+                 <span class="bulk-selected-count" id="selected-application-count">0 dipilih</span>
+                 <label class="bulk-status-field"><span>Ubah status menjadi</span><select id="bulk-status-select"><option value="">Pilih status…</option>${statusChoices.map((status) => `<option value="${escapeHtml(status)}">${escapeHtml(status)}</option>`).join("")}</select></label>
+                 <button class="bulk-status-button" id="bulk-status-button" type="button" disabled>Ubah status terpilih</button>
+               </div>
+               <div class="ledger-subheading"><span>◫ Antrean verifikasi</span><small>PRIORITAS · TERBARU</small></div>
               <div class="decision-list" id="application-list" aria-live="polite" aria-busy="false"></div>
               <div class="ledger-footer"><span>↑↓ Pilih berkas untuk membuka inspector</span><button id="sync-button" type="button">Sinkronkan data</button></div>
             </div>
@@ -876,12 +931,30 @@ function renderDashboard(user: AuthUser) {
     listElement.innerHTML = `<div class="ledger-message ${variant}"><span aria-hidden="true">${variant === "is-error" ? "!" : "—"}</span><p>${escapeHtml(message)}</p></div>`;
   }
 
+  function syncBulkStatusToolbar(): void {
+    const toolbar = document.getElementById("bulk-status-toolbar") as HTMLDivElement;
+    const selectAll = document.getElementById("select-all-applications") as HTMLInputElement;
+    const selectedCount = document.getElementById("selected-application-count") as HTMLSpanElement;
+    const statusSelect = document.getElementById("bulk-status-select") as HTMLSelectElement;
+    const actionButton = document.getElementById("bulk-status-button") as HTMLButtonElement;
+    const visibleIds = new Set(visibleApplicationIds);
+    const selectedVisibleCount = [...selectedApplicationIds].filter((id) => visibleIds.has(id)).length;
+    toolbar.hidden = visibleApplicationIds.length === 0;
+    selectedCount.textContent = `${selectedVisibleCount} dipilih`;
+    selectAll.checked = visibleApplicationIds.length > 0 && selectedVisibleCount === visibleApplicationIds.length;
+    selectAll.indeterminate = selectedVisibleCount > 0 && selectedVisibleCount < visibleApplicationIds.length;
+    actionButton.disabled = selectedVisibleCount === 0 || !statusSelect.value;
+  }
+
   function renderList(items: ApplicationListItem[], total: number) {
     renderStats(items, total);
+    visibleApplicationIds = items.map((item) => item.id);
+    selectedApplicationIds.clear();
     const countElement = document.getElementById("list-count");
     if (countElement) countElement.textContent = `${total} pengajuan`;
     if (!items.length) {
       setListMessage("Belum ada pengajuan yang sesuai dengan pencarian.", "is-empty");
+      syncBulkStatusToolbar();
       return;
     }
     listElement.innerHTML = items.map((item) => {
@@ -889,16 +962,36 @@ function renderDashboard(user: AuthUser) {
       const selected = selectedId === item.id;
       const statusLabel = item.status === "Baru" ? "Menunggu review" : item.status;
       return `
-        <button class="decision-application-row${selected ? " is-selected" : ""}" type="button" data-application-id="${item.id}" aria-label="Buka berkas ${escapeHtml(item.nama_calon)}" aria-current="${selected ? "true" : "false"}">
+        <div class="decision-application-row${selected ? " is-selected" : ""}" role="button" tabindex="0" data-application-id="${item.id}" aria-label="Buka berkas ${escapeHtml(item.nama_calon)}" aria-current="${selected ? "true" : "false"}">
+          <input class="application-select" type="checkbox" data-select-application-id="${item.id}" aria-label="Pilih ${escapeHtml(item.nama_calon)}" />
           <span class="decision-avatar">${escapeHtml(initials)}</span>
           <span class="decision-row-main"><strong>${escapeHtml(item.nama_calon)}</strong><small>${escapeHtml(applicationNumber(item.id))} · ${escapeHtml(item.jenjang)}</small><span class="decision-row-meta"><b>${escapeHtml(item.jenjang)}</b><span>${escapeHtml(statusLabel)}</span></span></span>
           <span class="decision-row-date">${escapeHtml(formatDate(item.created_at))}</span><span class="decision-row-arrow" aria-hidden="true">›</span>
-        </button>
+        </div>
       `;
     }).join("");
-    listElement.querySelectorAll<HTMLButtonElement>("[data-application-id]").forEach((row) => {
-      row.addEventListener("click", () => void loadDetail(Number(row.dataset.applicationId), true));
+    listElement.querySelectorAll<HTMLElement>("[data-application-id]").forEach((row) => {
+      const openDetail = (event: Event) => {
+        if ((event.target as HTMLElement).closest("[data-select-application-id]")) return;
+        void loadDetail(Number(row.dataset.applicationId), true);
+      };
+      row.addEventListener("click", openDetail);
+      row.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openDetail(event);
+        }
+      });
     });
+    listElement.querySelectorAll<HTMLInputElement>("[data-select-application-id]").forEach((checkbox) => {
+      checkbox.addEventListener("change", () => {
+        const id = Number(checkbox.dataset.selectApplicationId);
+        if (checkbox.checked) selectedApplicationIds.add(id);
+        else selectedApplicationIds.delete(id);
+        syncBulkStatusToolbar();
+      });
+    });
+    syncBulkStatusToolbar();
   }
 
   async function loadList() {
@@ -1041,6 +1134,41 @@ function renderDashboard(user: AuthUser) {
   searchInput.addEventListener("input", scheduleListLoad);
   levelFilter.addEventListener("change", () => void loadList());
   statusFilter.addEventListener("change", () => void loadList());
+  document.getElementById("select-all-applications")?.addEventListener("change", (event) => {
+    const checked = (event.currentTarget as HTMLInputElement).checked;
+    visibleApplicationIds.forEach((id) => {
+      if (checked) selectedApplicationIds.add(id);
+      else selectedApplicationIds.delete(id);
+    });
+    listElement.querySelectorAll<HTMLInputElement>("[data-select-application-id]").forEach((checkbox) => {
+      checkbox.checked = checked;
+    });
+    syncBulkStatusToolbar();
+  });
+  document.getElementById("bulk-status-select")?.addEventListener("change", syncBulkStatusToolbar);
+  document.getElementById("bulk-status-button")?.addEventListener("click", async () => {
+    const ids = [...selectedApplicationIds].filter((id) => visibleApplicationIds.includes(id));
+    const status = (document.getElementById("bulk-status-select") as HTMLSelectElement).value;
+    if (!ids.length || !statusChoices.includes(status)) return;
+    const button = document.getElementById("bulk-status-button") as HTMLButtonElement;
+    button.disabled = true;
+    button.textContent = "Menyimpan…";
+    try {
+      const result = await requestJSON<{ message: string }>("/api/applications/status", {
+        method: "PATCH",
+        body: JSON.stringify({ ids, status }),
+      });
+      selectedApplicationIds.clear();
+      (document.getElementById("bulk-status-select") as HTMLSelectElement).value = "";
+      showNotice(result.message);
+      await loadList();
+    } catch (error) {
+      showNotice(error instanceof Error ? error.message : "Status terpilih belum dapat diperbarui.");
+    } finally {
+      button.textContent = "Ubah status terpilih";
+      syncBulkStatusToolbar();
+    }
+  });
   document.getElementById("clear-filters")?.addEventListener("click", () => {
     searchInput.value = "";
     levelFilter.value = "Semua";

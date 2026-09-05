@@ -25,6 +25,8 @@ import type {
   ApplicationListResponse,
   ApplicationStatusResponse,
   ApplicationStatusUpdate,
+  BulkApplicationStatusResponse,
+  BulkApplicationStatusUpdate,
   BulkFilesRequest,
   CommitteeLogout200,
   CommitteeMe200,
@@ -977,6 +979,77 @@ export const useUpdateApplicationStatus = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getUpdateApplicationStatusMutationOptions(options));
+    }
+
+export const getBulkUpdateApplicationStatusUrl = () => {
+
+
+
+
+  return `/api/applications/status`
+}
+
+/**
+ * @summary Update the status of multiple applications
+ */
+export const bulkUpdateApplicationStatus = async (bulkApplicationStatusUpdate: BulkApplicationStatusUpdate, options?: Parameters<typeof customFetch>[1]): Promise<BulkApplicationStatusResponse> => {
+
+  return customFetch<BulkApplicationStatusResponse>(getBulkUpdateApplicationStatusUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(bulkApplicationStatusUpdate)
+  }
+);}
+
+
+
+
+
+export const getBulkUpdateApplicationStatusMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkUpdateApplicationStatus>>, TError,{data: BodyType<BulkApplicationStatusUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof bulkUpdateApplicationStatus>>, TError,{data: BodyType<BulkApplicationStatusUpdate>}, TContext> => {
+
+const mutationKey = ['bulkUpdateApplicationStatus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkUpdateApplicationStatus>>, {data: BodyType<BulkApplicationStatusUpdate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  bulkUpdateApplicationStatus(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BulkUpdateApplicationStatusMutationResult = NonNullable<Awaited<ReturnType<typeof bulkUpdateApplicationStatus>>>
+    export type BulkUpdateApplicationStatusMutationBody = BodyType<BulkApplicationStatusUpdate>
+    export type BulkUpdateApplicationStatusMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Update the status of multiple applications
+ */
+export const useBulkUpdateApplicationStatus = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkUpdateApplicationStatus>>, TError,{data: BodyType<BulkApplicationStatusUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof bulkUpdateApplicationStatus>>,
+        TError,
+        {data: BodyType<BulkApplicationStatusUpdate>},
+        TContext
+      > => {
+      return useMutation(getBulkUpdateApplicationStatusMutationOptions(options));
     }
 
 export const getGetApplicationFileUrl = (id: number,

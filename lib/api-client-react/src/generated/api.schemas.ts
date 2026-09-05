@@ -415,6 +415,34 @@ export interface ApplicationStatusUpdate {
   status: ApplicationStatusUpdateStatus;
 }
 
+export type BulkApplicationStatusUpdateStatus = typeof BulkApplicationStatusUpdateStatus[keyof typeof BulkApplicationStatusUpdateStatus];
+
+
+export const BulkApplicationStatusUpdateStatus = {
+  Baru: 'Baru',
+  Lolos_Verifikasi_Berkas: 'Lolos Verifikasi Berkas',
+  Observasi: 'Observasi',
+  Lolos_Observasi: 'Lolos Observasi',
+  Diterima: 'Diterima',
+} as const;
+
+export interface BulkApplicationStatusUpdate {
+  /**
+     * @minItems 1
+     * @maxItems 100
+     */
+  ids: number[];
+  status: BulkApplicationStatusUpdateStatus;
+}
+
+export interface BulkApplicationStatusResponse {
+  success: boolean;
+  message: string;
+  updatedCount: number;
+  ids: number[];
+  status: string;
+}
+
 export interface ApplicationStatusResponse {
   success: boolean;
   message: string;

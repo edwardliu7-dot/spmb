@@ -118,6 +118,38 @@ router.delete("/applications/:id", requireAdministrator, async (request, respons
   }
 });
 
+router.patch("/applications/status", async (request, response) => {
+  const rawIds = Array.isArray(request.body?.ids) ? request.body.ids : [];
+  const normalizedIds: number[] = rawIds
+    .map((value: unknown) => Number(value))
+    .filter((value: number): value is number => Number.isSafeInteger(value) && value > 0);
+  const ids = [...new Set<number>(normalizedIds)];
+  const status = typeof request.body?.status === "string" ? request.body.status : "";
+  if (!ids.length || ids.length > 100 || !committeeStatuses.includes(status as (typeof committeeStatuses)[number])) {
+    return response.status(400).json({ error: "Daftar pendaftar atau status tidak valid." });
+  }
+
+  try {
+    const updatedIds: number[] = [];
+    for (const id of ids) {
+      const application = await getPendaftar(id);
+      if (!application || !request.committeeAccount || !canAccessJenjang(request.committeeAccount, application.jenjang)) continue;
+      const updated = await updatePendaftarStatus(id, status, request.committeeAccount.username);
+      if (updated) updatedIds.push(updated.id);
+    }
+    return response.json({
+      success: true,
+      message: `${updatedIds.length} status pendaftar berhasil diperbarui.`,
+      updatedCount: updatedIds.length,
+      ids: updatedIds,
+      status,
+    });
+  } catch (error) {
+    request.log.error({ err: error, ids, status }, "Failed to bulk update SPMB application statuses");
+    return response.status(500).json({ error: "Status pendaftar belum dapat diperbarui." });
+  }
+});
+
 router.patch("/applications/:id/status", async (request, response) => {
   const id = parseId(request.params.id);
   const status = typeof request.body?.status === "string" ? request.body.status : "";
