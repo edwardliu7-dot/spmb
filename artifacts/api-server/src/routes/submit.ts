@@ -310,6 +310,13 @@ function handleUpload(request: Request, response: Parameters<typeof uploadMiddle
       return;
     }
 
+    const respondAfterCleanup = (status: number, message: string) => {
+      void removeUploadedFiles(request).finally(() => {
+        request.log.error({ err: error }, "Failed to process multipart submission upload");
+        response.status(status).json({ error: message });
+      });
+    };
+
     if (error instanceof multer.MulterError) {
       const message =
         error.code === "LIMIT_FILE_SIZE"
@@ -323,16 +330,24 @@ function handleUpload(request: Request, response: Parameters<typeof uploadMiddle
                 : error.code === "LIMIT_FIELD_VALUE"
                   ? "Ukuran salah satu isian teks terlalu besar."
             : "Berkas tidak dapat diproses. Periksa format dan ukuran berkas.";
-      response.status(400).json({ error: message });
+      respondAfterCleanup(400, message);
       return;
     }
 
     if (error instanceof UnsupportedFileTypeError) {
-      response.status(400).json({ error: error.message });
+      respondAfterCleanup(400, error.message);
       return;
     }
 
-    next(error);
+    const errorCode = typeof error === "object" && error !== null && "code" in error
+      ? String(error.code)
+      : "";
+    const message = errorCode === "ENOSPC"
+      ? "Penyimpanan server penuh. Berkas belum dapat diterima."
+      : errorCode === "EACCES" || errorCode === "EPERM"
+        ? "Folder penyimpanan berkas tidak dapat ditulis oleh server."
+        : "Berkas belum dapat disimpan. Periksa ukuran dan format berkas, lalu coba lagi.";
+    respondAfterCleanup(500, message);
   });
 }
 

@@ -173,6 +173,8 @@ const uploadFieldNames = ['foto_3x4', 'akte_lahir', 'kartu_keluarga', 'ktp_orang
 const draftStorageKey = 'spmb-2027-form-draft';
 const draftFilesDatabase = 'spmb-2027-draft-files';
 const draftFilesStore = 'files';
+const draftStorageTimeoutMs = 5000;
+const submissionTimeoutMs = 120000;
 
 if (window.location.pathname.replace(/\/+$/, '') === '/panitia') {
   void import('./panitia');
@@ -487,11 +489,24 @@ function openDraftFilesDatabase(): Promise<IDBDatabase> {
       return;
     }
     const request = window.indexedDB.open(draftFilesDatabase, 1);
+    const timeoutId = window.setTimeout(() => {
+      reject(new Error('Penyimpanan berkas lokal terlalu lama merespons.'));
+    }, draftStorageTimeoutMs);
     request.onupgradeneeded = () => {
       request.result.createObjectStore(draftFilesStore);
     };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error || new Error('Penyimpanan berkas lokal gagal dibuka.'));
+    request.onsuccess = () => {
+      window.clearTimeout(timeoutId);
+      resolve(request.result);
+    };
+    request.onerror = () => {
+      window.clearTimeout(timeoutId);
+      reject(request.error || new Error('Penyimpanan berkas lokal gagal dibuka.'));
+    };
+    request.onblocked = () => {
+      window.clearTimeout(timeoutId);
+      reject(new Error('Penyimpanan berkas lokal sedang digunakan tab lain.'));
+    };
   });
 }
 
@@ -510,8 +525,17 @@ async function getCachedDraftFile(name: string): Promise<File | null> {
     const database = await openDraftFilesDatabase();
     return await new Promise<File | null>((resolve, reject) => {
       const request = database.transaction(draftFilesStore, 'readonly').objectStore(draftFilesStore).get(name);
-      request.onsuccess = () => resolve(request.result instanceof File ? request.result : null);
-      request.onerror = () => reject(request.error || new Error('Berkas sementara tidak dapat dibaca.'));
+      const timeoutId = window.setTimeout(() => {
+        reject(new Error('Berkas sementara terlalu lama dibaca.'));
+      }, draftStorageTimeoutMs);
+      request.onsuccess = () => {
+        window.clearTimeout(timeoutId);
+        resolve(request.result instanceof File ? request.result : null);
+      };
+      request.onerror = () => {
+        window.clearTimeout(timeoutId);
+        reject(request.error || new Error('Berkas sementara tidak dapat dibaca.'));
+      };
     }).finally(() => database.close());
   } catch {
     return null;
@@ -1118,6 +1142,8 @@ form.addEventListener('submit', async (event) => {
   submitButton.classList.add('is-loading');
   submitButton.querySelector('.submit-label')!.textContent = 'Mengirim pengajuan';
   errorAlert.className = 'form-alert error';
+  const submissionController = new AbortController();
+  const submissionTimeoutId = window.setTimeout(() => submissionController.abort(), submissionTimeoutMs);
   try {
     const formData = new FormData(form);
     for (const name of uploadFieldNames) {
@@ -1130,7 +1156,10 @@ form.addEventListener('submit', async (event) => {
     formData.forEach((value, key) => {
       if (key !== 'consent' && (typeof value === 'string' ? value : value.name)) payload[key] = value;
     });
-    const result = await submitApplication(payload as unknown as Parameters<typeof submitApplication>[0]);
+    const result = await submitApplication(
+      payload as unknown as Parameters<typeof submitApplication>[0],
+      { signal: submissionController.signal },
+    );
     form.reset();
     clearDraft();
     document.querySelectorAll<HTMLElement>('[data-file-name]').forEach((label) => { label.textContent = 'Belum ada berkas dipilih'; });
@@ -1144,10 +1173,15 @@ form.addEventListener('submit', async (event) => {
     const cardTop = document.querySelector('.form-card')?.getBoundingClientRect().top ?? 0;
     window.scrollTo({ top: cardTop + window.scrollY - 25, behavior: 'smooth' });
   } catch (error) {
+    if (submissionController.signal.aborted) {
+      error = new Error('Layanan belum merespons setelah 2 menit. Jangan kirim ulang sebelum mengecek status pengajuan.');
+    }
     showSubmissionError(error);
     submitButton.disabled = false;
     submitButton.classList.remove('is-loading');
     submitButton.querySelector('.submit-label')!.textContent = 'Kirim pengajuan';
+  } finally {
+    window.clearTimeout(submissionTimeoutId);
   }
 });
 
