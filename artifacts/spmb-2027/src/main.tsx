@@ -98,7 +98,7 @@ function fileField(name: string, label: string, detail: string): string {
        <small data-file-name="${name}">${detail}</small>
     </div>
      <label class="form-board-upload-button" for="${name}">Pilih berkas
-       <input id="${name}" name="${name}" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required aria-required="true" data-testid="input-file-${name}" />
+        <input id="${name}" name="${name}" type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,application/pdf,image/jpeg,image/png,image/heic,image/heif" required aria-required="true" data-testid="input-file-${name}" />
      </label>
      <span class="form-board-upload-error" data-file-error="${name}" role="alert"></span>
   </div>`;
@@ -447,6 +447,42 @@ type DraftState = {
 let activeSectionIndex = 0;
 let cachedFileMetadata: Record<string, CachedFileMetadata> = {};
 let sectionNavigationInProgress = false;
+const normalizedUploadFiles = new Map<string, File>();
+const uploadNormalizationPromises = new Map<string, Promise<void>>();
+
+function isHeicFile(file: File): boolean {
+  const extension = file.name.toLowerCase().match(/\.[^.]+$/)?.[0];
+  return extension === '.heic' || extension === '.heif' || file.type === 'image/heic' || file.type === 'image/heif';
+}
+
+async function convertHeicToJpeg(file: File): Promise<File> {
+  const imageUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const element = new Image();
+      element.onload = () => resolve(element);
+      element.onerror = () => reject(new Error('Foto HEIC tidak dapat dibaca oleh browser ini.'));
+      element.src = imageUrl;
+    });
+    const maxDimension = 2400;
+    const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Foto HEIC tidak dapat dikonversi di perangkat ini.');
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.86));
+    if (!blob) throw new Error('Foto HEIC tidak dapat dikonversi di perangkat ini.');
+    const jpegName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
+    return new File([blob], jpegName || 'foto.jpg', {
+      type: 'image/jpeg',
+      lastModified: file.lastModified,
+    });
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
+}
 
 function readDraft(): DraftState | null {
   try {
@@ -1041,10 +1077,28 @@ updateSchoolFieldsRequirement();
 
 document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((input) => {
   input.addEventListener('change', () => {
-    const file = input.files?.[0];
+    const normalization = (async () => {
+      const selectedFile = input.files?.[0];
+      normalizedUploadFiles.delete(input.name);
     const label = document.querySelector<HTMLElement>(`[data-file-name="${input.name}"]`);
     const upload = input.closest<HTMLElement>('[data-upload]');
     const error = document.querySelector<HTMLElement>(`[data-file-error="${input.name}"]`);
+      let file = selectedFile;
+      if (file && isHeicFile(file)) {
+        if (label) label.textContent = 'Mengonversi foto iPhone…';
+        try {
+          file = await convertHeicToJpeg(file);
+          normalizedUploadFiles.set(input.name, file);
+        } catch {
+          input.value = '';
+          if (label) label.textContent = 'Belum ada berkas dipilih';
+          if (error) error.textContent = 'Foto iPhone berformat HEIC tidak dapat dikonversi. Simpan sebagai JPG lalu pilih ulang.';
+          upload?.classList.add('is-invalid');
+          saveDraft();
+          updateProgress();
+          return;
+        }
+      }
     const extension = file?.name.toLowerCase().match(/\.[^.]+$/)?.[0];
     const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png'];
     const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
@@ -1080,6 +1134,9 @@ document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((input
     }
     saveDraft();
     updateProgress();
+    })();
+    uploadNormalizationPromises.set(input.name, normalization);
+    void normalization;
   });
 });
 
@@ -1137,6 +1194,7 @@ function showSubmissionError(error: unknown): void {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
+  await Promise.all(uploadNormalizationPromises.values());
   if (!(await validateForm())) return;
   submitButton.disabled = true;
   submitButton.classList.add('is-loading');
@@ -1148,6 +1206,11 @@ form.addEventListener('submit', async (event) => {
     const formData = new FormData(form);
     for (const name of uploadFieldNames) {
       const input = getFieldControl(name) as HTMLInputElement | null;
+        const normalizedFile = normalizedUploadFiles.get(name);
+        if (normalizedFile) {
+          formData.set(name, normalizedFile, normalizedFile.name);
+          continue;
+        }
       if (input?.files?.[0]) continue;
       const cachedFile = await getCachedDraftFile(name);
       if (cachedFile) formData.set(name, cachedFile, cachedFile.name);
