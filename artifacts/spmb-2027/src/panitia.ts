@@ -792,7 +792,7 @@ function renderDashboard(user: AuthUser) {
       <div class="inspector-scroll">
         <div class="inspector-header">
           <div><p class="decision-kicker">▣ Decision inspector</p><h2>${escapeHtml(application.nama_calon)}</h2><span>${escapeHtml(applicationNumber(application.id))} · dikirim ${escapeHtml(formatDate(application.created_at))}</span></div>
-          <div class="inspector-header-actions">${user.username.toLowerCase() === "admin" ? '<button class="inspector-delete-button" id="delete-application-button" type="button">Hapus pendaftar</button>' : ""}<button class="inspector-zip-button" id="single-zip-button" type="button">ZIP berkas</button><button class="inspector-close" id="inspector-close" type="button" aria-label="Tutup inspector">×</button></div>
+           <div class="inspector-header-actions">${user.username.toLowerCase() === "admin" ? '<button class="inspector-delete-button" id="delete-application-button" type="button">Hapus pendaftar</button>' : ""}<button class="inspector-receipt-button" id="single-receipt-button" type="button">Unduh bukti PDF</button><button class="inspector-zip-button" id="single-zip-button" type="button">ZIP berkas</button><button class="inspector-close" id="inspector-close" type="button" aria-label="Tutup inspector">×</button></div>
         </div>
         <div class="inspector-tags"><span>${escapeHtml(application.jenjang)}</span><span>${escapeHtml(application.status)}</span><span class="is-priority">${application.status === "Baru" ? "● Prioritas review" : "● Dalam proses"}</span></div>
         <div class="inspector-note"><p>CATATAN REVIEWER</p><strong>${application.status === "Baru" ? "Pengajuan baru menunggu pembacaan pertama." : "Pastikan setiap bukti pendukung sudah sesuai sebelum keputusan akhir."}</strong></div>
@@ -805,6 +805,11 @@ function renderDashboard(user: AuthUser) {
       </div>
     `;
     document.getElementById("inspector-close")?.addEventListener("click", () => detailElement.classList.remove("is-open"));
+      document.getElementById("single-receipt-button")?.addEventListener("click", () => {
+        void downloadBinary(`/api/admin/applications/${application.id}/receipt`, undefined, `${applicationNumber(application.id)}_bukti-formulir.pdf`)
+          .then(() => showNotice("Bukti pendaftaran berhasil diunduh."))
+          .catch((error) => showNotice(error instanceof Error ? error.message : "Bukti pendaftaran belum dapat dibuat."));
+      });
      document.getElementById("single-zip-button")?.addEventListener("click", () => {
        void downloadBinary(`/api/admin/applications/${application.id}/files.zip`, undefined, `${applicationNumber(application.id)}-berkas.zip`)
          .then(() => showNotice("ZIP berkas berhasil diunduh."))

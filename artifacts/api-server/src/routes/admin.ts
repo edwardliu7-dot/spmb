@@ -11,6 +11,7 @@ import {
 } from "../lib/spmb-database";
 import { createXlsx, createZip, readExistingFile } from "../lib/export-files";
 import { resolveStoredUpload } from "./applications";
+import { createSpmbReceipt } from "../lib/spmb-receipt";
 
 const router = Router();
 router.use("/admin", requireCommitteeAuth);
@@ -272,6 +273,37 @@ router.get("/admin/applications/:id/files.zip", async (request, response) => {
   } catch (error) {
     request.log.error({ err: error, applicationId: id }, "Failed to create application ZIP");
     return response.status(500).json({ error: "ZIP berkas belum dapat dibuat." });
+  }
+});
+
+router.get("/admin/applications/:id/receipt", async (request, response) => {
+  const id = parseId(request.params.id);
+  const user = request.committeeAccount!;
+  if (!id) return response.status(404).json({ error: "Pendaftar tidak ditemukan." });
+
+  try {
+    const item = await getPendaftar(id);
+    if (!item || !canAccessJenjang(user, item.jenjang)) {
+      return response.status(404).json({ error: "Pendaftar tidak ditemukan." });
+    }
+
+    const pdf = await createSpmbReceipt(item);
+    request.log.info({ username: user.username, applicationId: id }, "Application receipt downloaded");
+    await recordCommitteeAudit({
+      username: user.username,
+      action: "download_application_receipt",
+      applicationId: id,
+    });
+    response.setHeader("Content-Type", "application/pdf");
+    response.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${applicationNumber(id)}_bukti-formulir.pdf"`,
+    );
+    response.setHeader("Content-Length", String(pdf.byteLength));
+    return response.end(Buffer.from(pdf));
+  } catch (error) {
+    request.log.error({ err: error, applicationId: id }, "Failed to create application receipt");
+    return response.status(500).json({ error: "Bukti pendaftaran belum dapat dibuat." });
   }
 });
 

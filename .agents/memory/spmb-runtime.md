@@ -9,6 +9,12 @@ The SPMB app uses the workspace's runtime-managed `DATABASE_URL` for PostgreSQL 
 
 **How to apply:** Keep database access through `@workspace/db` and runtime-managed connection values; do not put database credentials in source files. The PG* development endpoint does not support SSL, while a complete DATABASE_URL should be used unchanged.
 
+The API workflow reads its database connection at process startup; after the runtime database secret or endpoint changes, an already-running API can query the previous connection until it is restarted.
+
+**Why:** A newly submitted SPMB record was absent from the API response while present in the runtime database, then became available immediately after restarting the API workflow.
+
+**How to apply:** Restart the API service before diagnosing a newly submitted record as missing, especially after changing database secrets, deployment settings, or external database endpoints.
+
 Upload and asset paths must be derived from the module location rather than `process.cwd()`, because filtered pnpm workflows can launch an artifact with the package directory as the current directory while production launches from the workspace root.
 
 **Why:** Using the current directory created a nested upload directory in development, making database paths valid but unreadable when the receipt was generated from the normal package root.

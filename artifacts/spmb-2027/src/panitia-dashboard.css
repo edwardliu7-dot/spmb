@@ -1242,16 +1242,29 @@
   display: flex;
   align-items: flex-start;
   gap: 7px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
+.inspector-receipt-button,
 .inspector-zip-button {
-  border: 1px solid #d68d56;
+  border: 1px solid #5b8f80;
   border-radius: 7px;
   background: transparent;
   padding: 7px 9px;
-  color: #b15f47;
+  color: #356b61;
   cursor: pointer;
   font: 8px "IBM Plex Mono", monospace;
+}
+
+.inspector-receipt-button:hover,
+.inspector-zip-button:hover {
+  background: #e9f1e9;
+}
+
+.inspector-zip-button {
+  border-color: #d68d56;
+  color: #b15f47;
 }
 
 .inspector-loading p {
