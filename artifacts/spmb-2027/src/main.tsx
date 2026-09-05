@@ -98,7 +98,7 @@ function fileField(name: string, label: string, detail: string): string {
        <small data-file-name="${name}">${detail}</small>
     </div>
      <label class="form-board-upload-button" for="${name}">Pilih berkas
-       <input id="${name}" name="${name}" type="file" accept=".pdf,.jpg,.jpeg,.png" required aria-required="true" data-testid="input-file-${name}" />
+       <input id="${name}" name="${name}" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required aria-required="true" data-testid="input-file-${name}" />
      </label>
      <span class="form-board-upload-error" data-file-error="${name}" role="alert"></span>
   </div>`;
@@ -299,7 +299,7 @@ root.innerHTML = `
                <li>${icon('check')}KTP orang tua</li>
                <li>${icon('check')}Bukti pembayaran</li>
              </ul>
-             <div class="form-board-guide-tip">${icon('info')}Format PDF, JPG, atau PNG · maksimal 5 MB per berkas.</div>
+             <div class="form-board-guide-tip">${icon('info')}Format PDF, JPG, atau PNG · maksimal 5 MB per berkas · tidak ada batas minimum, tetapi berkas harus valid dan tidak kosong.</div>
            </article>
          </div>
          <div class="form-board-guide-bottom">
@@ -345,7 +345,7 @@ root.innerHTML = `
               <fieldset class="form-board-section" id="section-upload" data-section="04">
                 <div class="form-board-section-heading">
                   <span class="form-board-section-index">04</span>
-                  <div class="form-board-section-copy"><div class="form-board-section-kicker"><span>Bagian 04</span><span class="form-board-section-rule"></span></div><h3>Upload Berkas</h3><p>Format PDF, JPG, atau PNG. Maksimal 5 MB per berkas.</p></div>
+                  <div class="form-board-section-copy"><div class="form-board-section-kicker"><span>Bagian 04</span><span class="form-board-section-rule"></span></div><h3>Upload Berkas</h3><p>Format PDF, JPG, atau PNG. Maksimal 5 MB per berkas; tidak ada batas minimum, tetapi berkas harus valid dan tidak kosong.</p></div>
                   <span class="form-board-section-check"><span></span></span>
                 </div>
                 <div class="form-board-upload-grid">${uploadFields}</div>
@@ -988,8 +988,9 @@ document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((input
     const error = document.querySelector<HTMLElement>(`[data-file-error="${input.name}"]`);
     const extension = file?.name.toLowerCase().match(/\.[^.]+$/)?.[0];
     const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png'];
-    const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-    const invalidType = Boolean(file && (!extension || !allowedExtensions.includes(extension) || (file.type && !allowedMimeTypes.includes(file.type))));
+    const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    const genericMimeTypes = ['', 'application/octet-stream', 'application/x-download'];
+    const invalidType = Boolean(file && (!extension || !allowedExtensions.includes(extension) || (file.type && !allowedMimeTypes.includes(file.type) && !genericMimeTypes.includes(file.type))));
     const invalidSize = Boolean(file && file.size > 5 * 1024 * 1024);
     upload?.classList.remove('is-invalid');
     if (error) error.textContent = '';

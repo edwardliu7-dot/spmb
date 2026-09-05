@@ -60,13 +60,22 @@ const upload = multer({
     fieldSize: 16 * 1024,
   },
   fileFilter: (_req, file, callback) => {
-    const allowedExtensionsByMime: Record<string, string[]> = {
-      "image/jpeg": [".jpg", ".jpeg"],
-      "image/png": [".png"],
-      "application/pdf": [".pdf"],
+    const allowedMimesByExtension: Record<string, string[]> = {
+      ".jpg": ["image/jpeg", "image/jpg"],
+      ".jpeg": ["image/jpeg", "image/jpg"],
+      ".png": ["image/png"],
+      ".pdf": ["application/pdf"],
     };
     const extension = path.extname(file.originalname).toLowerCase();
-    if (!allowedExtensionsByMime[file.mimetype]?.includes(extension)) {
+    const mimeType = file.mimetype.toLowerCase();
+    const acceptsGenericMime =
+      mimeType === "" ||
+      mimeType === "application/octet-stream" ||
+      mimeType === "application/x-download";
+    if (
+      !allowedMimesByExtension[extension] ||
+      (!acceptsGenericMime && !allowedMimesByExtension[extension].includes(mimeType))
+    ) {
       callback(new UnsupportedFileTypeError());
       return;
     }
