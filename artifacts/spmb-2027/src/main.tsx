@@ -368,7 +368,10 @@ root.innerHTML = `
                 <button class="form-board-step-button form-board-step-button-primary" type="button" id="step-next" data-testid="button-step-next"><span>Lanjut</span>${icon('chevron')}</button>
               </div>
               <div class="form-board-submit-area">
-                <label class="form-board-consent"><input id="consent" name="consent" type="checkbox" required data-testid="input-consent" /><span>Saya memastikan data yang diisi <b>benar dan dapat dipertanggungjawabkan</b>.</span></label>
+                <div class="form-board-consent-field" data-field="consent">
+                  <label class="form-board-consent" for="consent"><input id="consent" name="consent" type="checkbox" required aria-describedby="consent-error" data-testid="input-consent" /><span>Saya memastikan data yang diisi <b>benar dan dapat dipertanggungjawabkan</b>.</span></label>
+                  <span class="error-message form-board-consent-error" id="consent-error" role="alert" aria-live="polite"></span>
+                </div>
                 <div class="form-board-submit-row">
                   <div class="form-board-submit-info">${icon('shield')}<span>Periksa kembali data sebelum mengirim.<small>Pengajuan akan diproses oleh panitia SPMB.</small></span></div>
                   <button class="form-board-submit-button submit-button" type="submit" id="submit-button" data-testid="button-submit-application"><span class="submit-label">Kirim pengajuan</span>${icon('check')}</button>
@@ -890,6 +893,12 @@ async function validateForm(scope: ParentNode = form): Promise<boolean> {
       }
     }
     (invalidControl as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).focus();
+    if (invalidControl.id === 'consent') {
+      invalidControl.closest<HTMLElement>('[data-field="consent"]')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
     const labels = [...invalidNames].map(getFieldLabel);
     errorAlert.textContent = labels.length === 1
       ? `Periksa kolom ${labels[0]}.`
