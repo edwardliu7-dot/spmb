@@ -362,6 +362,13 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .receipt-download-button { display: block; width: fit-content; margin: 20px auto 0; border-radius: 9px; background: hsl(var(--teal)); padding: 12px 17px; color: white; font-size: 12px; font-weight: 700; text-decoration: none; box-shadow: 0 7px 16px hsl(var(--teal) / .18); }
 .receipt-download-button:hover { background: hsl(var(--teal-deep)); }
 .receipt-download-button:focus-visible { outline: 3px solid hsl(var(--saffron)); outline-offset: 3px; }
+.success-whatsapp { max-width: 430px; margin: 24px auto 0; border: 1px solid hsl(145 45% 48% / .3); border-radius: 12px; background: hsl(145 45% 48% / .08); padding: 16px 18px; color: hsl(var(--teal-deep)); }
+.success-whatsapp strong, .success-whatsapp span { display: block; }
+.success-whatsapp strong { font-size: 13px; }
+.success-whatsapp span { margin-top: 5px; color: hsl(var(--ink-soft)); font-size: 12px; line-height: 1.5; }
+.whatsapp-group-button { display: inline-block; margin-top: 13px; border-radius: 8px; background: #168c52; padding: 10px 14px; color: white; font-size: 12px; font-weight: 700; text-decoration: none; }
+.whatsapp-group-button:hover { background: #107443; }
+.whatsapp-group-button:focus-visible { outline: 3px solid hsl(var(--saffron)); outline-offset: 3px; }
 .reset-button { display: block; margin: 25px auto 0; border: 1px solid hsl(var(--teal) / .44); border-radius: 9px; background: transparent; padding: 10px 15px; color: hsl(var(--teal)); font-size: 12px; font-weight: 700; }
 .footer {
   max-width: 1100px;

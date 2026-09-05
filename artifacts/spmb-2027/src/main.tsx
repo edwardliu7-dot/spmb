@@ -168,6 +168,15 @@ const uploadFields = [
   fileField('bukti_bayar', 'Bukti pembayaran', 'Belum ada berkas dipilih'),
 ].join('');
 
+const whatsappGroupLinks: Record<string, { name: string; url: string }> = {
+  Playgroup: { name: 'PGTK', url: 'https://chat.whatsapp.com/E3OfEx2PqqK4hi9ENtpERr' },
+  Daycare: { name: 'PGTK', url: 'https://chat.whatsapp.com/E3OfEx2PqqK4hi9ENtpERr' },
+  'TK-A': { name: 'PGTK', url: 'https://chat.whatsapp.com/E3OfEx2PqqK4hi9ENtpERr' },
+  'TK-B': { name: 'PGTK', url: 'https://chat.whatsapp.com/E3OfEx2PqqK4hi9ENtpERr' },
+  SD: { name: 'SD', url: 'https://chat.whatsapp.com/E8Du6lP94yz1ZGbE9TFo3q' },
+  SMP: { name: 'SMP', url: 'https://chat.whatsapp.com/BWNC9GTG9t67I3tyUv5Zrl' },
+};
+
 const sectionIds = ['section-student', 'section-school', 'section-parent', 'section-upload'];
 const uploadFieldNames = ['foto_3x4', 'akte_lahir', 'kartu_keluarga', 'ktp_orangtua', 'bukti_bayar'];
 const draftStorageKey = 'spmb-2027-form-draft';
@@ -373,6 +382,11 @@ root.innerHTML = `
             <p>Data Anda telah masuk ke sistem SPMB. Simpan nomor pengajuan ini dan unduh bukti formulir.</p>
             <span class="success-id" id="submission-id"></span>
             <a class="receipt-download-button" id="receipt-download" href="#" download hidden data-testid="link-download-receipt">Unduh bukti formulir (PDF)</a>
+            <div class="success-whatsapp" id="success-whatsapp" hidden>
+              <strong>Langkah berikutnya</strong>
+              <span id="whatsapp-group-message">Silakan masuk ke grup WhatsApp sesuai jenjang yang dipilih.</span>
+              <a class="whatsapp-group-button" id="whatsapp-group-link" href="#" target="_blank" rel="noopener noreferrer" hidden data-testid="link-whatsapp-group">Masuk grup WhatsApp</a>
+            </div>
              <button class="reset-button" type="button" id="success-status-button">Cek status pengajuan</button>
              <button class="reset-button" type="button" id="reset-button" data-testid="button-new-application">Buat pengajuan baru</button>
           </div>
@@ -392,6 +406,9 @@ const formBody = document.getElementById('form-body') as HTMLDivElement;
 const successView = document.getElementById('success-view') as HTMLDivElement;
 const submissionId = document.getElementById('submission-id') as HTMLSpanElement;
 const receiptDownload = document.getElementById('receipt-download') as HTMLAnchorElement;
+const whatsappGroup = document.getElementById('success-whatsapp') as HTMLDivElement;
+const whatsappGroupMessage = document.getElementById('whatsapp-group-message') as HTMLSpanElement;
+const whatsappGroupLink = document.getElementById('whatsapp-group-link') as HTMLAnchorElement;
 const resetButton = document.getElementById('reset-button') as HTMLButtonElement;
 const successStatusButton = document.getElementById('success-status-button') as HTMLButtonElement;
 const healthStatus = document.getElementById('health-status') as HTMLSpanElement;
@@ -1251,6 +1268,7 @@ form.addEventListener('submit', async (event) => {
   const submissionController = new AbortController();
   const submissionTimeoutId = window.setTimeout(() => submissionController.abort(), submissionTimeoutMs);
   try {
+    const submittedJenjang = (getFieldControl('jenjang') as HTMLSelectElement | null)?.value || '';
     const formData = new FormData(form);
     for (const name of uploadFieldNames) {
       const input = getFieldControl(name) as HTMLInputElement | null;
@@ -1271,6 +1289,7 @@ form.addEventListener('submit', async (event) => {
       payload as unknown as Parameters<typeof submitApplication>[0],
       { signal: submissionController.signal },
     );
+    const selectedWhatsappGroup = whatsappGroupLinks[submittedJenjang];
     form.reset();
     clearDraft();
     document.querySelectorAll<HTMLElement>('[data-file-name]').forEach((label) => { label.textContent = 'Belum ada berkas dipilih'; });
@@ -1279,6 +1298,17 @@ form.addEventListener('submit', async (event) => {
     statusNumberInput.value = `SPMB-${String(result.id).padStart(6, '0')}`;
     receiptDownload.href = result.receiptUrl;
     receiptDownload.hidden = false;
+    if (selectedWhatsappGroup) {
+      whatsappGroupMessage.textContent = `Bergabunglah ke grup WhatsApp ${selectedWhatsappGroup.name} untuk mendapatkan informasi berikutnya.`;
+      whatsappGroupLink.href = selectedWhatsappGroup.url;
+      whatsappGroupLink.hidden = false;
+      whatsappGroup.hidden = false;
+    } else {
+      whatsappGroupMessage.textContent = '';
+      whatsappGroupLink.hidden = true;
+      whatsappGroupLink.removeAttribute('href');
+      whatsappGroup.hidden = true;
+    }
     formBody.classList.add('is-hidden');
     successView.classList.add('is-visible');
     const cardTop = document.querySelector('.form-card')?.getBoundingClientRect().top ?? 0;
@@ -1301,6 +1331,9 @@ resetButton.addEventListener('click', () => {
   successView.classList.remove('is-visible');
   receiptDownload.hidden = true;
   receiptDownload.removeAttribute('href');
+  whatsappGroup.hidden = true;
+  whatsappGroupLink.hidden = true;
+  whatsappGroupLink.removeAttribute('href');
   formBody.classList.remove('is-hidden');
   submitButton.disabled = false;
   submitButton.classList.remove('is-loading');
