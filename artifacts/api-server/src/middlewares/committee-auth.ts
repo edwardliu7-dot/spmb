@@ -3,7 +3,8 @@ import type { NextFunction, Request, Response } from "express";
 import type { Response as ExpressResponse } from "express";
 
 export const committeeCookieName = "spmb_committee_session";
-export const committeeStatuses = ["Baru", "Diverifikasi", "Perlu Perbaikan", "Diterima", "Ditolak"] as const;
+export const committeeStatuses = ["Baru", "Lolos Verifikasi Berkas", "Observasi", "Lolos Observasi", "Diterima"] as const;
+export const committeeDecisionStatuses = ["Lolos Verifikasi Berkas", "Observasi", "Lolos Observasi", "Diterima"] as const;
 export const allJenjang = ["Playgroup", "Daycare", "TK-A", "TK-B", "SD", "SMP"] as const;
 
 type AccountDefinition = {

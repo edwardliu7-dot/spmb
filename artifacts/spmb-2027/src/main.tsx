@@ -466,12 +466,13 @@ const submitArea = document.querySelector<HTMLElement>('.form-board-submit-area'
 
 const statusDescriptions: Record<string, string> = {
   Baru: 'Pengajuan sudah diterima dan menunggu pemeriksaan panitia.',
-  Diverifikasi: 'Berkas dan data sedang diperiksa oleh panitia.',
-  'Perlu Perbaikan': 'Panitia membutuhkan perbaikan atau kelengkapan data.',
+  'Lolos Verifikasi Berkas': 'Berkas pendaftaran telah lolos verifikasi panitia.',
+  Observasi: 'Calon peserta didik sedang mengikuti tahap observasi.',
+  'Lolos Observasi': 'Calon peserta didik telah lolos tahap observasi.',
   Diterima: 'Pengajuan telah diterima. Ikuti informasi lanjutan dari sekolah.',
   Ditolak: 'Pengajuan belum dapat diterima pada proses seleksi ini.',
 };
-const statusSteps = ['Baru', 'Diverifikasi', 'Perlu Perbaikan', 'Diterima'];
+const statusSteps = ['Baru', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima'];
 
 type CachedFileMetadata = {
   name: string;
@@ -1048,7 +1049,7 @@ function formatStatusDate(value: string): string {
 
 function renderStatusResult(result: Awaited<ReturnType<typeof getSubmissionStatus>>): void {
   const currentIndex = statusSteps.indexOf(result.status);
-  const isRejected = result.status === 'Ditolak';
+  const isRejected = String(result.status) === 'Ditolak';
   const statusLabel = result.status === 'Baru' ? 'Diterima sistem' : result.status;
 
   statusResultNumber.textContent = result.applicationNumber;

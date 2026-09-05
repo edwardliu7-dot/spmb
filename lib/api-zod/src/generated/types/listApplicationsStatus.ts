@@ -12,8 +12,8 @@ export type ListApplicationsStatus = typeof ListApplicationsStatus[keyof typeof 
 export const ListApplicationsStatus = {
   Semua: 'Semua',
   Baru: 'Baru',
-  Diverifikasi: 'Diverifikasi',
-  Perlu_Perbaikan: 'Perlu Perbaikan',
+  Lolos_Verifikasi_Berkas: 'Lolos Verifikasi Berkas',
+  Observasi: 'Observasi',
+  Lolos_Observasi: 'Lolos Observasi',
   Diterima: 'Diterima',
-  Ditolak: 'Ditolak',
 } as const;

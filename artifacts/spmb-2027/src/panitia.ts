@@ -79,7 +79,8 @@ type RegistrationQuotaSummary = {
 
 type MasterApplication = ApplicationDetail;
 
-const statuses = ["Baru", "Diverifikasi", "Perlu Perbaikan", "Diterima", "Ditolak"];
+const statusChoices = ["Lolos Verifikasi Berkas", "Observasi", "Lolos Observasi", "Diterima"];
+const statuses = ["Baru", ...statusChoices];
 const rootElement = document.getElementById("root");
 
 if (!rootElement) throw new Error("Elemen root tidak ditemukan.");
@@ -485,7 +486,7 @@ function renderDashboard(user: AuthUser) {
           <section class="decision-metrics" aria-label="Ringkasan pendaftaran">
             <button class="decision-metric" type="button" data-metric-status="Semua"><span>Total pengajuan<i></i></span><strong id="total-count">00</strong><small>Semua status</small></button>
             <button class="decision-metric" type="button" data-metric-status="Baru"><span>Perlu ditinjau<i class="is-coral"></i></span><strong id="new-count">00</strong><small>Status baru</small></button>
-            <button class="decision-metric" type="button" data-metric-status="Diverifikasi"><span>Siap diproses<i class="is-gold"></i></span><strong id="ready-count">00</strong><small>Sudah diverifikasi</small></button>
+            <button class="decision-metric" type="button" data-metric-status="Lolos Verifikasi Berkas"><span>Lolos verifikasi<i class="is-gold"></i></span><strong id="ready-count">00</strong><small>Siap masuk tahap berikutnya</small></button>
             <button class="decision-metric" type="button" data-metric-status="Diterima"><span>Diterima<i class="is-green"></i></span><strong id="accepted-count">00</strong><small>Status diterima</small></button>
           </section>
 
@@ -659,7 +660,7 @@ function renderDashboard(user: AuthUser) {
     content.innerHTML = `
       <div class="observation-summary">
         <div><span>Total pendaftar</span><strong>${data.total}</strong><small>${escapeHtml(data.jenjang)}</small></div>
-        <div><span>Sudah diverifikasi</span><strong>${data.counts.Diverifikasi || 0}</strong><small>Siap diproses</small></div>
+        <div><span>Lolos verifikasi berkas</span><strong>${data.counts["Lolos Verifikasi Berkas"] || 0}</strong><small>Siap masuk tahap berikutnya</small></div>
         <div><span>Diterima</span><strong>${data.counts.Diterima || 0}</strong><small>Keputusan akhir</small></div>
         <div><span>Berkas belum lengkap</span><strong>${data.incompleteDocuments}</strong><small>Perlu ditindaklanjuti</small></div>
       </div>
@@ -856,7 +857,7 @@ function renderDashboard(user: AuthUser) {
 
   function renderStats(items: ApplicationListItem[], total: number) {
     const newCount = items.filter((item) => item.status === "Baru").length;
-    const readyCount = items.filter((item) => item.status === "Diverifikasi").length;
+    const readyCount = items.filter((item) => item.status === "Lolos Verifikasi Berkas").length;
     const acceptedCount = items.filter((item) => item.status === "Diterima").length;
     const totalCount = document.getElementById("total-count");
     const newElement = document.getElementById("new-count");
@@ -936,7 +937,7 @@ function renderDashboard(user: AuthUser) {
         <div class="inspector-note"><p>CATATAN REVIEWER</p><strong>${application.status === "Baru" ? "Pengajuan baru menunggu pembacaan pertama." : "Pastikan setiap bukti pendukung sudah sesuai sebelum keputusan akhir."}</strong></div>
            <dl class="inspector-facts">${field("Nomor pengajuan", applicationNumber(application.id))}${field("Sekolah asal", application.nama_sekolah_asal)}${field("Alamat domisili", application.alamat_domisili)}${field("Nomor WhatsApp orang tua", application.nomor_hp_orangtua)}${field("Email", application.email)}</dl>
         <section class="inspector-section"><div class="inspector-section-title"><h3>Bukti pendukung</h3><b>${availableDocuments}/${totalDocuments || 0} lengkap</b></div><div class="inspector-progress"><i style="width: ${completion}%"></i></div><div class="inspector-documents">${documents || `<p class="inspector-muted">Belum ada daftar dokumen.</p>`}</div></section>
-        <section class="inspector-section inspector-actions"><p class="decision-kicker">TINDAKAN KEPUTUSAN</p><div class="decision-action-grid"><button type="button" data-decision="Diterima" class="decision-action is-approve">✓<span>Sahkan</span></button><button type="button" data-decision="Diverifikasi" class="decision-action is-hold">◷<span>Tahan</span></button><button type="button" data-decision="Perlu Perbaikan" class="decision-action is-return">↻<span>Kembalikan</span></button></div><p class="decision-feedback" id="status-feedback" aria-live="polite"></p><label class="manual-status-label" for="application-status">Status manual</label><select id="application-status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${status === application.status ? "selected" : ""}>${escapeHtml(status)}</option>`).join("")}</select></section>
+        <section class="inspector-section inspector-actions"><p class="decision-kicker">TINDAKAN KEPUTUSAN</p><div class="decision-action-grid"><button type="button" data-decision="Lolos Verifikasi Berkas" class="decision-action is-hold">✓<span>Lolos verifikasi berkas</span></button><button type="button" data-decision="Observasi" class="decision-action is-return">◷<span>Masuk observasi</span></button><button type="button" data-decision="Lolos Observasi" class="decision-action is-hold">✓<span>Lolos observasi</span></button><button type="button" data-decision="Diterima" class="decision-action is-approve">★<span>Diterima</span></button></div><p class="decision-feedback" id="status-feedback" aria-live="polite"></p><label class="manual-status-label" for="application-status">Status manual</label><select id="application-status">${statusChoices.map((status) => `<option value="${escapeHtml(status)}" ${status === application.status ? "selected" : ""}>${escapeHtml(status)}</option>`).join("")}</select></section>
          <section class="inspector-section detail-section"><h3>Calon peserta didik</h3><dl class="detail-grid">${field("Nama lengkap", application.nama_calon)}${field("Nama panggilan", application.nama_panggilan)}${field("Jenis kelamin", application.jenis_kelamin)}${field("Tempat, tanggal lahir", `${application.tempat_lahir || "—"}, ${application.tanggal_lahir || "—"}`)}${field("NISN", application.nisn)}${field("NIK anak", application.nik_anak)}${field("Alamat domisili", application.alamat_domisili, "span-2")}${field("Anak ke-", application.anak_ke)}${field("Jumlah saudara", application.jumlah_saudara)}${field("Status anak", application.status_anak)}${field("Agama", application.agama)}${field("Kewarganegaraan", application.warga_negara)}${field("Tinggi / berat", `${application.tinggi_badan || "—"} cm / ${application.berat_badan || "—"} kg`)}${field("Transportasi", application.transportasi)}${field("Jarak ke sekolah", application.jarak_sekolah)}${field("Riwayat penyakit", application.riwayat_penyakit, "span-2")}</dl></section>
         <section class="inspector-section detail-section"><h3>Sekolah asal</h3><dl class="detail-grid">${field("Nama sekolah", application.nama_sekolah_asal, "span-2")}${field("Tahun lulus", application.tahun_lulus)}${field("Alamat sekolah", application.alamat_sekolah_asal, "span-2")}</dl></section>
         <section class="inspector-section detail-section"><h3>Orang tua & wali</h3><dl class="detail-grid">${field("Nomor Kartu Keluarga", application.nomor_kk)}${field("NIK ayah", application.nik_ayah)}${field("Nama ayah", application.nama_ayah)}${field("Pekerjaan ayah", application.pekerjaan_ayah)}${field("Penghasilan ayah", application.penghasilan_ayah)}${field("NIK ibu", application.nik_ibu)}${field("Nama ibu", application.nama_ibu)}${field("Pekerjaan ibu", application.pekerjaan_ibu)}${field("Penghasilan ibu", application.penghasilan_ibu)}${field("Nama wali", application.nama_wali)}${field("Hubungan wali", application.hubungan_wali)}</dl></section>

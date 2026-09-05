@@ -391,8 +391,8 @@ export async function updatePendaftarStatus(
       try {
         await db.insert(committeeNotificationTable).values({
           application_id: id,
-          type: status === "Perlu Perbaikan" ? "needs_revision" : "status_changed",
-          title: status === "Perlu Perbaikan" ? "Pengajuan membutuhkan perbaikan" : "Status pengajuan berubah",
+          type: status === "Observasi" ? "observation" : "status_changed",
+          title: status === "Observasi" ? "Pengajuan masuk tahap observasi" : "Status pengajuan berubah",
           message: `${current.nama_calon}: ${current.status} → ${status}.`,
           jenjang: current.jenjang,
         });

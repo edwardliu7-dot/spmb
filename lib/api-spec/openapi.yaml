@@ -230,7 +230,7 @@ paths:
         - name: status
           in: query
           required: false
-          schema: { type: string, enum: [Semua, Baru, Diverifikasi, "Perlu Perbaikan", Diterima, Ditolak] }
+          schema: { type: string, enum: [Semua, Baru, "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima] }
       responses:
         "200":
           description: Application summaries
@@ -688,7 +688,7 @@ components:
         applicationNumber: { type: string }
         nama_calon: { type: string }
         jenjang: { type: string }
-        status: { type: string, enum: [Baru, Diverifikasi, "Perlu Perbaikan", Diterima, Ditolak] }
+        status: { type: string, enum: [Baru, "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima] }
         created_at: { type: string }
       required: [id, applicationNumber, nama_calon, jenjang, status, created_at]
     ApplicationListItem:
@@ -803,7 +803,7 @@ components:
       properties:
         status:
           type: string
-          enum: [Baru, Diverifikasi, "Perlu Perbaikan", Diterima, Ditolak]
+          enum: [Baru, "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima]
       required: [status]
     ApplicationStatusResponse:
       type: object

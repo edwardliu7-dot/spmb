@@ -302,10 +302,10 @@ export type SubmissionStatusResponseStatus = typeof SubmissionStatusResponseStat
 
 export const SubmissionStatusResponseStatus = {
   Baru: 'Baru',
-  Diverifikasi: 'Diverifikasi',
-  Perlu_Perbaikan: 'Perlu Perbaikan',
+  Lolos_Verifikasi_Berkas: 'Lolos Verifikasi Berkas',
+  Observasi: 'Observasi',
+  Lolos_Observasi: 'Lolos Observasi',
   Diterima: 'Diterima',
-  Ditolak: 'Ditolak',
 } as const;
 
 export interface SubmissionStatusResponse {
@@ -405,10 +405,10 @@ export type ApplicationStatusUpdateStatus = typeof ApplicationStatusUpdateStatus
 
 export const ApplicationStatusUpdateStatus = {
   Baru: 'Baru',
-  Diverifikasi: 'Diverifikasi',
-  Perlu_Perbaikan: 'Perlu Perbaikan',
+  Lolos_Verifikasi_Berkas: 'Lolos Verifikasi Berkas',
+  Observasi: 'Observasi',
+  Lolos_Observasi: 'Lolos Observasi',
   Diterima: 'Diterima',
-  Ditolak: 'Ditolak',
 } as const;
 
 export interface ApplicationStatusUpdate {
@@ -482,10 +482,10 @@ export type ListApplicationsStatus = typeof ListApplicationsStatus[keyof typeof 
 export const ListApplicationsStatus = {
   Semua: 'Semua',
   Baru: 'Baru',
-  Diverifikasi: 'Diverifikasi',
-  Perlu_Perbaikan: 'Perlu Perbaikan',
+  Lolos_Verifikasi_Berkas: 'Lolos Verifikasi Berkas',
+  Observasi: 'Observasi',
+  Lolos_Observasi: 'Lolos Observasi',
   Diterima: 'Diterima',
-  Ditolak: 'Ditolak',
 } as const;
 
 export type ListAdminNotificationsParams = {

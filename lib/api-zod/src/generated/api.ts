@@ -237,7 +237,7 @@ export const GetSubmissionStatusResponse = zod.object({
   "applicationNumber": zod.string(),
   "nama_calon": zod.string(),
   "jenjang": zod.string(),
-  "status": zod.enum(['Baru', 'Diverifikasi', 'Perlu Perbaikan', 'Diterima', 'Ditolak']),
+  "status": zod.enum(['Baru', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima']),
   "created_at": zod.string()
 })
 
@@ -269,7 +269,7 @@ export const CommitteeLogoutResponse = zod.object({
 export const ListApplicationsQueryParams = zod.object({
   "q": zod.coerce.string().optional().describe('Search by applicant name or application number.'),
   "jenjang": zod.enum(['Semua', 'Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']).optional(),
-  "status": zod.enum(['Semua', 'Baru', 'Diverifikasi', 'Perlu Perbaikan', 'Diterima', 'Ditolak']).optional()
+  "status": zod.enum(['Semua', 'Baru', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima']).optional()
 })
 
 export const ListApplicationsResponse = zod.object({
@@ -473,7 +473,7 @@ export const UpdateApplicationStatusParams = zod.object({
 })
 
 export const UpdateApplicationStatusBody = zod.object({
-  "status": zod.enum(['Baru', 'Diverifikasi', 'Perlu Perbaikan', 'Diterima', 'Ditolak'])
+  "status": zod.enum(['Baru', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima'])
 })
 
 export const UpdateApplicationStatusResponse = zod.object({
