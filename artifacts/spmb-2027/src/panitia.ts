@@ -500,8 +500,9 @@ function renderDashboard(user: AuthUser) {
             <div id="observation-content" class="observation-content"><div class="admin-loading">Memuat observasi…</div></div>
           </section>
 
-          <section class="admin-view" id="master-view" hidden>
-             <div class="admin-view-heading"><div><p class="decision-kicker decision-accent">Master data</p><h2>Master pendaftar</h2><p>Nomor pengajuan menjadi identitas utama; NIK anak dan NISN tetap ditampilkan sebagai data terpisah.</p></div><div class="admin-heading-actions"><button class="admin-export-button" id="master-export-button" type="button">Download Excel</button><button class="admin-zip-button" id="bulk-zip-button" type="button">Download ZIP terpilih</button></div></div>
+           <section class="admin-view" id="master-view" hidden>
+              <div class="admin-view-heading"><div><p class="decision-kicker decision-accent">Master data</p><h2>Master pendaftar</h2><p>Nomor pengajuan menjadi identitas utama; NIK anak dan NISN tetap ditampilkan sebagai data terpisah.</p></div><div class="admin-heading-actions"><button class="admin-export-button" id="master-export-button" type="button">Download Excel</button><button class="admin-zip-button" id="bulk-zip-button" type="button">Download ZIP terpilih</button></div></div>
+              ${user.username.toLowerCase() === "admin" ? `<section class="share-recap-panel" aria-labelledby="share-recap-title"><div class="share-recap-heading"><div><p class="decision-kicker decision-accent">Bagikan rekap</p><h3 id="share-recap-title">Rekap pendaftar ke WhatsApp</h3><p>Pilih jenjang untuk membuka WhatsApp dengan daftar nama yang sudah diurutkan dari waktu pendaftaran paling awal.</p></div><span class="share-recap-note">ADMIN ONLY</span></div><div class="share-recap-list" id="share-recap-list"><div class="admin-loading">Menyiapkan rekap…</div></div></section>` : ""}
              <div class="admin-filter-row"><label>Cari<input id="master-search-input" type="search" placeholder="Nama, nomor pengajuan, atau sekolah" /></label><label>Jenjang<select id="master-level-filter"><option value="Semua">Semua jenjang</option>${allowedLevels.map((level) => `<option value="${escapeHtml(level)}">${escapeHtml(level)}</option>`).join("")}</select></label><label>Status<select id="master-status-filter"><option value="Semua">Semua status</option>${statuses.map((status) => `<option value="${escapeHtml(status)}">${escapeHtml(status)}</option>`).join("")}</select></label><label>Urutkan<select id="master-sort-filter"><option value="newest">Terbaru</option><option value="oldest">Terlama</option><option value="name">Nama A–Z</option><option value="status">Status</option></select></label></div>
             <div class="admin-table-wrap" id="master-table"></div>
           </section>
@@ -565,7 +566,10 @@ function renderDashboard(user: AuthUser) {
     });
     if (view === "applications") void loadApplicationsTable();
     if (view === "observations") void loadObservation();
-    if (view === "master") void loadMasterData();
+    if (view === "master") {
+      void loadMasterData();
+      if (user.username.toLowerCase() === "admin") void loadShareRecap();
+    }
     if (view === "notifications") void loadNotifications();
     closeRail();
   }
@@ -670,6 +674,72 @@ function renderDashboard(user: AuthUser) {
       renderApplicationTable(items, target, true);
     } catch (error) {
       target.innerHTML = `<div class="admin-empty is-error">${escapeHtml(error instanceof Error ? error.message : "Master data belum dapat dimuat.")}</div>`;
+    }
+  }
+
+  function whatsappRecapUrl(jenjang: string, items: MasterApplication[]): string {
+    const orderedItems = [...items].sort((a, b) => {
+      const dateDifference = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      return dateDifference || a.id - b.id;
+    });
+    const lines = orderedItems.map((item, index) =>
+      `${index + 1}. ${item.nama_calon} · ${applicationNumber(item.id)} · ${formatDate(item.created_at)}`,
+    );
+    const message = [
+      "REKAP PENDAFTAR SPMB TISA 2027/2028",
+      `Jenjang: ${jenjang}`,
+      `Total: ${orderedItems.length} pendaftar`,
+      "",
+      "Urutan pendaftaran (terlama ke terbaru):",
+      ...lines,
+    ].join("\n");
+    return `https://wa.me/?text=${encodeURIComponent(message)}`;
+  }
+
+  function renderShareRecap(items: MasterApplication[]) {
+    const target = document.getElementById("share-recap-list");
+    if (!target) return;
+    const grouped = new Map<string, MasterApplication[]>();
+    items.forEach((item) => {
+      const current = grouped.get(item.jenjang) || [];
+      current.push(item);
+      grouped.set(item.jenjang, current);
+    });
+    const levels = allowedLevels.filter((level) => grouped.has(level));
+    if (!levels.length) {
+      target.innerHTML = `<div class="admin-empty"><strong>Belum ada pendaftar untuk dibagikan</strong><span>Rekap per jenjang akan muncul setelah data pendaftaran tersedia.</span></div>`;
+      return;
+    }
+    target.innerHTML = levels.map((level) => {
+      const levelItems = grouped.get(level) || [];
+      const orderedItems = [...levelItems].sort((a, b) => {
+        const dateDifference = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        return dateDifference || a.id - b.id;
+      });
+      const preview = orderedItems.slice(0, 3).map((item) => escapeHtml(item.nama_calon)).join(" · ");
+      const remaining = orderedItems.length - Math.min(orderedItems.length, 3);
+      return `<article class="share-recap-item"><div class="share-recap-item-copy"><span class="admin-level-tag">${escapeHtml(level)}</span><strong>${orderedItems.length} pendaftar</strong><small>${preview}${remaining > 0 ? ` +${remaining} lainnya` : ""}</small></div><button class="share-whatsapp-button" type="button" data-share-jenjang="${escapeHtml(level)}">Bagikan ke WhatsApp</button></article>`;
+    }).join("");
+    target.querySelectorAll<HTMLButtonElement>("[data-share-jenjang]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const jenjang = button.dataset.shareJenjang;
+        if (!jenjang) return;
+        const levelItems = grouped.get(jenjang) || [];
+        window.open(whatsappRecapUrl(jenjang, levelItems), "_blank", "noopener,noreferrer");
+        showNotice(`Rekap ${jenjang} siap dibagikan di WhatsApp.`);
+      });
+    });
+  }
+
+  async function loadShareRecap() {
+    const target = document.getElementById("share-recap-list");
+    if (!target) return;
+    target.innerHTML = `<div class="admin-loading">Menyiapkan rekap…</div>`;
+    try {
+      const result = await requestJSON<{ items: MasterApplication[]; total: number }>("/api/admin/master-data");
+      renderShareRecap(result.items);
+    } catch (error) {
+      target.innerHTML = `<div class="admin-empty is-error">${escapeHtml(error instanceof Error ? error.message : "Rekap belum dapat dimuat.")}</div>`;
     }
   }
 
