@@ -42,6 +42,7 @@ import type {
   ObservationResponse,
   PaymentVerificationInput,
   PaymentVerificationResult,
+  RegistrationQuotaResponse,
   StudentApplicationInput,
   SubmissionResult,
   SubmissionStatusResponse
@@ -140,6 +141,84 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getHealthCheckQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetRegistrationQuotasUrl = () => {
+
+
+
+
+  return `/api/quotas`
+}
+
+/**
+ * Returns configured quotas and current fill levels without exposing applicant data.
+ * @summary Get current SPMB registration quotas
+ */
+export const getRegistrationQuotas = async ( options?: Parameters<typeof customFetch>[1]): Promise<RegistrationQuotaResponse> => {
+
+  return customFetch<RegistrationQuotaResponse>(getGetRegistrationQuotasUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetRegistrationQuotasQueryKey = () => {
+    return [
+    `/api/quotas`
+    ] as const;
+    }
+
+
+export const getGetRegistrationQuotasQueryOptions = <TData = Awaited<ReturnType<typeof getRegistrationQuotas>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRegistrationQuotas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetRegistrationQuotasQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRegistrationQuotas>>> = ({ signal }) => getRegistrationQuotas({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRegistrationQuotas>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetRegistrationQuotasQueryResult = NonNullable<Awaited<ReturnType<typeof getRegistrationQuotas>>>
+export type GetRegistrationQuotasQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get current SPMB registration quotas
+ */
+
+export function useGetRegistrationQuotas<TData = Awaited<ReturnType<typeof getRegistrationQuotas>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRegistrationQuotas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetRegistrationQuotasQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

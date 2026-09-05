@@ -6,8 +6,18 @@ import { getPendaftar, getPublicPendaftarStatus, insertPendaftar } from "../lib/
 import { type ApplicationFileInput } from "../lib/application-files";
 import { allJenjang } from "../middlewares/committee-auth";
 import { createReceiptToken, createSpmbReceipt, isValidReceiptToken } from "../lib/spmb-receipt";
+import { getRegistrationQuotaSummary, RegistrationQuotaFullError } from "../lib/registration-quota";
 
 const router = Router();
+
+router.get("/quotas", async (request, response) => {
+  try {
+    return response.json(await getRegistrationQuotaSummary());
+  } catch (error) {
+    request.log.error({ err: error }, "Failed to load registration quotas");
+    return response.status(500).json({ error: "Informasi kuota belum dapat dimuat." });
+  }
+});
 
 const documentFields = [
   "foto_3x4",
@@ -536,6 +546,14 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
     });
     return;
   } catch (error) {
+    if (error instanceof RegistrationQuotaFullError) {
+      await removeUploadedFiles(request);
+      response.status(409).json({
+        error: error.message,
+        fields: ["jenjang", ...(error.jenisKelamin ? ["jenis_kelamin"] : [])],
+      });
+      return;
+    }
     request.log.error({ err: error, errorCode: getErrorCode(error) }, "Failed to save SPMB application");
     await removeUploadedFiles(request);
     response.status(500).json({

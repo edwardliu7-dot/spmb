@@ -486,6 +486,145 @@
   letter-spacing: 0;
 }
 
+.form-board-quota-overview {
+  margin-bottom: 30px;
+  border: 1px solid #d6d2c6;
+  border-radius: 16px;
+  background: #f8f5ec;
+  padding: 22px;
+  box-shadow: 0 15px 45px #223d3910;
+}
+
+.form-board-quota-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.form-board-quota-heading h2 {
+  margin: 9px 0 6px;
+  color: #173f43;
+  font: 600 25px/1 "Fraunces", Georgia, serif;
+  letter-spacing: -0.045em;
+}
+
+.form-board-quota-heading h2 em {
+  color: #b55341;
+  font-style: normal;
+}
+
+.form-board-quota-heading p {
+  max-width: 620px;
+  margin: 0;
+  color: #7e8177;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.form-board-quota-updated {
+  flex: 0 0 auto;
+  color: #8d9288;
+  font: 8px "IBM Plex Mono", monospace;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.form-board-quota-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.form-board-quota-card {
+  min-width: 0;
+  border: 1px solid #d9ded2;
+  border-radius: 10px;
+  background: #fffdf8;
+  padding: 12px;
+}
+
+.form-board-quota-card.is-full {
+  border-color: #d9a397;
+  background: #fff4f0;
+}
+
+.form-board-quota-card-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 7px;
+}
+
+.form-board-quota-card-top strong {
+  color: #315f5c;
+  font-size: 11px;
+}
+
+.form-board-quota-card-top span {
+  color: #4d8474;
+  font: 700 8px "IBM Plex Mono", monospace;
+  white-space: nowrap;
+}
+
+.form-board-quota-card.is-full .form-board-quota-card-top span {
+  color: #b55341;
+}
+
+.form-board-quota-numbers {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.form-board-quota-numbers b {
+  color: #173f43;
+  font: 600 24px/1 "Fraunces", Georgia, serif;
+}
+
+.form-board-quota-numbers span {
+  color: #8d9288;
+  font-size: 9px;
+}
+
+.form-board-quota-gender {
+  display: grid;
+  gap: 3px;
+  margin-top: 10px;
+  border-top: 1px solid #e2e5dc;
+  padding-top: 8px;
+}
+
+.form-board-quota-gender span {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  color: #7e8177;
+  font-size: 8px;
+}
+
+.form-board-quota-gender b {
+  color: #315f5c;
+  font: 700 8px "IBM Plex Mono", monospace;
+}
+
+.form-board-quota-loading {
+  grid-column: 1 / -1;
+  border: 1px dashed #cbd3c5;
+  border-radius: 9px;
+  padding: 15px;
+  color: #7e8177;
+  font-size: 10px;
+  text-align: center;
+}
+
+.form-board-quota-loading.is-error {
+  border-color: #d9a397;
+  color: #b55341;
+}
+
 .form-board-workspace {
   display: grid;
   grid-template-columns: minmax(245px, 0.32fr) minmax(0, 1fr);
@@ -1081,6 +1220,21 @@
 
 .form-board-field-span {
   grid-column: span 2;
+}
+
+.form-board-selected-quota-notice {
+  border-left: 3px solid #4d8474;
+  background: #edf2e5;
+  padding: 9px 11px;
+  color: #56756b;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.form-board-selected-quota-notice.is-full {
+  border-left-color: #b55341;
+  background: #fff0eb;
+  color: #a2483a;
 }
 
 .form-board-field > label {
@@ -2317,6 +2471,19 @@
 
   .form-board-stats {
     grid-template-columns: 1fr;
+  }
+
+  .form-board-quota-heading {
+    display: block;
+  }
+
+  .form-board-quota-updated {
+    display: block;
+    margin-top: 12px;
+  }
+
+  .form-board-quota-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .form-board-payment-gate {

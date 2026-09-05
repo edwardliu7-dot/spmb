@@ -23,6 +23,7 @@ import {
 import type { ApplicationFileInput } from "./application-files";
 import { logger } from "./logger";
 import { resolveStoredUpload, uploadsDirectory } from "./upload-storage";
+import { getQuotaDefinition, RegistrationQuotaFullError } from "./registration-quota";
 
 export { uploadsDirectory } from "./upload-storage";
 
@@ -73,6 +74,34 @@ export async function insertPendaftar(values: InsertPendaftar, files: Applicatio
     Object.entries(values).filter(([key]) => pendaftarColumns.has(key)),
   ) as InsertPendaftar;
   const created = await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(2027202701)`);
+    const quotaDefinition = getQuotaDefinition(values.jenjang);
+    if (quotaDefinition?.quota !== null && quotaDefinition?.quota !== undefined) {
+      const [levelCount] = await tx
+        .select({ count: sql<number>`count(*)` })
+        .from(pendaftarTable)
+        .where(eq(pendaftarTable.jenjang, values.jenjang));
+      if (Number(levelCount?.count || 0) >= quotaDefinition.quota) {
+        throw new RegistrationQuotaFullError(values.jenjang, null, quotaDefinition.quota);
+      }
+
+      if (quotaDefinition.genderQuotas) {
+        const genderQuota = quotaDefinition.genderQuotas[values.jenis_kelamin as keyof typeof quotaDefinition.genderQuotas];
+        if (genderQuota) {
+          const [genderCount] = await tx
+            .select({ count: sql<number>`count(*)` })
+            .from(pendaftarTable)
+            .where(and(
+              eq(pendaftarTable.jenjang, values.jenjang),
+              eq(pendaftarTable.jenis_kelamin, values.jenis_kelamin),
+            ));
+          if (Number(genderCount?.count || 0) >= genderQuota) {
+            throw new RegistrationQuotaFullError(values.jenjang, values.jenis_kelamin, genderQuota);
+          }
+        }
+      }
+    }
+
     const [inserted] = await tx
       .insert(pendaftarTable)
       .values(compatibleValues)

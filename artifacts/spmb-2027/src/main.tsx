@@ -1,4 +1,4 @@
-import { getSubmissionStatus, healthCheck, submitApplication } from '@workspace/api-client-react';
+import { getRegistrationQuotas, getSubmissionStatus, healthCheck, submitApplication, type RegistrationQuotaResponse } from '@workspace/api-client-react';
 import schoolLogoUrl from '../../../lib/logo tisa.png';
 import './index.css';
 import './form-board.css';
@@ -40,6 +40,16 @@ function escapeHtml(value: unknown): string {
 }
 
 const requiredMark = '<span class="form-board-required" aria-hidden="true">*</span>';
+
+type RegistrationQuota = RegistrationQuotaResponse['levels'][number];
+
+function quotaGenderLabel(value: string): string {
+  return value === 'Laki-laki' ? 'Putra' : value === 'Perempuan' ? 'Putri' : value;
+}
+
+function quotaNumber(value: number | null): string {
+  return value === null ? '—' : String(value);
+}
 
 function inputField(
   name: string,
@@ -112,6 +122,7 @@ const studentFields = [
     ['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP'],
     'Usia minimum pada 1 Juli 2027: PG 3 tahun, TK-A 4 tahun, TK-B 5 tahun, SD 6 tahun; Daycare dan SMP tanpa batas minimum',
   ),
+  '<div class="form-board-selected-quota-notice form-board-field-span" id="selected-quota-notice">Pilih jenjang untuk melihat ketersediaan kursi.</div>',
   inputField('nama_calon', 'Nama lengkap calon peserta didik'),
   inputField('nama_panggilan', 'Nama panggilan'),
   inputField('jenis_kelamin', 'Jenis kelamin', 'select', ['Laki-laki', 'Perempuan']),
@@ -244,6 +255,14 @@ root.innerHTML = `
         <div class="form-board-stat"><div><span>WAKTU PENGISIAN</span>${icon('file-check')}</div><strong>10<span class="form-board-stat-unit">mnt</span></strong><small>siapkan dokumen resmi di dekat Anda</small></div>
         <div class="form-board-stat"><div><span>DOKUMEN PENDUKUNG</span>${icon('folder')}</div><strong>05</strong><small>PDF, JPG, atau PNG · maksimal 5 MB</small></div>
       </section>
+
+       <section class="form-board-quota-overview" aria-labelledby="quota-overview-title">
+         <div class="form-board-quota-heading">
+           <div><div class="form-board-panel-kicker">${icon('clipboard')}Ketersediaan kursi</div><h2 id="quota-overview-title">Kuota pendaftaran <em>2027 / 2028.</em></h2><p>Pilih jenjang yang masih memiliki kuota. Kuota SD dibagi seimbang untuk putra dan putri.</p></div>
+           <span class="form-board-quota-updated" id="quota-updated">Memuat kuota</span>
+         </div>
+         <div class="form-board-quota-grid" id="quota-grid"><div class="form-board-quota-loading">Memuat ketersediaan kursi…</div></div>
+       </section>
 
        <section class="form-board-status-view" id="status-view" hidden aria-labelledby="status-view-title">
          <div class="form-board-status-intro">
@@ -418,6 +437,8 @@ const healthStatus = document.getElementById('health-status') as HTMLSpanElement
 const healthDot = document.getElementById('health-dot') as HTMLElement;
 const formNotice = document.getElementById('form-notice') as HTMLDivElement;
 const formNoticeText = formNotice.querySelector('span') as HTMLSpanElement;
+const quotaGrid = document.getElementById('quota-grid') as HTMLDivElement;
+const quotaUpdated = document.getElementById('quota-updated') as HTMLSpanElement;
 const menuButton = document.querySelector<HTMLButtonElement>('.form-board-menu-button');
 const navigation = document.querySelector<HTMLElement>('.form-board-nav');
 const pageViewButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-page-view]'));
@@ -1063,6 +1084,80 @@ function getStatusErrorMessage(error: unknown): string {
       : 'Status pengajuan belum dapat diperiksa. Silakan coba lagi.';
 }
 
+function formatQuotaUpdatedAt(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Baru saja diperbarui';
+  return `Diperbarui ${new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Jakarta',
+  }).format(date)} WIB`;
+}
+
+function renderQuotaOverview(summary: RegistrationQuotaResponse): void {
+  const quotaByLevel = new Map(summary.levels.map((level) => [level.jenjang, level]));
+  quotaGrid.innerHTML = summary.levels.map((level) => {
+    const isFull = level.isFull;
+    const genderSummary = level.gender
+      ? `<div class="form-board-quota-gender">${level.gender.map((gender) => `<span>${quotaGenderLabel(gender.jenisKelamin)} <b>${gender.filled}/${gender.quota}</b></span>`).join('')}</div>`
+      : '';
+    const remainingLabel = level.remaining === null ? 'Tanpa batas' : `${level.remaining} tersisa`;
+    return `<article class="form-board-quota-card${isFull ? ' is-full' : ''}">
+      <div class="form-board-quota-card-top"><strong>${escapeHtml(level.jenjang)}</strong><span>${isFull ? 'Penuh' : remainingLabel}</span></div>
+      <div class="form-board-quota-numbers"><b>${level.filled}</b><span>/ ${quotaNumber(level.quota)} terisi</span></div>
+      ${genderSummary}
+    </article>`;
+  }).join('');
+  quotaUpdated.textContent = formatQuotaUpdatedAt(summary.updatedAt);
+
+  const levelControl = getFieldControl('jenjang') as HTMLSelectElement | null;
+  if (levelControl) {
+    Array.from(levelControl.options).forEach((option) => {
+      const level = quotaByLevel.get(option.value);
+      if (!level) return;
+      option.disabled = level.isFull && option.value !== 'SD';
+      option.textContent = `${option.value}${level.isFull ? ' · Penuh' : ''}`;
+    });
+  }
+  updateSelectedQuotaState(summary);
+}
+
+function updateSelectedQuotaState(summary?: RegistrationQuotaResponse): void {
+  const levelControl = getFieldControl('jenjang') as HTMLSelectElement | null;
+  const genderControl = getFieldControl('jenis_kelamin') as HTMLSelectElement | null;
+  const selectedLevel = levelControl?.value || '';
+  const selectedGender = genderControl?.value || '';
+  const level = summary?.levels.find((item) => item.jenjang === selectedLevel);
+  const selectedGenderQuota = level?.gender?.find((item) => item.jenisKelamin === selectedGender);
+  const isFull = Boolean(level?.isFull || selectedGenderQuota?.isFull);
+  if (genderControl) {
+    Array.from(genderControl.options).forEach((option) => {
+      const genderQuota = level?.gender?.find((item) => item.jenisKelamin === option.value);
+      option.disabled = Boolean(genderQuota?.isFull);
+      option.textContent = `${option.value}${genderQuota?.isFull ? ' · Penuh' : ''}`;
+    });
+  }
+  const message = level?.gender && selectedGenderQuota?.isFull
+    ? `Kuota ${selectedLevel} untuk ${quotaGenderLabel(selectedGender)} sudah penuh. Pilih jenis kelamin atau jenjang lain.`
+    : level?.isFull
+      ? `Kuota ${selectedLevel} sudah penuh. Pilih jenjang lain.`
+      : level?.remaining !== null && level
+        ? `Kuota ${selectedLevel}: ${level.remaining} kursi masih tersedia.`
+        : selectedLevel
+          ? `Kuota ${selectedLevel}: tidak dibatasi.`
+          : 'Pilih jenjang untuk melihat ketersediaan kursi.';
+  const existingNotice = document.getElementById('selected-quota-notice');
+  if (existingNotice) {
+    existingNotice.textContent = message;
+    existingNotice.className = `form-board-selected-quota-notice${isFull ? ' is-full' : ''}`;
+  }
+  submitButton.disabled = isFull;
+}
+
+let registrationQuotaSummary: RegistrationQuotaResponse | undefined;
+
 menuButton?.addEventListener('click', () => {
   const open = navigation?.classList.toggle('form-board-nav-open') ?? false;
   menuButton.setAttribute('aria-expanded', String(open));
@@ -1105,12 +1200,14 @@ form.querySelectorAll<HTMLElement>('input, select, textarea').forEach((control) 
   control.addEventListener('change', () => {
     clearError(control);
     saveDraft();
+    if (registrationQuotaSummary) updateSelectedQuotaState(registrationQuotaSummary);
   });
 });
 
 getFieldControl('jenjang')?.addEventListener('change', () => {
   applyPublicTheme((getFieldControl('jenjang') as HTMLSelectElement).value);
   updateSchoolFieldsRequirement();
+  if (registrationQuotaSummary) updateSelectedQuotaState(registrationQuotaSummary);
   saveDraft();
 });
 
@@ -1327,7 +1424,7 @@ form.addEventListener('submit', async (event) => {
       error = new Error('Layanan belum merespons setelah 2 menit. Jangan kirim ulang sebelum mengecek status pengajuan.');
     }
     showSubmissionError(error);
-    submitButton.disabled = false;
+    updateSelectedQuotaState(registrationQuotaSummary);
     submitButton.classList.remove('is-loading');
     submitButton.querySelector('.submit-label')!.textContent = 'Kirim pengajuan';
   } finally {
@@ -1354,6 +1451,16 @@ resetButton.addEventListener('click', () => {
 });
 
 updateProgress();
+
+void getRegistrationQuotas()
+  .then((summary) => {
+    registrationQuotaSummary = summary;
+    renderQuotaOverview(summary);
+  })
+  .catch(() => {
+    quotaUpdated.textContent = 'Kuota belum tersedia';
+    quotaGrid.innerHTML = '<div class="form-board-quota-loading is-error">Informasi kuota belum dapat dimuat. Silakan coba lagi nanti.</div>';
+  });
 
 healthCheck()
   .then((status) => {

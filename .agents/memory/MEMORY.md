@@ -8,3 +8,4 @@
 - [SPMB OpenAPI numeric schemas](spmb-openapi-numeric.md) — this workspace's Orval/Zod combination rejects generated zod.int(); use compatible number schemas unless the toolchain is upgraded.
 - [SPMB submit and receipt flow](spmb-submit-receipt-flow.md) — submission returns a receipt URL; PDF generation is lazy and runs only when that URL is opened.
 - [SPMB Safari upload draft](spmb-safari-upload.md) — Safari can restore IndexedDB uploads as Blob or cross-realm File while metadata still looks valid.
+- [SPMB quota policy](spmb-quota-policy.md) — numeric quotas are enforced from database counts; Daycare remains unlimited until a quota is explicitly supplied.

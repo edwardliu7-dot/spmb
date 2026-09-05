@@ -55,6 +55,28 @@ type ObservationResponse = {
   };
 };
 
+type RegistrationQuotaGender = {
+  jenisKelamin: string;
+  quota: number;
+  filled: number;
+  remaining: number;
+  isFull: boolean;
+};
+
+type RegistrationQuota = {
+  jenjang: string;
+  quota: number | null;
+  filled: number;
+  remaining: number | null;
+  isFull: boolean;
+  gender: RegistrationQuotaGender[] | null;
+};
+
+type RegistrationQuotaSummary = {
+  levels: RegistrationQuota[];
+  updatedAt: string;
+};
+
 type MasterApplication = ApplicationDetail;
 
 const statuses = ["Baru", "Diverifikasi", "Perlu Perbaikan", "Diterima", "Ditolak"];
@@ -677,26 +699,59 @@ function renderDashboard(user: AuthUser) {
     }
   }
 
-  function whatsappRecapUrl(jenjang: string, items: MasterApplication[]): string {
+  function whatsappRecapUrl(jenjang: string, items: MasterApplication[], quota: RegistrationQuota | undefined): string {
     const orderedItems = [...items].sort((a, b) => {
       const dateDifference = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       return dateDifference || a.id - b.id;
     });
-    const lines = orderedItems.map((item, index) =>
-      `${index + 1}. ${item.nama_calon} · ${applicationNumber(item.id)} · ${formatDate(item.created_at)}`,
-    );
+    const buildSection = (sectionTitle: string, sectionItems: MasterApplication[], sectionQuota: number | null, sectionRemaining: number | null) => {
+      const slots = sectionQuota === null
+        ? Math.max(sectionItems.length, 1)
+        : sectionQuota;
+      const lines = Array.from({ length: slots }, (_, index) => {
+        const item = sectionItems[index];
+        return item
+          ? `${index + 1}. ${item.nama_calon} . ${applicationNumber(item.id)}`
+          : `${index + 1}.`;
+      });
+      return [
+        sectionTitle,
+        `Kuota tersedia : ${sectionRemaining === null ? "Tidak dibatasi" : sectionRemaining}`,
+        "",
+        "Urutan pendaftaran _(terlama ke terbaru)_ :",
+        "*NAMA . NOMOR PENDAFTARAN*",
+        ...lines,
+      ].join("\n");
+    };
+
+    const messageSections = quota?.gender
+      ? quota.gender.map((gender) => {
+          const genderValue = gender.jenisKelamin;
+          const genderItems = orderedItems.filter((item) => item.jenis_kelamin === genderValue);
+          return buildSection(
+            genderValue === "Laki-laki" ? "PUTRA" : "PUTRI",
+            genderItems,
+            gender.quota,
+            gender.remaining,
+          );
+        })
+      : [buildSection(
+          "",
+          orderedItems,
+          quota?.quota ?? null,
+          quota?.remaining ?? null,
+        )];
+
     const message = [
-      "REKAP PENDAFTAR SPMB TISA 2027/2028",
-      `Jenjang: ${jenjang}`,
-      `Total: ${orderedItems.length} pendaftar`,
+      "*REKAP PENDAFTAR SPMB TISA 2027/2028*",
+      `Jenjang : ${jenjang}`,
       "",
-      "Urutan pendaftaran (terlama ke terbaru):",
-      ...lines,
+      ...messageSections,
     ].join("\n");
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   }
 
-  function renderShareRecap(items: MasterApplication[]) {
+  function renderShareRecap(items: MasterApplication[], summary: RegistrationQuotaSummary) {
     const target = document.getElementById("share-recap-list");
     if (!target) return;
     const grouped = new Map<string, MasterApplication[]>();
@@ -705,27 +760,37 @@ function renderDashboard(user: AuthUser) {
       current.push(item);
       grouped.set(item.jenjang, current);
     });
-    const levels = allowedLevels.filter((level) => grouped.has(level));
+    const levels = allowedLevels;
     if (!levels.length) {
       target.innerHTML = `<div class="admin-empty"><strong>Belum ada pendaftar untuk dibagikan</strong><span>Rekap per jenjang akan muncul setelah data pendaftaran tersedia.</span></div>`;
       return;
     }
     target.innerHTML = levels.map((level) => {
       const levelItems = grouped.get(level) || [];
+      const quota = summary.levels.find((item) => item.jenjang === level);
       const orderedItems = [...levelItems].sort((a, b) => {
         const dateDifference = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
         return dateDifference || a.id - b.id;
       });
       const preview = orderedItems.slice(0, 3).map((item) => escapeHtml(item.nama_calon)).join(" · ");
       const remaining = orderedItems.length - Math.min(orderedItems.length, 3);
-      return `<article class="share-recap-item"><div class="share-recap-item-copy"><span class="admin-level-tag">${escapeHtml(level)}</span><strong>${orderedItems.length} pendaftar</strong><small>${preview}${remaining > 0 ? ` +${remaining} lainnya` : ""}</small></div><button class="share-whatsapp-button" type="button" data-share-jenjang="${escapeHtml(level)}">Bagikan ke WhatsApp</button></article>`;
+      const quotaText = quota?.quota === null
+        ? "Kuota tidak dibatasi"
+        : quota
+          ? `Terisi ${quota.filled}/${quota.quota} · Sisa ${quota.remaining}`
+          : "Kuota belum tersedia";
+      const genderText = quota?.gender
+        ? ` · ${quota.gender.map((gender) => `${gender.jenisKelamin === "Laki-laki" ? "Putra" : "Putri"} ${gender.filled}/${gender.quota}`).join(" · ")}`
+        : "";
+      return `<article class="share-recap-item"><div class="share-recap-item-copy"><span class="admin-level-tag">${escapeHtml(level)}</span><strong>${orderedItems.length} pendaftar</strong><small>${escapeHtml(quotaText)}${escapeHtml(genderText)}</small><small>${preview || "Belum ada pendaftar"}${remaining > 0 ? ` +${remaining} lainnya` : ""}</small></div><button class="share-whatsapp-button" type="button" data-share-jenjang="${escapeHtml(level)}">Bagikan ke WhatsApp</button></article>`;
     }).join("");
     target.querySelectorAll<HTMLButtonElement>("[data-share-jenjang]").forEach((button) => {
       button.addEventListener("click", () => {
         const jenjang = button.dataset.shareJenjang;
         if (!jenjang) return;
         const levelItems = grouped.get(jenjang) || [];
-        window.open(whatsappRecapUrl(jenjang, levelItems), "_blank", "noopener,noreferrer");
+        const quota = summary.levels.find((item) => item.jenjang === jenjang);
+        window.open(whatsappRecapUrl(jenjang, levelItems, quota), "_blank", "noopener,noreferrer");
         showNotice(`Rekap ${jenjang} siap dibagikan di WhatsApp.`);
       });
     });
@@ -736,8 +801,11 @@ function renderDashboard(user: AuthUser) {
     if (!target) return;
     target.innerHTML = `<div class="admin-loading">Menyiapkan rekap…</div>`;
     try {
-      const result = await requestJSON<{ items: MasterApplication[]; total: number }>("/api/admin/master-data");
-      renderShareRecap(result.items);
+      const [result, quotaSummary] = await Promise.all([
+        requestJSON<{ items: MasterApplication[]; total: number }>("/api/admin/master-data"),
+        requestJSON<RegistrationQuotaSummary>("/api/quotas"),
+      ]);
+      renderShareRecap(result.items, quotaSummary);
     } catch (error) {
       target.innerHTML = `<div class="admin-empty is-error">${escapeHtml(error instanceof Error ? error.message : "Rekap belum dapat dimuat.")}</div>`;
     }

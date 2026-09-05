@@ -32,6 +32,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /quotas:
+    get:
+      operationId: getRegistrationQuotas
+      tags: [applications]
+      summary: Get current SPMB registration quotas
+      description: Returns configured quotas and current fill levels without exposing applicant data.
+      responses:
+        "200":
+          description: Current registration quota summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationQuotaResponse"
+        "500":
+          description: Quota data unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /submit:
     post:
       operationId: submitApplication
@@ -65,6 +84,12 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "429":
           description: Too many submissions from the same network
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: The selected level or gender quota is full
           content:
             application/json:
               schema:
@@ -500,6 +525,38 @@ components:
       required:
         - status
         - database
+    RegistrationQuotaGender:
+      type: object
+      properties:
+        jenisKelamin: { type: string }
+        quota: { type: number }
+        filled: { type: number }
+        remaining: { type: number }
+        isFull: { type: boolean }
+      required: [jenisKelamin, quota, filled, remaining, isFull]
+    RegistrationQuota:
+      type: object
+      properties:
+        jenjang: { type: string }
+        quota: { type: number, nullable: true }
+        filled: { type: number }
+        remaining: { type: number, nullable: true }
+        isFull: { type: boolean }
+        gender:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/RegistrationQuotaGender"
+      required: [jenjang, quota, filled, remaining, isFull, gender]
+    RegistrationQuotaResponse:
+      type: object
+      properties:
+        levels:
+          type: array
+          items:
+            $ref: "#/components/schemas/RegistrationQuota"
+        updatedAt: { type: string, format: date-time }
+      required: [levels, updatedAt]
     StudentApplicationInput:
       type: object
       required:

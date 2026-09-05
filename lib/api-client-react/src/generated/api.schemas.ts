@@ -10,6 +10,28 @@ export interface HealthStatus {
   database: string;
 }
 
+export interface RegistrationQuotaGender {
+  jenisKelamin: string;
+  quota: number;
+  filled: number;
+  remaining: number;
+  isFull: boolean;
+}
+
+export interface RegistrationQuota {
+  jenjang: string;
+  quota: number | null;
+  filled: number;
+  remaining: number | null;
+  isFull: boolean;
+  gender: RegistrationQuotaGender[] | null;
+}
+
+export interface RegistrationQuotaResponse {
+  levels: RegistrationQuota[];
+  updatedAt: string;
+}
+
 export type StudentApplicationInputJenjang = typeof StudentApplicationInputJenjang[keyof typeof StudentApplicationInputJenjang];
 
 

@@ -19,6 +19,29 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
+ * Returns configured quotas and current fill levels without exposing applicant data.
+ * @summary Get current SPMB registration quotas
+ */
+export const GetRegistrationQuotasResponse = zod.object({
+  "levels": zod.array(zod.object({
+  "jenjang": zod.string(),
+  "quota": zod.number().nullable(),
+  "filled": zod.number(),
+  "remaining": zod.number().nullable(),
+  "isFull": zod.boolean(),
+  "gender": zod.array(zod.object({
+  "jenisKelamin": zod.string(),
+  "quota": zod.number(),
+  "filled": zod.number(),
+  "remaining": zod.number(),
+  "isFull": zod.boolean()
+})).nullable()
+})),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
  * Stores student registration data and the uploaded supporting documents.
  * @summary Submit a new SPMB application
  */
