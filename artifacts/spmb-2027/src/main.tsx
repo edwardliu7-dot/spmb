@@ -120,14 +120,14 @@ const studentFields = [
     'Jenjang yang dituju',
     'select',
     ['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP'],
-    'Usia minimum pada 1 Juli 2027: PG 3 tahun, TK-A 4 tahun, TK-B 5 tahun, SD 6 tahun; Daycare dan SMP tanpa batas minimum',
+    'Usia minimum pada 31 Juli 2027: PG 3 tahun, TK-A 4 tahun, TK-B 5 tahun, SD 6 tahun; Daycare dan SMP tanpa batas minimum',
   ),
   '<div class="form-board-selected-quota-notice form-board-field-span" id="selected-quota-notice">Pilih jenjang untuk melihat ketersediaan kursi.</div>',
   inputField('nama_calon', 'Nama lengkap calon peserta didik'),
   inputField('nama_panggilan', 'Nama panggilan'),
   inputField('jenis_kelamin', 'Jenis kelamin', 'select', ['Laki-laki', 'Perempuan']),
   inputField('tempat_lahir', 'Tempat lahir'),
-  inputField('tanggal_lahir', 'Tanggal lahir', 'date', [], 'Usia dihitung pada 1 Juli 2027'),
+  inputField('tanggal_lahir', 'Tanggal lahir', 'date', [], 'Usia dihitung pada 31 Juli 2027'),
   inputField('nisn', 'NISN', 'text', [], '10 digit bila sudah memiliki', false, false),
   inputField('nik_anak', 'NIK anak'),
   inputField('alamat_domisili', 'Alamat domisili saat ini', 'textarea', [], '', true),
@@ -767,10 +767,10 @@ function getMinimumAgeError(level: string, birthDateValue: string): string | nul
   const birthDate = new Date(`${birthDateValue}T00:00:00.000Z`);
   if (Number.isNaN(birthDate.getTime())) return null;
 
-  const latestAllowedBirthDate = Date.UTC(2027 - minimumAge, 6, 1);
+  const latestAllowedBirthDate = Date.UTC(2027 - minimumAge, 6, 31);
   return birthDate.getTime() <= latestAllowedBirthDate
     ? null
-    : `Untuk jenjang ${level}, calon peserta didik harus berusia minimal ${minimumAge} tahun pada 1 Juli 2027.`;
+    : `Untuk jenjang ${level}, calon peserta didik harus berusia minimal ${minimumAge} tahun pada 31 Juli 2027.`;
 }
 
 function updateSchoolFieldsRequirement(): void {
@@ -1420,6 +1420,9 @@ form.addEventListener('submit', async (event) => {
     successView.classList.add('is-visible');
     const cardTop = document.querySelector('.form-card')?.getBoundingClientRect().top ?? 0;
     window.scrollTo({ top: cardTop + window.scrollY - 25, behavior: 'smooth' });
+    if (submittedJenjang === 'SMP' && selectedWhatsappGroup) {
+      window.location.assign(selectedWhatsappGroup.url);
+    }
   } catch (error) {
     if (submissionController.signal.aborted) {
       error = new Error('Layanan belum merespons setelah 2 menit. Jangan kirim ulang sebelum mengecek status pengajuan.');

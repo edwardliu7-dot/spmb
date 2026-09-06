@@ -638,7 +638,7 @@ components:
         tanggal_lahir:
           type: string
           format: date
-          description: "Usia dihitung pada 1 Juli 2027. Minimum: Playgroup 3 tahun, TK-A 4 tahun, TK-B 5 tahun, SD 6 tahun. Daycare dan SMP tidak memiliki batas usia minimum."
+          description: "Usia dihitung pada 31 Juli 2027. Minimum: Playgroup 3 tahun, TK-A 4 tahun, TK-B 5 tahun, SD 6 tahun. Daycare dan SMP tidak memiliki batas usia minimum."
         nisn: { type: string, pattern: "^[0-9]{10}$", maxLength: 10, nullable: true }
         nik_anak: { type: string, pattern: "^[0-9]{16}$", minLength: 16, maxLength: 16 }
         alamat_domisili: { type: string, minLength: 1, maxLength: 1000 }

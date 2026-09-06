@@ -26,7 +26,7 @@ export interface StudentApplicationInput {
      * @maxLength 100
      */
   tempat_lahir: string;
-  /** Usia dihitung pada 1 Juli 2027. Minimum: Playgroup 3 tahun, TK-A 4 tahun, TK-B 5 tahun, SD 6 tahun. Daycare dan SMP tidak memiliki batas usia minimum. */
+  /** Usia dihitung pada 31 Juli 2027. Minimum: Playgroup 3 tahun, TK-A 4 tahun, TK-B 5 tahun, SD 6 tahun. Daycare dan SMP tidak memiliki batas usia minimum. */
   tanggal_lahir: Date;
   /**
      * @maxLength 10

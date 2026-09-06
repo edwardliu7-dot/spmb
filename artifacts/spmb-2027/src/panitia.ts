@@ -720,7 +720,7 @@ function renderDashboard(user: AuthUser) {
         <div><span>Berkas belum lengkap</span><strong>${data.incompleteDocuments}</strong><small>Perlu ditindaklanjuti</small></div>
       </div>
       <div class="observation-card observation-trend"><h3>Tren pengajuan</h3><div class="trend-list">${data.trends.slice(-14).map((item) => `<div><span>${escapeHtml(item.date)}</span><b>${item.count}</b><i><em style="width:${data.total ? Math.max(4, Math.round((item.count / data.total) * 100)) : 0}%"></em></i></div>`).join("") || `<p class="admin-muted">Belum ada pengajuan pada periode ini.</p>`}</div></div>
-      <div class="observation-grid">${breakdown("Jenis kelamin", data.breakdowns.jenisKelamin)}${breakdown("Kelompok usia · 1 Juli 2027", data.breakdowns.kelompokUsia)}${breakdown("Status pengajuan", data.breakdowns.status)}${breakdown("Asal sekolah", data.breakdowns.asalSekolah)}</div>
+      <div class="observation-grid">${breakdown("Jenis kelamin", data.breakdowns.jenisKelamin)}${breakdown("Kelompok usia · 31 Juli 2027", data.breakdowns.kelompokUsia)}${breakdown("Status pengajuan", data.breakdowns.status)}${breakdown("Asal sekolah", data.breakdowns.asalSekolah)}</div>
       <div class="observation-card"><h3>Kelengkapan dokumen</h3><div class="completion-summary"><strong>${data.breakdowns.kelengkapan.lengkap}</strong><span>lengkap</span><strong>${data.breakdowns.kelengkapan.belumLengkap}</strong><span>belum lengkap</span></div></div>`;
   }
 

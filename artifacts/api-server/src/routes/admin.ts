@@ -49,7 +49,7 @@ function parseId(value: unknown): number | null {
 
 function ageAtReference(birthDate: string): number | null {
   const birth = new Date(`${birthDate}T00:00:00.000Z`);
-  const reference = new Date("2027-07-01T00:00:00.000Z");
+  const reference = new Date("2027-07-31T00:00:00.000Z");
   if (Number.isNaN(birth.getTime())) return null;
   let age = reference.getUTCFullYear() - birth.getUTCFullYear();
   const birthdayNotReached =
