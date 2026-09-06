@@ -372,6 +372,28 @@ export interface NotificationReadResponse {
   count?: number | null;
 }
 
+export interface SubmissionMonitoringFailure {
+  occurredAt: string;
+  stage: string;
+  reason: string;
+  status: number;
+  jenjang?: string | null;
+}
+
+export type SubmissionMonitoringResponseFailuresByReason = {[key: string]: number};
+
+export interface SubmissionMonitoringResponse {
+  startedAt: string;
+  attempts: number;
+  successes: number;
+  failures: number;
+  failureRate: number;
+  lastSuccessAt: string | null;
+  lastFailureAt: string | null;
+  failuresByReason: SubmissionMonitoringResponseFailuresByReason;
+  recentFailures: SubmissionMonitoringFailure[];
+}
+
 export type ObservationResponseCounts = {[key: string]: number};
 
 export type ObservationResponseTrendsItem = {

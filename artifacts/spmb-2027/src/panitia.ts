@@ -77,6 +77,18 @@ type RegistrationQuotaSummary = {
   updatedAt: string;
 };
 
+type SubmissionMonitoringResponse = {
+  startedAt: string;
+  attempts: number;
+  successes: number;
+  failures: number;
+  failureRate: number;
+  lastSuccessAt: string | null;
+  lastFailureAt: string | null;
+  failuresByReason: Record<string, number>;
+  recentFailures: Array<{ occurredAt: string; stage: string; reason: string; status: number; jenjang?: string }>;
+};
+
 type MasterApplication = ApplicationDetail;
 
 const statusChoices = ["Lolos Verifikasi Berkas", "Observasi", "Lolos Observasi", "Diterima"];
@@ -538,6 +550,16 @@ function renderDashboard(user: AuthUser) {
             <button class="decision-metric" type="button" data-metric-status="Lolos Verifikasi Berkas"><span>Lolos verifikasi<i class="is-gold"></i></span><strong id="ready-count">00</strong><small>Siap masuk tahap berikutnya</small></button>
             <button class="decision-metric" type="button" data-metric-status="Diterima"><span>Diterima<i class="is-green"></i></span><strong id="accepted-count">00</strong><small>Status diterima</small></button>
           </section>
+           <section class="submission-monitoring" id="submission-monitoring" aria-label="Monitoring layanan pengajuan">
+             <div class="submission-monitoring-heading"><div><p class="decision-kicker decision-accent">Monitoring layanan</p><h2>Aktivitas pengajuan</h2></div><small id="submission-monitoring-updated">Memuat…</small></div>
+             <div class="submission-monitoring-grid">
+               <div><strong id="submission-attempt-count">—</strong><span>Percobaan</span></div>
+               <div><strong id="submission-success-count">—</strong><span>Berhasil</span></div>
+               <div class="is-warning"><strong id="submission-failure-count">—</strong><span>Gagal</span></div>
+               <div><strong id="submission-failure-rate">—</strong><span>Rasio gagal</span></div>
+             </div>
+             <p class="submission-monitoring-note" id="submission-monitoring-note">Belum ada data monitoring.</p>
+           </section>
 
           <section class="decision-workspace">
             <div class="evidence-ledger">
@@ -927,6 +949,32 @@ function renderDashboard(user: AuthUser) {
     if (completionValue) completionValue.textContent = `${completion}%`;
   }
 
+  async function loadSubmissionMonitoring() {
+    const updated = document.getElementById("submission-monitoring-updated");
+    const note = document.getElementById("submission-monitoring-note");
+    try {
+      const result = await requestJSON<SubmissionMonitoringResponse>("/api/admin/submission-monitoring");
+      const attempts = document.getElementById("submission-attempt-count");
+      const successes = document.getElementById("submission-success-count");
+      const failures = document.getElementById("submission-failure-count");
+      const failureRate = document.getElementById("submission-failure-rate");
+      if (attempts) attempts.textContent = String(result.attempts);
+      if (successes) successes.textContent = String(result.successes);
+      if (failures) failures.textContent = String(result.failures);
+      if (failureRate) failureRate.textContent = `${(result.failureRate * 100).toFixed(1)}%`;
+      if (updated) updated.textContent = `Sejak ${formatDate(result.startedAt)}`;
+      const [topReason, topCount] = Object.entries(result.failuresByReason)[0] ?? [];
+      if (note) {
+        note.textContent = topReason
+          ? `Kegagalan terbanyak: ${topReason.replaceAll("_", " ")} (${topCount}).${result.lastFailureAt ? ` Terakhir ${formatDate(result.lastFailureAt)}.` : ""}`
+          : "Belum ada kegagalan pengajuan pada sesi server ini.";
+      }
+    } catch (error) {
+      if (updated) updated.textContent = "Tidak tersedia";
+      if (note) note.textContent = error instanceof Error ? error.message : "Monitoring belum dapat dimuat.";
+    }
+  }
+
   function setListMessage(message: string, variant = "") {
     listElement.innerHTML = `<div class="ledger-message ${variant}"><span aria-hidden="true">${variant === "is-error" ? "!" : "—"}</span><p>${escapeHtml(message)}</p></div>`;
   }
@@ -1244,7 +1292,9 @@ function renderDashboard(user: AuthUser) {
 
   void loadList();
   void loadNotifications();
+  void loadSubmissionMonitoring();
   window.setInterval(() => { void loadNotifications(); }, 45_000);
+  window.setInterval(() => { void loadSubmissionMonitoring(); }, 45_000);
 }
 
 async function bootstrap() {

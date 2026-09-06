@@ -545,6 +545,28 @@ export const ListAdminNotificationsResponse = zod.object({
 
 
 /**
+ * @summary Get live submission monitoring counters
+ */
+export const GetAdminSubmissionMonitoringResponse = zod.object({
+  "startedAt": zod.coerce.date(),
+  "attempts": zod.number(),
+  "successes": zod.number(),
+  "failures": zod.number(),
+  "failureRate": zod.number(),
+  "lastSuccessAt": zod.coerce.date().nullable(),
+  "lastFailureAt": zod.coerce.date().nullable(),
+  "failuresByReason": zod.record(zod.string(), zod.number()),
+  "recentFailures": zod.array(zod.object({
+  "occurredAt": zod.coerce.date(),
+  "stage": zod.string(),
+  "reason": zod.string(),
+  "status": zod.number(),
+  "jenjang": zod.string().nullish()
+}))
+})
+
+
+/**
  * @summary Mark all visible notifications as read
  */
 export const MarkAllAdminNotificationsReadResponse = zod.object({

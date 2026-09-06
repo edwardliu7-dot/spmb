@@ -14,6 +14,7 @@ import { createXlsx, createZip } from "../lib/export-files";
 import { getApplicationFileFields, readApplicationFile } from "../lib/application-files";
 import { resolveStoredUpload } from "./applications";
 import { createSpmbReceipt } from "../lib/spmb-receipt";
+import { getSubmissionMonitoring } from "../lib/submission-monitor";
 
 const router = Router();
 router.use("/admin", requireCommitteeAuth);
@@ -130,6 +131,11 @@ router.get("/admin/notifications", async (request, response) => {
     request.log.error({ err: error }, "Failed to list committee notifications");
     return response.status(500).json({ error: "Notifikasi belum dapat dimuat." });
   }
+});
+
+router.get("/admin/submission-monitoring", (request, response) => {
+  request.log.info({ event: "spmb_submission_monitoring_viewed", username: request.committeeAccount!.username }, "SPMB submission monitoring viewed");
+  return response.json(getSubmissionMonitoring());
 });
 
 router.post("/admin/notifications/read-all", async (request, response) => {

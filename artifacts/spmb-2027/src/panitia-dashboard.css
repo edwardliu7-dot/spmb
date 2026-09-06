@@ -516,6 +516,70 @@
   font-size: 9px;
 }
 
+.submission-monitoring {
+  margin-bottom: 26px;
+  border: 1px solid #d6d2c6;
+  border-radius: 15px;
+  background: #edf3ef;
+  padding: 16px 19px 14px;
+}
+
+.submission-monitoring-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.submission-monitoring-heading h2 {
+  margin: 3px 0 0;
+  color: #173f43;
+  font: 600 20px "Fraunces", Georgia, serif;
+}
+
+.submission-monitoring-heading > small {
+  color: #849188;
+  font: 9px "IBM Plex Mono", monospace;
+}
+
+.submission-monitoring-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.submission-monitoring-grid > div {
+  border: 1px solid #d5ded8;
+  border-radius: 9px;
+  background: #f8fbf7;
+  padding: 10px 12px;
+}
+
+.submission-monitoring-grid strong {
+  display: block;
+  color: #1f5a5b;
+  font: 600 22px "Fraunces", Georgia, serif;
+}
+
+.submission-monitoring-grid .is-warning strong {
+  color: #b55341;
+}
+
+.submission-monitoring-grid span {
+  display: block;
+  margin-top: 2px;
+  color: #829087;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.submission-monitoring-note {
+  margin: 11px 0 0;
+  color: #6f7e75;
+  font-size: 10px;
+}
+
 .decision-workspace {
   display: grid;
   grid-template-columns: minmax(0, 1.06fr) minmax(390px, 0.94fr);
@@ -1504,6 +1568,19 @@
 
   .decision-metric:nth-child(-n + 2) {
     border-bottom: 1px solid #d6d2c6;
+  }
+
+  .submission-monitoring-heading {
+    display: block;
+  }
+
+  .submission-monitoring-heading > small {
+    display: block;
+    margin-top: 8px;
+  }
+
+  .submission-monitoring-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .ledger-heading {

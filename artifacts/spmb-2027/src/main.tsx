@@ -196,6 +196,7 @@ const draftFilesStore = 'files';
 const draftFilesDatabaseVersion = 2;
 const draftStorageTimeoutMs = 5000;
 const submissionTimeoutMs = 120000;
+const lastSubmissionStorageKey = 'spmb-2027-last-submission';
 
 if (window.location.pathname.replace(/\/+$/, '') === '/panitia') {
   void import('./panitia');
@@ -431,6 +432,7 @@ const receiptDownload = document.getElementById('receipt-download') as HTMLAncho
 const whatsappGroup = document.getElementById('success-whatsapp') as HTMLDivElement;
 const whatsappGroupMessage = document.getElementById('whatsapp-group-message') as HTMLSpanElement;
 const whatsappGroupLink = document.getElementById('whatsapp-group-link') as HTMLAnchorElement;
+let whatsappRedirectTimer: number | undefined;
 const resetButton = document.getElementById('reset-button') as HTMLButtonElement;
 const successStatusButton = document.getElementById('success-status-button') as HTMLButtonElement;
 const healthStatus = document.getElementById('health-status') as HTMLSpanElement;
@@ -1401,12 +1403,27 @@ form.addEventListener('submit', async (event) => {
     clearDraft();
     document.querySelectorAll<HTMLElement>('[data-file-name]').forEach((label) => { label.textContent = 'Belum ada berkas dipilih'; });
     document.querySelectorAll<HTMLElement>('[data-field]').forEach((field) => field.classList.remove('field-error'));
-    submissionId.textContent = `Nomor pengajuan: SPMB-${String(result.id).padStart(6, '0')}`;
-    statusNumberInput.value = `SPMB-${String(result.id).padStart(6, '0')}`;
+    const formattedApplicationNumber = `SPMB-${String(result.id).padStart(6, '0')}`;
+    submissionId.textContent = `Nomor pengajuan: ${formattedApplicationNumber}`;
+    statusNumberInput.value = formattedApplicationNumber;
     receiptDownload.href = result.receiptUrl;
     receiptDownload.hidden = false;
+    try {
+      localStorage.setItem(lastSubmissionStorageKey, JSON.stringify({
+        id: result.id,
+        applicationNumber: formattedApplicationNumber,
+        receiptUrl: result.receiptUrl,
+        jenjang: submittedJenjang,
+        whatsappUrl: selectedWhatsappGroup?.url || null,
+        savedAt: new Date().toISOString(),
+      }));
+    } catch {
+      // The success screen still shows the number when browser storage is unavailable.
+    }
     if (selectedWhatsappGroup) {
-      whatsappGroupMessage.textContent = `Bergabunglah ke grup WhatsApp ${selectedWhatsappGroup.name} untuk mendapatkan informasi berikutnya.`;
+      whatsappGroupMessage.textContent = submittedJenjang === 'SMP'
+        ? `Nomor ${formattedApplicationNumber} tersimpan. Mengalihkan ke grup WhatsApp ${selectedWhatsappGroup.name}…`
+        : `Bergabunglah ke grup WhatsApp ${selectedWhatsappGroup.name} untuk mendapatkan informasi berikutnya.`;
       whatsappGroupLink.href = selectedWhatsappGroup.url;
       whatsappGroupLink.hidden = false;
       whatsappGroup.hidden = false;
@@ -1421,7 +1438,9 @@ form.addEventListener('submit', async (event) => {
     const cardTop = document.querySelector('.form-card')?.getBoundingClientRect().top ?? 0;
     window.scrollTo({ top: cardTop + window.scrollY - 25, behavior: 'smooth' });
     if (submittedJenjang === 'SMP' && selectedWhatsappGroup) {
-      window.location.assign(selectedWhatsappGroup.url);
+      whatsappRedirectTimer = window.setTimeout(() => {
+        window.location.assign(selectedWhatsappGroup.url);
+      }, 2200);
     }
   } catch (error) {
     if (submissionController.signal.aborted) {
@@ -1437,6 +1456,10 @@ form.addEventListener('submit', async (event) => {
 });
 
 resetButton.addEventListener('click', () => {
+  if (whatsappRedirectTimer !== undefined) {
+    window.clearTimeout(whatsappRedirectTimer);
+    whatsappRedirectTimer = undefined;
+  }
   clearDraft();
   successView.classList.remove('is-visible');
   receiptDownload.hidden = true;

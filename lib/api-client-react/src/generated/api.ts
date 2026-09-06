@@ -46,6 +46,7 @@ import type {
   PaymentVerificationResult,
   RegistrationQuotaResponse,
   StudentApplicationInput,
+  SubmissionMonitoringResponse,
   SubmissionResult,
   SubmissionStatusResponse
 } from './api.schemas';
@@ -1206,6 +1207,83 @@ export function useListAdminNotifications<TData = Awaited<ReturnType<typeof list
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getListAdminNotificationsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminSubmissionMonitoringUrl = () => {
+
+
+
+
+  return `/api/admin/submission-monitoring`
+}
+
+/**
+ * @summary Get live submission monitoring counters
+ */
+export const getAdminSubmissionMonitoring = async ( options?: Parameters<typeof customFetch>[1]): Promise<SubmissionMonitoringResponse> => {
+
+  return customFetch<SubmissionMonitoringResponse>(getGetAdminSubmissionMonitoringUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminSubmissionMonitoringQueryKey = () => {
+    return [
+    `/api/admin/submission-monitoring`
+    ] as const;
+    }
+
+
+export const getGetAdminSubmissionMonitoringQueryOptions = <TData = Awaited<ReturnType<typeof getAdminSubmissionMonitoring>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminSubmissionMonitoring>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminSubmissionMonitoringQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminSubmissionMonitoring>>> = ({ signal }) => getAdminSubmissionMonitoring({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminSubmissionMonitoring>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminSubmissionMonitoringQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminSubmissionMonitoring>>>
+export type GetAdminSubmissionMonitoringQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get live submission monitoring counters
+ */
+
+export function useGetAdminSubmissionMonitoring<TData = Awaited<ReturnType<typeof getAdminSubmissionMonitoring>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminSubmissionMonitoring>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminSubmissionMonitoringQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

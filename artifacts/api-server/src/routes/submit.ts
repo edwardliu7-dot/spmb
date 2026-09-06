@@ -7,6 +7,12 @@ import { type ApplicationFileInput } from "../lib/application-files";
 import { allJenjang } from "../middlewares/committee-auth";
 import { createReceiptToken, createSpmbReceipt, isValidReceiptToken } from "../lib/spmb-receipt";
 import { getRegistrationQuotaSummary, RegistrationQuotaFullError } from "../lib/registration-quota";
+import {
+  recordSubmissionAttempt,
+  recordSubmissionFailure,
+  recordSubmissionSuccess,
+} from "../lib/submission-monitor";
+import { getMinimumAgeError } from "../lib/age-rules";
 
 const router = Router();
 
@@ -139,12 +145,6 @@ const schoolTextFields = new Set<TextField>([
   "alamat_sekolah_asal",
 ]);
 const earlyEducationLevels = new Set(["Playgroup", "Daycare", "TK-A", "TK-B"]);
-const minimumAgeByLevel: Record<string, number> = {
-  Playgroup: 3,
-  "TK-A": 4,
-  "TK-B": 5,
-  SD: 6,
-};
 const validFieldValues: Partial<Record<TextField, readonly string[]>> = {
   status_anak: ["Anak kandung", "Anak tiri", "Anak angkat"],
   agama: ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu"],
@@ -219,12 +219,15 @@ function consumeSubmitRateLimit(request: Request): number | null {
 }
 
 function enforceSubmitRateLimit(request: Request, response: Parameters<typeof uploadMiddleware>[1], next: Parameters<typeof uploadMiddleware>[2]) {
+  recordSubmissionAttempt();
   const retryAfter = consumeSubmitRateLimit(request);
   if (!retryAfter) {
     next();
     return;
   }
 
+  recordSubmissionFailure({ stage: "rate-limit", reason: "rate_limit", status: 429 });
+  request.log.warn({ event: "spmb_submission_failed", stage: "rate-limit", reason: "rate_limit", status: 429 }, "SPMB submission blocked by rate limit");
   response.setHeader("Retry-After", String(retryAfter));
   response.status(429).json({
     error: "Terlalu banyak pengajuan dari jaringan ini. Silakan coba lagi beberapa menit lagi.",
@@ -249,17 +252,6 @@ function isDigits(value: string, length: number): boolean {
 function isValidPhoneNumber(value: string): boolean {
   const normalized = value.replace(/[^\d+]/g, "");
   return /^(?:\+62|62|0)8\d{8,12}$/.test(normalized);
-}
-
-function getMinimumAgeError(level: string, birthDateValue: string): string | null {
-  const minimumAge = minimumAgeByLevel[level];
-  if (!minimumAge) return null;
-
-  const birthDate = new Date(`${birthDateValue}T00:00:00.000Z`);
-  const latestAllowedBirthDate = Date.UTC(2027 - minimumAge, 6, 31);
-  return birthDate.getTime() <= latestAllowedBirthDate
-    ? null
-    : `Untuk jenjang ${level}, calon peserta didik harus berusia minimal ${minimumAge} tahun pada 31 Juli 2027.`;
 }
 
 function getFileSignatureError(file: Express.Multer.File, bytes: Buffer): string | null {
@@ -305,7 +297,13 @@ function handleUpload(request: Request, response: Parameters<typeof uploadMiddle
 
     const respondAfterCleanup = (status: number, message: string) => {
       void removeUploadedFiles(request).finally(() => {
-        request.log.error({ err: error }, "Failed to process multipart submission upload");
+        const reason = error instanceof multer.MulterError
+          ? `upload_${error.code.toLowerCase()}`
+          : error instanceof UnsupportedFileTypeError
+            ? "unsupported_file_type"
+            : "upload_processing";
+        recordSubmissionFailure({ stage: "upload", reason, status });
+        request.log.error({ event: "spmb_submission_failed", stage: "upload", reason, status, err: error }, "Failed to process multipart submission upload");
         response.status(status).json({ error: message });
       });
     };
@@ -458,6 +456,17 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   ) {
     await removeUploadedFiles(request);
+    const reason = invalidFiles.length
+      ? "invalid_file"
+      : missingFiles.length
+        ? "missing_file"
+        : invalidNumbers.length
+          ? "invalid_number"
+          : ageRequirementError
+            ? "age_requirement"
+            : "invalid_form";
+    recordSubmissionFailure({ stage: "validation", reason, status: 400, jenjang: jenjang || undefined });
+    request.log.warn({ event: "spmb_submission_failed", stage: "validation", reason, status: 400, jenjang: jenjang || undefined }, "SPMB submission validation failed");
     response.status(400).json({
       error: invalidFiles.length
         ? invalidFiles[0]
@@ -536,7 +545,8 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
 
     const result = await insertPendaftar(values, uploadedFiles);
     const id = Number(result.id);
-    request.log.info({ applicationId: id }, "SPMB application submitted");
+    recordSubmissionSuccess();
+    request.log.info({ event: "spmb_submission_succeeded", applicationId: id, jenjang }, "SPMB application submitted");
 
     response.status(201).json({
       success: true,
@@ -548,13 +558,16 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
   } catch (error) {
     if (error instanceof RegistrationQuotaFullError) {
       await removeUploadedFiles(request);
+      recordSubmissionFailure({ stage: "quota", reason: "quota_full", status: 409, jenjang });
+      request.log.warn({ event: "spmb_submission_failed", stage: "quota", reason: "quota_full", status: 409, jenjang }, "SPMB submission rejected because quota is full");
       response.status(409).json({
         error: error.message,
         fields: ["jenjang", ...(error.jenisKelamin ? ["jenis_kelamin"] : [])],
       });
       return;
     }
-    request.log.error({ err: error, errorCode: getErrorCode(error) }, "Failed to save SPMB application");
+    recordSubmissionFailure({ stage: "persistence", reason: "save_failed", status: 500, jenjang });
+    request.log.error({ event: "spmb_submission_failed", stage: "persistence", reason: "save_failed", status: 500, jenjang, err: error, errorCode: getErrorCode(error) }, "Failed to save SPMB application");
     await removeUploadedFiles(request);
     response.status(500).json({
       error: getSubmissionFailureMessage(error),

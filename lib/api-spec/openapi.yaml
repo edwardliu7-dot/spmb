@@ -415,6 +415,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /admin/submission-monitoring:
+    get:
+      operationId: getAdminSubmissionMonitoring
+      tags: [applications]
+      summary: Get live submission monitoring counters
+      security:
+        - committeeSession: []
+      responses:
+        "200":
+          description: Submission monitoring counters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionMonitoringResponse"
+        "401":
+          description: Not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /admin/notifications/read-all:
     post:
       operationId: markAllAdminNotificationsRead
@@ -795,6 +815,31 @@ components:
         success: { type: boolean }
         count: { type: number, nullable: true }
       required: [success]
+    SubmissionMonitoringFailure:
+      type: object
+      properties:
+        occurredAt: { type: string, format: date-time }
+        stage: { type: string }
+        reason: { type: string }
+        status: { type: number }
+        jenjang: { type: string, nullable: true }
+      required: [occurredAt, stage, reason, status]
+    SubmissionMonitoringResponse:
+      type: object
+      properties:
+        startedAt: { type: string, format: date-time }
+        attempts: { type: number }
+        successes: { type: number }
+        failures: { type: number }
+        failureRate: { type: number }
+        lastSuccessAt: { type: string, format: date-time, nullable: true }
+        lastFailureAt: { type: string, format: date-time, nullable: true }
+        failuresByReason: { type: object, additionalProperties: { type: number } }
+        recentFailures:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubmissionMonitoringFailure"
+      required: [startedAt, attempts, successes, failures, failureRate, lastSuccessAt, lastFailureAt, failuresByReason, recentFailures]
     ObservationResponse:
       type: object
       properties:
