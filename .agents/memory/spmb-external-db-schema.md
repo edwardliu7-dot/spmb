@@ -55,3 +55,9 @@ Quota adjustment reads can fail with a Drizzle query wrapper whose PostgreSQL `4
 **Why:** A newly added quota-adjustment table was absent in a development database and caused the public quota endpoint to return 500 even though the underlying PostgreSQL error was a normal missing-relation condition.
 
 **How to apply:** When adding optional feature tables, handle wrapped missing-relation errors and guard transactional reads against the startup schema inventory; synchronize the table before enabling the corresponding admin write flow.
+
+Drizzle can still include schema-declared nullable/default columns in an INSERT statement even when the application filters the values object against an older column inventory. A legacy runtime database therefore needs the additive column itself, not only a compatibility filter.
+
+**Why:** A submission reached the file-table path only after the missing upload table was restored; the next failure exposed the newer correction-note column in the generated INSERT.
+
+**How to apply:** When an older runtime schema rejects an INSERT with `42703`, add the missing additive column through the supported development/publish schema flow and retest the complete submission, rather than relying on value filtering alone.
