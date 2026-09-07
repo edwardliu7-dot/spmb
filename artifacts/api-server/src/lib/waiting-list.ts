@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import {
   db,
@@ -36,7 +37,7 @@ export type WaitingListMatch = {
   source: "ai" | "heuristic";
 };
 
-function normalizeName(value: string): string {
+export function normalizeWaitingListName(value: string): string {
   return value
     .toLocaleLowerCase("id-ID")
     .normalize("NFKD")
@@ -68,8 +69,8 @@ function heuristicMatch(
   application: WaitingListApplication,
 ): WaitingListMatch | null {
   if (waiting.jenjang !== application.jenjang) return null;
-  const waitingName = normalizeName(waiting.nama);
-  const applicationName = normalizeName(application.nama_calon);
+  const waitingName = normalizeWaitingListName(waiting.nama);
+  const applicationName = normalizeWaitingListName(application.nama_calon);
   if (!waitingName || !applicationName) return null;
   const waitingTokens = new Set(waitingName.split(" "));
   const applicationTokens = new Set(applicationName.split(" "));
@@ -297,6 +298,163 @@ export async function findWaitingListMatches(
       }),
     );
   }
+}
+
+export type WaitingListReservationInput = {
+  nama: string;
+  jenjang: string;
+  jenisKelamin: string;
+};
+
+export type WaitingListReservationMatch = {
+  waitingListId: number;
+  confidence: number;
+  reason: string;
+  source: "ai" | "heuristic";
+};
+
+const waitingListAccessTtlMs = 30 * 60 * 1000;
+
+function waitingListAccessSecret(): string {
+  return process.env.SESSION_SECRET || "";
+}
+
+function signWaitingListAccess(body: string): string {
+  return createHmac("sha256", waitingListAccessSecret()).update(body).digest("base64url");
+}
+
+function createWaitingListAccessToken(input: WaitingListReservationInput, match: WaitingListReservationMatch): string | null {
+  const secret = waitingListAccessSecret();
+  if (!secret) return null;
+  const payload = Buffer.from(JSON.stringify({
+    waitingListId: match.waitingListId,
+    nama: normalizeWaitingListName(input.nama),
+    jenjang: input.jenjang,
+    jenisKelamin: input.jenisKelamin,
+    expiresAt: Date.now() + waitingListAccessTtlMs,
+  })).toString("base64url");
+  return `${payload}.${signWaitingListAccess(payload)}`;
+}
+
+function readWaitingListAccessToken(token: string): {
+  waitingListId: number;
+  nama: string;
+  jenjang: string;
+  jenisKelamin: string;
+  expiresAt: number;
+} | null {
+  const secret = waitingListAccessSecret();
+  if (!secret) return null;
+  const [payload, signature] = token.split(".");
+  if (!payload || !signature) return null;
+  const expectedSignature = signWaitingListAccess(payload);
+  const expectedBuffer = Buffer.from(expectedSignature);
+  const actualBuffer = Buffer.from(signature);
+  if (expectedBuffer.length !== actualBuffer.length || !timingSafeEqual(expectedBuffer, actualBuffer)) return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as Record<string, unknown>;
+    const waitingListId = Number(parsed.waitingListId);
+    const expiresAt = Number(parsed.expiresAt);
+    if (
+      !Number.isSafeInteger(waitingListId)
+      || waitingListId <= 0
+      || !Number.isFinite(expiresAt)
+      || expiresAt <= Date.now()
+      || typeof parsed.nama !== "string"
+      || typeof parsed.jenjang !== "string"
+      || typeof parsed.jenisKelamin !== "string"
+    ) return null;
+    return {
+      waitingListId,
+      nama: parsed.nama,
+      jenjang: parsed.jenjang,
+      jenisKelamin: parsed.jenisKelamin,
+      expiresAt,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function findWaitingListReservation(input: WaitingListReservationInput): Promise<{
+  match: WaitingListReservationMatch;
+  token: string;
+} | null> {
+  const nama = input.nama.trim();
+  if (!nama || !input.jenjang || !input.jenisKelamin) return null;
+
+  const waitingItems = await listWaitingList([input.jenjang]);
+  const candidate: WaitingListApplication = {
+    id: 0,
+    nama_calon: nama,
+    jenjang: input.jenjang,
+    jenis_kelamin: input.jenisKelamin,
+    tanggal_lahir: "",
+    created_at: new Date(),
+  };
+  const rejectedPairs = await listRejectedWaitingMatches(waitingItems.map((item) => item.id));
+  const heuristicMatches = waitingItems.flatMap((waiting) => {
+    const match = heuristicMatch(waiting, candidate);
+    return match && !rejectedPairs.has(`${match.waitingListId}:0`) ? [match] : [];
+  }).sort((left, right) => right.confidence - left.confidence);
+
+  // Strong local matches avoid sending a simple exact/name-prefix lookup
+  // to an external model. The model is used for nickname, token-order, and
+  // spelling variations that need a second signal.
+  let match = heuristicMatches.find((item) => item.confidence >= 0.72);
+  if (!match) {
+    try {
+      const aiMatches = await getAiMatches(waitingItems, [candidate], rejectedPairs);
+      match = aiMatches
+        .filter((item) => item.confidence >= 0.7)
+        .sort((left, right) => right.confidence - left.confidence)[0];
+    } catch {
+      match = undefined;
+    }
+  }
+  if (!match) return null;
+
+  const reservationMatch: WaitingListReservationMatch = {
+    waitingListId: match.waitingListId,
+    confidence: match.confidence,
+    reason: match.reason,
+    source: match.source,
+  };
+  const token = createWaitingListAccessToken(input, reservationMatch);
+  return token ? { match: reservationMatch, token } : null;
+}
+
+export async function verifyWaitingListAccessToken(
+  token: string,
+  input: WaitingListReservationInput,
+): Promise<boolean> {
+  const parsed = readWaitingListAccessToken(token);
+  if (
+    !parsed
+    || parsed.jenjang !== input.jenjang
+    || parsed.jenisKelamin !== input.jenisKelamin
+    || parsed.nama !== normalizeWaitingListName(input.nama)
+  ) return false;
+
+  const [waiting] = await db
+    .select({
+      id: waitingListTable.id,
+      nama: waitingListTable.nama,
+      jenjang: waitingListTable.jenjang,
+      jenisKelamin: waitingListTable.jenis_kelamin,
+    })
+    .from(waitingListTable)
+    .where(and(
+      eq(waitingListTable.id, parsed.waitingListId),
+      eq(waitingListTable.status, "active"),
+    ))
+    .limit(1);
+  return Boolean(
+    waiting
+    && waiting.jenjang === input.jenjang
+    && (!waiting.jenisKelamin || waiting.jenisKelamin === input.jenisKelamin)
+    && normalizeWaitingListName(waiting.nama) === parsed.nama,
+  );
 }
 
 export async function decideWaitingListMatch(input: {

@@ -1,4 +1,4 @@
-import { getRegistrationQuotas, getSubmissionStatus, healthCheck, submitApplication, type RegistrationQuotaResponse } from '@workspace/api-client-react';
+import { checkWaitingListReservation, getRegistrationQuotas, getSubmissionStatus, healthCheck, submitApplication, type RegistrationQuotaResponse } from '@workspace/api-client-react';
 import schoolLogoUrl from '../../../lib/logo tisa.png';
 import './index.css';
 import './form-board.css';
@@ -1232,7 +1232,9 @@ function renderQuotaOverview(summary: RegistrationQuotaResponse): void {
     Array.from(levelControl.options).forEach((option) => {
       const level = quotaByLevel.get(option.value);
       if (!level) return;
-      option.disabled = level.isFull && option.value !== 'SD';
+      // Full levels remain selectable so a student with a booked waiting-list
+      // reservation can enter their name and be checked before submitting.
+      option.disabled = false;
       option.textContent = `${option.value}${level.isFull ? ' · Penuh' : ''}`;
     });
   }
@@ -1250,14 +1252,21 @@ function updateSelectedQuotaState(summary?: RegistrationQuotaResponse): void {
   if (genderControl) {
     Array.from(genderControl.options).forEach((option) => {
       const genderQuota = level?.gender?.find((item) => item.jenisKelamin === option.value);
-      option.disabled = Boolean(genderQuota?.isFull);
+      // Keep both options available: a waiting-list booking may be the
+      // reason this otherwise-full gender quota is still allowed.
+      option.disabled = false;
       option.textContent = `${option.value}${genderQuota?.isFull ? ' · Penuh' : ''}`;
     });
   }
-  const message = level?.gender && selectedGenderQuota?.isFull
-    ? `Kuota ${selectedLevel} untuk ${quotaGenderLabel(selectedGender)} sudah penuh. Pilih jenis kelamin atau jenjang lain.`
+  const isWaitingListAccess = Boolean(waitingListAccessToken);
+  const message = isWaitingListAccess
+    ? waitingListAccessSource === 'ai'
+      ? 'AI menemukan kecocokan dengan booking waiting list. Verifikasi berhasil, silakan lanjutkan pengisian formulir.'
+      : 'Booking waiting list cocok dengan nama ini. Verifikasi berhasil, silakan lanjutkan pengisian formulir.'
+    : level?.gender && selectedGenderQuota?.isFull
+    ? `Kuota ${selectedLevel} untuk ${quotaGenderLabel(selectedGender)} sudah penuh. Jika sudah booking, masukkan nama lengkap sesuai waiting list untuk pemeriksaan otomatis.`
     : level?.isFull
-      ? `Kuota ${selectedLevel} sudah penuh. Pilih jenjang lain.`
+      ? `Kuota ${selectedLevel} sudah penuh. Jika sudah booking, masukkan nama lengkap sesuai waiting list untuk pemeriksaan otomatis.`
       : level?.remaining !== null && level
         ? `Kuota ${selectedLevel}: ${level.remaining} kursi masih tersedia.`
         : selectedLevel
@@ -1266,12 +1275,57 @@ function updateSelectedQuotaState(summary?: RegistrationQuotaResponse): void {
   const existingNotice = document.getElementById('selected-quota-notice');
   if (existingNotice) {
     existingNotice.textContent = message;
-    existingNotice.className = `form-board-selected-quota-notice${isFull ? ' is-full' : ''}`;
+    existingNotice.className = `form-board-selected-quota-notice${isFull && !isWaitingListAccess ? ' is-full' : ''}${isWaitingListAccess ? ' is-waiting-list-verified' : ''}`;
   }
-  submitButton.disabled = isFull;
+  submitButton.disabled = isFull && !isWaitingListAccess;
 }
 
 let registrationQuotaSummary: RegistrationQuotaResponse | undefined;
+let waitingListAccessToken: string | null = null;
+let waitingListAccessSource: 'ai' | 'heuristic' | null = null;
+let waitingListCheckSequence = 0;
+let waitingListCheckTimer: number | undefined;
+
+function isSelectedQuotaFull(): boolean {
+  const levelControl = getFieldControl('jenjang') as HTMLSelectElement | null;
+  const genderControl = getFieldControl('jenis_kelamin') as HTMLSelectElement | null;
+  const level = registrationQuotaSummary?.levels.find((item) => item.jenjang === levelControl?.value);
+  const gender = level?.gender?.find((item) => item.jenisKelamin === genderControl?.value);
+  return Boolean(level?.isFull || gender?.isFull);
+}
+
+function scheduleWaitingListCheck(): void {
+  window.clearTimeout(waitingListCheckTimer);
+  const sequence = ++waitingListCheckSequence;
+  waitingListAccessToken = null;
+  waitingListAccessSource = null;
+  if (registrationQuotaSummary) updateSelectedQuotaState(registrationQuotaSummary);
+
+  if (!isSelectedQuotaFull()) return;
+  const nama = (getFieldControl('nama_calon') as HTMLInputElement | null)?.value.trim() || '';
+  const jenjang = (getFieldControl('jenjang') as HTMLSelectElement | null)?.value || '';
+  const jenisKelamin = (getFieldControl('jenis_kelamin') as HTMLSelectElement | null)?.value || '';
+  if (nama.length < 2 || !jenjang || !jenisKelamin) return;
+
+  waitingListCheckTimer = window.setTimeout(async () => {
+    try {
+      const result = await checkWaitingListReservation({
+        nama,
+        jenjang: jenjang as never,
+        jenisKelamin: jenisKelamin as never,
+      });
+      if (sequence !== waitingListCheckSequence) return;
+      waitingListAccessToken = result.eligible && result.token ? result.token : null;
+      waitingListAccessSource = result.eligible && result.token ? result.source || 'heuristic' : null;
+      if (registrationQuotaSummary) updateSelectedQuotaState(registrationQuotaSummary);
+    } catch {
+      if (sequence !== waitingListCheckSequence) return;
+      waitingListAccessToken = null;
+      waitingListAccessSource = null;
+      if (registrationQuotaSummary) updateSelectedQuotaState(registrationQuotaSummary);
+    }
+  }, 450);
+}
 
 menuButton?.addEventListener('click', () => {
   const open = navigation?.classList.toggle('form-board-nav-open') ?? false;
@@ -1311,11 +1365,13 @@ form.querySelectorAll<HTMLElement>('input, select, textarea').forEach((control) 
   control.addEventListener('input', () => {
     clearError(control);
     saveDraft();
+    if (control.id === 'nama_calon') scheduleWaitingListCheck();
   });
   control.addEventListener('change', () => {
     clearError(control);
     saveDraft();
     if (registrationQuotaSummary) updateSelectedQuotaState(registrationQuotaSummary);
+    if (['nama_calon', 'jenjang', 'jenis_kelamin'].includes(control.id)) scheduleWaitingListCheck();
   });
 });
 
@@ -1507,6 +1563,9 @@ form.addEventListener('submit', async (event) => {
   try {
     const submittedJenjang = (getFieldControl('jenjang') as HTMLSelectElement | null)?.value || '';
     const formData = new FormData(form);
+    if (!resubmissionId && waitingListAccessToken) {
+      formData.set('waiting_list_token', waitingListAccessToken);
+    }
     for (const name of uploadFieldNames) {
       const input = getFieldControl(name) as HTMLInputElement | null;
         const normalizedFile = normalizedUploadFiles.get(name);
@@ -1531,6 +1590,9 @@ form.addEventListener('submit', async (event) => {
     const selectedWhatsappGroup = whatsappGroupLinks[submittedJenjang];
     const wasResubmission = resubmissionId !== null;
     form.reset();
+     waitingListAccessToken = null;
+     waitingListAccessSource = null;
+     waitingListCheckSequence += 1;
     resubmissionId = null;
     correctionFileFields = new Set<string>();
     clearDraft();
@@ -1596,6 +1658,9 @@ resetButton.addEventListener('click', () => {
   clearDraft();
   resubmissionId = null;
   correctionFileFields = new Set<string>();
+  waitingListAccessToken = null;
+  waitingListAccessSource = null;
+  waitingListCheckSequence += 1;
   successView.classList.remove('is-visible');
   receiptDownload.hidden = true;
   receiptDownload.removeAttribute('href');
@@ -1618,6 +1683,7 @@ void getRegistrationQuotas()
   .then((summary) => {
     registrationQuotaSummary = summary;
     renderQuotaOverview(summary);
+    scheduleWaitingListCheck();
   })
   .catch(() => {
     quotaUpdated.textContent = 'Kuota belum tersedia';

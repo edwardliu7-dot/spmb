@@ -10,4 +10,4 @@
 - [SPMB Safari upload draft](spmb-safari-upload.md) — Safari can restore IndexedDB uploads as Blob or cross-realm File while metadata still looks valid.
 - [SPMB quota policy](spmb-quota-policy.md) — numeric quotas are enforced from database counts; Daycare remains unlimited until a quota is explicitly supplied.
 - [SPMB correction resubmit files](spmb-correction-resubmit.md) — correction mode must distinguish server-retained uploads from local draft blobs.
-- [SPMB waiting list matching](spmb-waiting-list.md) — named quota reservations stay active until an administrator confirms an AI-suggested match.
+- [SPMB waiting list matching](spmb-waiting-list.md) — active bookings can unlock a public form via short-lived signed matching access; admin confirmation still controls removal.

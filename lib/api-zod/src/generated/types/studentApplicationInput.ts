@@ -210,4 +210,6 @@ export interface StudentApplicationInput {
   ktp_orangtua: string;
   /** Uploaded PDF, JPG, or PNG file, maximum 5 MB */
   bukti_bayar: string;
+  /** Short-lived server token issued when the name matches an active waiting-list booking */
+  waiting_list_token?: string | null;
 }

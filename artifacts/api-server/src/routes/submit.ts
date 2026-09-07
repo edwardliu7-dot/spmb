@@ -13,6 +13,7 @@ import {
   recordSubmissionSuccess,
 } from "../lib/submission-monitor";
 import { getMinimumAgeError } from "../lib/age-rules";
+import { findWaitingListReservation } from "../lib/waiting-list";
 
 const router = Router();
 
@@ -22,6 +23,29 @@ router.get("/quotas", async (request, response) => {
   } catch (error) {
     request.log.error({ err: error }, "Failed to load registration quotas");
     return response.status(500).json({ error: "Informasi kuota belum dapat dimuat." });
+  }
+});
+
+router.post("/waiting-list/check", async (request, response) => {
+  const nama = typeof request.body?.nama === "string" ? request.body.nama.trim() : "";
+  const jenjang = typeof request.body?.jenjang === "string" ? request.body.jenjang.trim() : "";
+  const jenisKelamin = typeof request.body?.jenisKelamin === "string" ? request.body.jenisKelamin.trim() : "";
+  if (nama.length < 2 || !allJenjang.includes(jenjang as (typeof allJenjang)[number]) || !["Laki-laki", "Perempuan"].includes(jenisKelamin)) {
+    return response.status(400).json({ error: "Nama, jenjang, dan jenis kelamin wajib diisi." });
+  }
+  try {
+    const reservation = await findWaitingListReservation({ nama, jenjang, jenisKelamin });
+    return response.json(reservation
+      ? {
+          eligible: true,
+          token: reservation.token,
+          source: reservation.match.source,
+          confidence: reservation.match.confidence,
+        }
+      : { eligible: false });
+  } catch (error) {
+    request.log.error({ err: error, jenjang }, "Failed to check waiting list reservation");
+    return response.json({ eligible: false });
   }
 });
 
@@ -129,6 +153,7 @@ const textFields = [
   "instansi_jabatan_ibu",
   "nama_wali",
   "hubungan_wali",
+  "waiting_list_token",
 ] as const;
 
 type TextField = (typeof textFields)[number];
@@ -565,10 +590,11 @@ router.post(["/submit", "/submissions/:id/resubmit"], enforceSubmitRateLimit, ha
        ktp_orangtua_path: isResubmission ? String((existingApplication as Record<string, unknown>).ktp_orangtua_path ?? "") || null : null,
        bukti_bayar_path: isResubmission ? String((existingApplication as Record<string, unknown>).bukti_bayar_path ?? "") || null : null,
     };
+     const waitingListAccessToken = getValue(request, "waiting_list_token") || undefined;
 
      const result = isResubmission
        ? await updatePendaftar(resubmitId!, values, uploadedFiles)
-       : await insertPendaftar(values, uploadedFiles);
+        : await insertPendaftar(values, uploadedFiles, waitingListAccessToken);
      if (!result) {
        response.status(404).json({ error: "Pengajuan tidak ditemukan." });
        return;

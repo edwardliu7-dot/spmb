@@ -1271,6 +1271,13 @@
   color: #a2483a;
 }
 
+.form-board-selected-quota-notice.is-waiting-list-verified {
+  border-left-color: #2f806d;
+  background: #e5f4ec;
+  color: #216653;
+  font-weight: 700;
+}
+
 .form-board-field > label {
   display: flex;
   align-items: baseline;

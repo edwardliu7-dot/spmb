@@ -63,3 +63,8 @@ export * from './submissionMonitoringResponseFailuresByReason';
 export * from './submissionResult';
 export * from './submissionStatusResponse';
 export * from './submissionStatusResponseStatus';
+export * from './waitingListReservationInput';
+export * from './waitingListReservationInputJenisKelamin';
+export * from './waitingListReservationInputJenjang';
+export * from './waitingListReservationResponse';
+export * from './waitingListReservationResponseSource';

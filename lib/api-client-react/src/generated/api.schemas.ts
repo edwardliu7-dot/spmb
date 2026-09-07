@@ -281,6 +281,53 @@ export interface StudentApplicationInput {
   ktp_orangtua: string;
   /** Uploaded PDF, JPG, or PNG file, maximum 5 MB */
   bukti_bayar: string;
+  /** Short-lived server token issued when the name matches an active waiting-list booking */
+  waiting_list_token?: string | null;
+}
+
+export type WaitingListReservationInputJenjang = typeof WaitingListReservationInputJenjang[keyof typeof WaitingListReservationInputJenjang];
+
+
+export const WaitingListReservationInputJenjang = {
+  Playgroup: 'Playgroup',
+  Daycare: 'Daycare',
+  'TK-A': 'TK-A',
+  'TK-B': 'TK-B',
+  SD: 'SD',
+  SMP: 'SMP',
+} as const;
+
+export type WaitingListReservationInputJenisKelamin = typeof WaitingListReservationInputJenisKelamin[keyof typeof WaitingListReservationInputJenisKelamin];
+
+
+export const WaitingListReservationInputJenisKelamin = {
+  'Laki-laki': 'Laki-laki',
+  Perempuan: 'Perempuan',
+} as const;
+
+export interface WaitingListReservationInput {
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  nama: string;
+  jenjang: WaitingListReservationInputJenjang;
+  jenisKelamin: WaitingListReservationInputJenisKelamin;
+}
+
+export type WaitingListReservationResponseSource = typeof WaitingListReservationResponseSource[keyof typeof WaitingListReservationResponseSource] | null;
+
+
+export const WaitingListReservationResponseSource = {
+  ai: 'ai',
+  heuristic: 'heuristic',
+} as const;
+
+export interface WaitingListReservationResponse {
+  eligible: boolean;
+  token?: string | null;
+  source?: WaitingListReservationResponseSource;
+  confidence?: number | null;
 }
 
 export interface PaymentVerificationInput {

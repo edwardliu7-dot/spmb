@@ -26,6 +26,7 @@ import type { ApplicationFileInput } from "./application-files";
 import { logger } from "./logger";
 import { resolveStoredUpload, uploadsDirectory } from "./upload-storage";
 import { adjustmentScope, getQuotaDefinition, RegistrationQuotaFullError } from "./registration-quota";
+import { verifyWaitingListAccessToken } from "./waiting-list";
 
 export { uploadsDirectory } from "./upload-storage";
 
@@ -70,11 +71,22 @@ async function getSchemaMetadata(): Promise<SchemaMetadata> {
   return schemaMetadataPromise;
 }
 
-export async function insertPendaftar(values: InsertPendaftar, files: ApplicationFileInput[] = []) {
+export async function insertPendaftar(
+  values: InsertPendaftar,
+  files: ApplicationFileInput[] = [],
+  waitingListAccessToken?: string,
+) {
   const { pendaftarColumns, tables } = await getSchemaMetadata();
   const compatibleValues = Object.fromEntries(
     Object.entries(values).filter(([key]) => pendaftarColumns.has(key)),
   ) as InsertPendaftar;
+  const hasWaitingListAccess = waitingListAccessToken
+    ? await verifyWaitingListAccessToken(waitingListAccessToken, {
+        nama: values.nama_calon,
+        jenjang: values.jenjang,
+        jenisKelamin: values.jenis_kelamin,
+      })
+    : false;
   const created = await db.transaction(async (tx) => {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(2027202701)`);
     const quotaDefinition = getQuotaDefinition(values.jenjang);
@@ -98,7 +110,8 @@ export async function insertPendaftar(values: InsertPendaftar, files: Applicatio
               eq(waitingListTable.status, "active"),
             ))
         : [];
-      if (Number(levelCount?.count || 0) + Number(manualLevel?.filled || 0) + Number(waitingLevel?.count || 0) >= quotaDefinition.quota) {
+      const waitingLevelFilled = Math.max(0, Number(waitingLevel?.count || 0) - (hasWaitingListAccess ? 1 : 0));
+      if (Number(levelCount?.count || 0) + Number(manualLevel?.filled || 0) + waitingLevelFilled >= quotaDefinition.quota) {
         throw new RegistrationQuotaFullError(values.jenjang, null, quotaDefinition.quota);
       }
 
@@ -131,7 +144,8 @@ export async function insertPendaftar(values: InsertPendaftar, files: Applicatio
                   eq(waitingListTable.status, "active"),
                 ))
             : [];
-          if (Number(genderCount?.count || 0) + Number(manualGender?.filled || 0) + Number(waitingGender?.count || 0) >= genderQuota) {
+          const waitingGenderFilled = Math.max(0, Number(waitingGender?.count || 0) - (hasWaitingListAccess ? 1 : 0));
+          if (Number(genderCount?.count || 0) + Number(manualGender?.filled || 0) + waitingGenderFilled >= genderQuota) {
             throw new RegistrationQuotaFullError(values.jenjang, values.jenis_kelamin, genderQuota);
           }
         }

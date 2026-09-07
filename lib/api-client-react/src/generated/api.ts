@@ -53,7 +53,9 @@ import type {
   SubmissionEditData,
   SubmissionMonitoringResponse,
   SubmissionResult,
-  SubmissionStatusResponse
+  SubmissionStatusResponse,
+  WaitingListReservationInput,
+  WaitingListReservationResponse
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -238,6 +240,78 @@ export function useGetRegistrationQuotas<TData = Awaited<ReturnType<typeof getRe
 
 
 
+
+export const getCheckWaitingListReservationUrl = () => {
+
+
+
+
+  return `/api/waiting-list/check`
+}
+
+/**
+ * Checks whether a submitted student name matches an active waiting-list reservation without exposing waiting-list data.
+ * @summary Check a booked waiting-list name
+ */
+export const checkWaitingListReservation = async (waitingListReservationInput: WaitingListReservationInput, options?: Parameters<typeof customFetch>[1]): Promise<WaitingListReservationResponse> => {
+
+  return customFetch<WaitingListReservationResponse>(getCheckWaitingListReservationUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(waitingListReservationInput)
+  }
+);}
+
+
+
+
+
+export const getCheckWaitingListReservationMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkWaitingListReservation>>, TError,{data: BodyType<WaitingListReservationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof checkWaitingListReservation>>, TError,{data: BodyType<WaitingListReservationInput>}, TContext> => {
+
+const mutationKey = ['checkWaitingListReservation'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof checkWaitingListReservation>>, {data: BodyType<WaitingListReservationInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  checkWaitingListReservation(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CheckWaitingListReservationMutationResult = NonNullable<Awaited<ReturnType<typeof checkWaitingListReservation>>>
+    export type CheckWaitingListReservationMutationBody = BodyType<WaitingListReservationInput>
+    export type CheckWaitingListReservationMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Check a booked waiting-list name
+ */
+export const useCheckWaitingListReservation = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkWaitingListReservation>>, TError,{data: BodyType<WaitingListReservationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof checkWaitingListReservation>>,
+        TError,
+        {data: BodyType<WaitingListReservationInput>},
+        TContext
+      > => {
+      return useMutation(getCheckWaitingListReservationMutationOptions(options));
+    }
 
 export const getGetQuotaAdjustmentsUrl = () => {
 
@@ -464,6 +538,9 @@ formData.append(`akte_lahir`, studentApplicationInput.akte_lahir);
 formData.append(`kartu_keluarga`, studentApplicationInput.kartu_keluarga);
 formData.append(`ktp_orangtua`, studentApplicationInput.ktp_orangtua);
 formData.append(`bukti_bayar`, studentApplicationInput.bukti_bayar);
+if(studentApplicationInput.waiting_list_token !== undefined && studentApplicationInput.waiting_list_token !== null) {
+ formData.append(`waiting_list_token`, studentApplicationInput.waiting_list_token);
+ }
 
   return customFetch<SubmissionResult>(getSubmitApplicationUrl(),
   {
@@ -1444,6 +1521,9 @@ formData.append(`akte_lahir`, studentApplicationUpdateInput.akte_lahir);
 formData.append(`kartu_keluarga`, studentApplicationUpdateInput.kartu_keluarga);
 formData.append(`ktp_orangtua`, studentApplicationUpdateInput.ktp_orangtua);
 formData.append(`bukti_bayar`, studentApplicationUpdateInput.bukti_bayar);
+if(studentApplicationUpdateInput.waiting_list_token !== undefined && studentApplicationUpdateInput.waiting_list_token !== null) {
+ formData.append(`waiting_list_token`, studentApplicationUpdateInput.waiting_list_token);
+ }
 
   return customFetch<SubmissionResult>(getResubmitApplicationUrl(id),
   {

@@ -51,6 +51,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /waiting-list/check:
+    post:
+      operationId: checkWaitingListReservation
+      tags: [applications]
+      summary: Check a booked waiting-list name
+      description: Checks whether a submitted student name matches an active waiting-list reservation without exposing waiting-list data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WaitingListReservationInput"
+      responses:
+        "200":
+          description: Waiting-list reservation check result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WaitingListReservationResponse"
+        "400":
+          description: Missing or invalid matching fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /admin/quota-adjustments:
     get:
       operationId: getQuotaAdjustments
@@ -851,6 +876,22 @@ components:
         kartu_keluarga: { type: string, description: "Uploaded PDF, JPG, or PNG file, maximum 5 MB" }
         ktp_orangtua: { type: string, description: "Uploaded PDF, JPG, or PNG file, maximum 5 MB" }
         bukti_bayar: { type: string, description: "Uploaded PDF, JPG, or PNG file, maximum 5 MB" }
+        waiting_list_token: { type: string, nullable: true, description: "Short-lived server token issued when the name matches an active waiting-list booking" }
+    WaitingListReservationInput:
+      type: object
+      required: [nama, jenjang, jenisKelamin]
+      properties:
+        nama: { type: string, minLength: 2, maxLength: 120 }
+        jenjang: { type: string, enum: [Playgroup, Daycare, TK-A, TK-B, SD, SMP] }
+        jenisKelamin: { type: string, enum: [Laki-laki, Perempuan] }
+    WaitingListReservationResponse:
+      type: object
+      properties:
+        eligible: { type: boolean }
+        token: { type: string, nullable: true }
+        source: { type: string, enum: [ai, heuristic], nullable: true }
+        confidence: { type: number, nullable: true }
+      required: [eligible]
     PaymentVerificationInput:
       type: object
       required: [bukti_bayar]

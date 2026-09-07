@@ -46,6 +46,29 @@ export const GetRegistrationQuotasResponse = zod.object({
 
 
 /**
+ * Checks whether a submitted student name matches an active waiting-list reservation without exposing waiting-list data.
+ * @summary Check a booked waiting-list name
+ */
+export const checkWaitingListReservationBodyNamaMin = 2;
+export const checkWaitingListReservationBodyNamaMax = 120;
+
+
+
+export const CheckWaitingListReservationBody = zod.object({
+  "nama": zod.string().min(checkWaitingListReservationBodyNamaMin).max(checkWaitingListReservationBodyNamaMax),
+  "jenjang": zod.enum(['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']),
+  "jenisKelamin": zod.enum(['Laki-laki', 'Perempuan'])
+})
+
+export const CheckWaitingListReservationResponse = zod.object({
+  "eligible": zod.boolean(),
+  "token": zod.string().nullish(),
+  "source": zod.enum(['ai', 'heuristic']).nullish(),
+  "confidence": zod.number().nullish()
+})
+
+
+/**
  * @summary Get manual quota fill adjustments
  */
 export const getQuotaAdjustmentsResponseItemsItemFilledMin = 0;
@@ -255,7 +278,8 @@ export const SubmitApplicationBody = zod.object({
   "akte_lahir": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
   "kartu_keluarga": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
   "ktp_orangtua": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
-  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB')
+  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "waiting_list_token": zod.string().nullish().describe('Short-lived server token issued when the name matches an active waiting-list booking')
 })
 
 export const SubmitApplicationResponse = zod.object({
@@ -513,7 +537,8 @@ export const GetApplicationResponse = zod.object({
   "akte_lahir": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
   "kartu_keluarga": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
   "ktp_orangtua": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
-  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB')
+  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "waiting_list_token": zod.string().nullish().describe('Short-lived server token issued when the name matches an active waiting-list booking')
 })).and(zod.object({
   "files": zod.array(zod.object({
   "field": zod.string(),
@@ -744,7 +769,8 @@ export const GetSubmissionEditDataResponse = zod.object({
   "akte_lahir": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
   "kartu_keluarga": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
   "ktp_orangtua": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
-  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB')
+  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "waiting_list_token": zod.string().nullish().describe('Short-lived server token issued when the name matches an active waiting-list booking')
 }).and(zod.object({
   "id": zod.number(),
   "applicationNumber": zod.string(),
@@ -903,7 +929,8 @@ export const ResubmitApplicationBody = zod.object({
   "akte_lahir": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
   "kartu_keluarga": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
   "ktp_orangtua": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
-  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB')
+  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "waiting_list_token": zod.string().nullish().describe('Short-lived server token issued when the name matches an active waiting-list booking')
 }).describe('Same student fields as StudentApplicationInput. Supporting document fields are optional during correction and retained when omitted.')
 
 export const ResubmitApplicationResponse = zod.object({
@@ -1167,7 +1194,8 @@ export const ListAdminMasterDataResponse = zod.object({
   "akte_lahir": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
   "kartu_keluarga": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
   "ktp_orangtua": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
-  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB')
+  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "waiting_list_token": zod.string().nullish().describe('Short-lived server token issued when the name matches an active waiting-list booking')
 })).and(zod.object({
   "files": zod.array(zod.object({
   "field": zod.string(),
