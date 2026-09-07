@@ -500,6 +500,15 @@ const statusDescriptions: Record<string, string> = {
 };
 const statusSteps = ['Baru', 'Perlu Perbaikan Data', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima'];
 
+function canonicalizeStatus(value: unknown): string {
+  const normalized = String(value ?? '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('id-ID');
+  return statusSteps.find((status) => status.toLocaleLowerCase('id-ID') === normalized) || String(value ?? '').trim();
+}
+
+function isCorrectionStatus(value: unknown, canEdit?: boolean): boolean {
+  return canEdit === true || canonicalizeStatus(value) === 'Perlu Perbaikan Data';
+}
+
 type CachedFileMetadata = {
   name: string;
   size: number;
@@ -1086,9 +1095,11 @@ function renderStatusResult(result: Awaited<ReturnType<typeof getSubmissionStatu
   catatan_perbaikan?: string | null;
   canEdit?: boolean;
 }): void {
-  const currentIndex = statusSteps.indexOf(result.status);
-  const isRejected = String(result.status) === 'Ditolak';
-  const statusLabel = result.status === 'Baru' ? 'Diterima sistem' : result.status;
+  const canonicalStatus = canonicalizeStatus(result.status);
+  const currentIndex = statusSteps.indexOf(canonicalStatus);
+  const isRejected = canonicalStatus === 'Ditolak';
+  const statusLabel = canonicalStatus === 'Baru' ? 'Diterima sistem' : canonicalStatus;
+  const correctionStatus = isCorrectionStatus(canonicalStatus, result.canEdit);
 
   statusResultNumber.textContent = result.applicationNumber;
   statusResultCurrent.textContent = statusLabel;
@@ -1106,11 +1117,11 @@ function renderStatusResult(result: Awaited<ReturnType<typeof getSubmissionStatu
   }).join('');
   statusResultNote.className = `form-board-status-note${isRejected ? ' is-rejected' : result.status === 'Diterima' ? ' is-success' : ''}`;
   const correctionNote = result.catatan_perbaikan?.trim();
-  const noteCopy = result.status === 'Perlu Perbaikan Data' && correctionNote
-    ? `${statusDescriptions[result.status]} Catatan panitia: ${correctionNote}`
-    : statusDescriptions[result.status] || 'Status pengajuan sedang diperbarui.';
+  const noteCopy = correctionStatus && correctionNote
+    ? `${statusDescriptions['Perlu Perbaikan Data']} Catatan panitia: ${correctionNote}`
+    : statusDescriptions[canonicalStatus] || 'Status pengajuan sedang diperbarui.';
   statusResultNote.innerHTML = `<strong>${escapeHtml(statusLabel)}</strong><span>${escapeHtml(noteCopy)}</span>`;
-  statusResultEditActions.hidden = !(result.canEdit || result.status === 'Perlu Perbaikan Data');
+  statusResultEditActions.hidden = !correctionStatus;
   statusResult.hidden = false;
 }
 
