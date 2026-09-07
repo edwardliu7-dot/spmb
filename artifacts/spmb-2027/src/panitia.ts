@@ -843,14 +843,26 @@ function renderDashboard(user: AuthUser) {
       const dateDifference = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       return dateDifference || a.id - b.id;
     });
-    const buildSection = (sectionTitle: string, sectionItems: MasterApplication[], sectionQuota: number | null, sectionRemaining: number | null) => {
+    const buildSection = (
+      sectionTitle: string,
+      sectionItems: MasterApplication[],
+      sectionQuota: number | null,
+      sectionRemaining: number | null,
+      sectionWaitingFilled = 0,
+    ) => {
       const slots = sectionQuota === null
         ? Math.max(sectionItems.length, 1)
         : sectionQuota;
+      const bookedSlots = Math.min(
+        Math.max(0, sectionWaitingFilled),
+        Math.max(0, slots - sectionItems.length),
+      );
       const lines = Array.from({ length: slots }, (_, index) => {
         const item = sectionItems[index];
         return item
           ? `${index + 1}. ${item.nama_calon} . ${applicationNumber(item.id)}`
+          : index < sectionItems.length + bookedSlots
+            ? `${index + 1}. booked`
           : `${index + 1}.`;
       });
       return [
@@ -872,6 +884,7 @@ function renderDashboard(user: AuthUser) {
             genderItems,
             gender.quota,
             gender.remaining,
+            gender.waitingFilled,
           );
         })
       : [buildSection(
@@ -879,6 +892,7 @@ function renderDashboard(user: AuthUser) {
           orderedItems,
           quota?.quota ?? null,
           quota?.remaining ?? null,
+           quota?.waitingFilled ?? 0,
         )];
 
     const message = [
