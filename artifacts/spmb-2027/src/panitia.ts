@@ -1310,7 +1310,7 @@ function renderDashboard(user: AuthUser) {
         <div class="inspector-note"><p>CATATAN REVIEWER</p><strong>${application.status === "Baru" ? "Pengajuan baru menunggu pembacaan pertama." : "Pastikan setiap bukti pendukung sudah sesuai sebelum keputusan akhir."}</strong></div>
            <dl class="inspector-facts">${field("Nomor pengajuan", applicationNumber(application.id))}${field("Sekolah asal", application.nama_sekolah_asal)}${field("Alamat domisili", application.alamat_domisili)}${field("Nomor WhatsApp orang tua", application.nomor_hp_orangtua)}${field("Email", application.email)}</dl>
         <section class="inspector-section"><div class="inspector-section-title"><h3>Bukti pendukung</h3><b>${availableDocuments}/${totalDocuments || 0} lengkap</b></div><div class="inspector-progress"><i style="width: ${completion}%"></i></div><div class="inspector-documents">${documents || `<p class="inspector-muted">Belum ada daftar dokumen.</p>`}</div></section>
-     <section class="inspector-section inspector-actions"><p class="decision-kicker">TINDAKAN KEPUTUSAN</p><div class="decision-action-grid"><button type="button" data-decision="Lolos Verifikasi Berkas" class="decision-action is-hold">✓<span>Lolos verifikasi berkas</span></button><button type="button" data-decision="Observasi" class="decision-action is-return">◷<span>Masuk observasi</span></button><button type="button" data-decision="Lolos Observasi" class="decision-action is-hold">✓<span>Lolos observasi</span></button><button type="button" data-decision="Diterima" class="decision-action is-approve">★<span>Diterima</span></button></div><p class="decision-feedback" id="status-feedback" aria-live="polite"></p><label class="manual-status-label" for="application-status">Status manual</label><select id="application-status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${status === application.status ? "selected" : ""}>${escapeHtml(status)}</option>`).join("")}</select><button type="button" class="manual-status-save" id="save-manual-status" hidden>Simpan status</button><label class="manual-status-label correction-note-label" for="correction-note">Catatan perbaikan <small>wajib untuk “Perlu Perbaikan Data”</small></label><textarea id="correction-note" maxlength="2000" rows="4" placeholder="Tuliskan data atau berkas yang perlu diperbaiki…">${escapeHtml(String(application.catatan_perbaikan || ""))}</textarea></section>
+     <section class="inspector-section inspector-actions"><p class="decision-kicker">TINDAKAN KEPUTUSAN</p><div class="decision-action-grid"><button type="button" data-decision="Perlu Perbaikan Data" class="decision-action is-return">↺<span>Minta perbaikan data</span></button><button type="button" data-decision="Lolos Verifikasi Berkas" class="decision-action is-hold">✓<span>Lolos verifikasi berkas</span></button><button type="button" data-decision="Observasi" class="decision-action is-return">◷<span>Masuk observasi</span></button><button type="button" data-decision="Lolos Observasi" class="decision-action is-hold">✓<span>Lolos observasi</span></button><button type="button" data-decision="Diterima" class="decision-action is-approve">★<span>Diterima</span></button></div><p class="decision-feedback" id="status-feedback" aria-live="polite"></p><label class="manual-status-label" for="application-status">Status manual</label><select id="application-status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${status === application.status ? "selected" : ""}>${escapeHtml(status)}</option>`).join("")}</select><button type="button" class="manual-status-save" id="save-manual-status" hidden>Simpan status</button><label class="manual-status-label correction-note-label" for="correction-note">Catatan perbaikan <small>wajib untuk “Perlu Perbaikan Data”</small></label><textarea id="correction-note" maxlength="2000" rows="4" placeholder="Tuliskan data atau berkas yang perlu diperbaiki…">${escapeHtml(String(application.catatan_perbaikan || ""))}</textarea></section>
          <section class="inspector-section detail-section"><h3>Calon peserta didik</h3><dl class="detail-grid">${field("Nama lengkap", application.nama_calon)}${field("Nama panggilan", application.nama_panggilan)}${field("Jenis kelamin", application.jenis_kelamin)}${field("Tempat, tanggal lahir", `${application.tempat_lahir || "—"}, ${application.tanggal_lahir || "—"}`)}${field("NISN", application.nisn)}${field("NIK anak", application.nik_anak)}${field("Alamat domisili", application.alamat_domisili, "span-2")}${field("Anak ke-", application.anak_ke)}${field("Jumlah saudara", application.jumlah_saudara)}${field("Status anak", application.status_anak)}${field("Agama", application.agama)}${field("Kewarganegaraan", application.warga_negara)}${field("Tinggi / berat", `${application.tinggi_badan || "—"} cm / ${application.berat_badan || "—"} kg`)}${field("Transportasi", application.transportasi)}${field("Jarak ke sekolah", application.jarak_sekolah)}${field("Riwayat penyakit", application.riwayat_penyakit, "span-2")}</dl></section>
         <section class="inspector-section detail-section"><h3>Sekolah asal</h3><dl class="detail-grid">${field("Nama sekolah", application.nama_sekolah_asal, "span-2")}${field("Tahun lulus", application.tahun_lulus)}${field("Alamat sekolah", application.alamat_sekolah_asal, "span-2")}</dl></section>
         <section class="inspector-section detail-section"><h3>Orang tua & wali</h3><dl class="detail-grid">${field("Nomor Kartu Keluarga", application.nomor_kk)}${field("NIK ayah", application.nik_ayah)}${field("Nama ayah", application.nama_ayah)}${field("Pekerjaan ayah", application.pekerjaan_ayah)}${field("Penghasilan ayah", application.penghasilan_ayah)}${field("NIK ibu", application.nik_ibu)}${field("Nama ibu", application.nama_ibu)}${field("Pekerjaan ibu", application.pekerjaan_ibu)}${field("Penghasilan ibu", application.penghasilan_ibu)}${field("Nama wali", application.nama_wali)}${field("Hubungan wali", application.hubungan_wali)}</dl></section>
@@ -1347,9 +1347,27 @@ function renderDashboard(user: AuthUser) {
          showNotice(error instanceof Error ? error.message : "Data pendaftar belum dapat dihapus.");
        }
      });
-    detailElement.querySelectorAll<HTMLButtonElement>("[data-decision]").forEach((button) => {
-      button.addEventListener("click", () => void updateStatus(button.dataset.decision || "", "Tindakan keputusan tersimpan."));
-    });
+     detailElement.querySelectorAll<HTMLButtonElement>("[data-decision]").forEach((button) => {
+       button.addEventListener("click", () => {
+         const nextStatus = button.dataset.decision || "";
+         if (nextStatus === "Perlu Perbaikan Data") {
+           const statusSelect = document.getElementById("application-status") as HTMLSelectElement | null;
+           const correctionNote = document.getElementById("correction-note") as HTMLTextAreaElement | null;
+           const saveButton = document.getElementById("save-manual-status") as HTMLButtonElement | null;
+           const feedback = document.getElementById("status-feedback");
+           if (statusSelect) statusSelect.value = nextStatus;
+           if (correctionNote) correctionNote.required = true;
+           if (saveButton) saveButton.hidden = false;
+           if (feedback) {
+             feedback.textContent = "Isi catatan perbaikan, lalu klik Simpan status.";
+             feedback.className = "decision-feedback";
+           }
+           correctionNote?.focus();
+           return;
+         }
+         void updateStatus(nextStatus, "Tindakan keputusan tersimpan.");
+       });
+     });
      const manualStatusSelect = document.getElementById("application-status") as HTMLSelectElement | null;
      const correctionNote = document.getElementById("correction-note") as HTMLTextAreaElement | null;
      const saveManualStatusButton = document.getElementById("save-manual-status") as HTMLButtonElement | null;
