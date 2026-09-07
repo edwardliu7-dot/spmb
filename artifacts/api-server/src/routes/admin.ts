@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
 import path from "node:path";
-import { canAccessJenjang, requireCommitteeAuth } from "../middlewares/committee-auth";
+import { canAccessJenjang, isKnownJenjang, requireCommitteeAuth } from "../middlewares/committee-auth";
 import {
   getObservationRows,
   getPendaftar,
@@ -21,6 +21,12 @@ import {
   registrationQuotaDefinitions,
   saveRegistrationQuotaAdjustments,
 } from "../lib/registration-quota";
+import {
+  createWaitingListEntry,
+  decideWaitingListMatch,
+  findWaitingListMatches,
+  listWaitingList,
+} from "../lib/waiting-list";
 
 const router = Router();
 router.use("/admin", requireCommitteeAuth);
@@ -98,6 +104,106 @@ router.put("/admin/quota-adjustments", async (request, response) => {
   } catch (error) {
     request.log.error({ err: error }, "Failed to save registration quota adjustments");
     return response.status(500).json({ error: "Pengaturan kuota terisi belum dapat disimpan." });
+  }
+});
+
+router.get("/admin/waiting-list", async (request, response) => {
+  if (!isAdministrator(request)) return response.status(403).json({ error: "Hanya administrator yang dapat mengelola waiting list." });
+  const user = request.committeeAccount!;
+  try {
+    const items = await listWaitingList(user.allowedJenjang);
+    const applications = (await listMasterPendaftar({ allowedJenjang: user.allowedJenjang })).map((item) => ({
+      id: item.id,
+      nama_calon: item.nama_calon,
+      jenjang: item.jenjang,
+      jenis_kelamin: item.jenis_kelamin,
+      tanggal_lahir: item.tanggal_lahir,
+      created_at: item.created_at,
+    }));
+    const matches = await findWaitingListMatches(items, applications);
+    const matchesByWaiting = new Map<number, typeof matches>();
+    matches.forEach((match) => {
+      const current = matchesByWaiting.get(match.waitingListId) || [];
+      current.push(match);
+      matchesByWaiting.set(match.waitingListId, current);
+    });
+    return response.json({
+      items: items.map((item) => ({
+        ...item,
+        matches: (matchesByWaiting.get(item.id) || []).sort((left, right) => right.confidence - left.confidence),
+      })),
+      aiEnabled: Boolean(process.env.GROQ_API_KEY),
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    request.log.error({ err: error }, "Failed to load waiting list");
+    return response.status(500).json({ error: "Waiting list belum dapat dimuat." });
+  }
+});
+
+router.post("/admin/waiting-list", async (request, response) => {
+  if (!isAdministrator(request)) return response.status(403).json({ error: "Hanya administrator yang dapat menambah waiting list." });
+  const nama = typeof request.body?.nama === "string" ? request.body.nama.trim() : "";
+  const jenjang = typeof request.body?.jenjang === "string" ? request.body.jenjang.trim() : "";
+  const jenisKelamin = request.body?.jenisKelamin === null || request.body?.jenisKelamin === undefined || request.body?.jenisKelamin === ""
+    ? null
+    : typeof request.body.jenisKelamin === "string" ? request.body.jenisKelamin.trim() : "";
+  const catatan = typeof request.body?.catatan === "string" ? request.body.catatan.trim() : "";
+  if (nama.length < 2 || nama.length > 120) return response.status(400).json({ error: "Nama siswa harus diisi 2–120 karakter." });
+  if (!isKnownJenjang(jenjang)) return response.status(400).json({ error: "Jenjang waiting list tidak valid." });
+  if (jenisKelamin && !["Laki-laki", "Perempuan"].includes(jenisKelamin)) {
+    return response.status(400).json({ error: "Jenis kelamin waiting list tidak valid." });
+  }
+  if (jenjang === "SD" && !jenisKelamin) {
+    return response.status(400).json({ error: "Jenis kelamin wajib diisi untuk waiting list SD agar kuota putra/putri tepat." });
+  }
+  if (catatan.length > 500) return response.status(400).json({ error: "Catatan maksimal 500 karakter." });
+  try {
+    const item = await createWaitingListEntry({
+      nama,
+      jenjang,
+      jenisKelamin,
+      catatan: catatan || null,
+      addedBy: request.committeeAccount!.username,
+    });
+    await recordCommitteeAudit({
+      username: request.committeeAccount!.username,
+      action: "waiting_list_add",
+      details: JSON.stringify({ id: item?.id, nama, jenjang, jenisKelamin }),
+    });
+    return response.status(201).json({ item });
+  } catch (error) {
+    request.log.error({ err: error }, "Failed to add waiting list item");
+    return response.status(500).json({ error: "Nama siswa belum dapat ditambahkan ke waiting list." });
+  }
+});
+
+router.post("/admin/waiting-list/:id/match-decision", async (request, response) => {
+  if (!isAdministrator(request)) return response.status(403).json({ error: "Hanya administrator yang dapat mengonfirmasi kecocokan waiting list." });
+  const waitingListId = parseId(request.params.id);
+  const applicationId = parseId(request.body?.applicationId);
+  const decision = request.body?.decision;
+  if (!waitingListId || !applicationId || !["confirmed", "rejected"].includes(decision)) {
+    return response.status(400).json({ error: "Keputusan kecocokan belum lengkap." });
+  }
+  try {
+    const result = await decideWaitingListMatch({
+      waitingListId,
+      applicationId,
+      decision,
+      decidedBy: request.committeeAccount!.username,
+    });
+    if (!result) return response.status(404).json({ error: "Waiting list atau pendaftar tidak ditemukan, atau jenjangnya berbeda." });
+    await recordCommitteeAudit({
+      username: request.committeeAccount!.username,
+      action: decision === "confirmed" ? "waiting_list_match_confirmed" : "waiting_list_match_rejected",
+      applicationId,
+      details: JSON.stringify({ waitingListId }),
+    });
+    return response.json({ success: true, ...result });
+  } catch (error) {
+    request.log.error({ err: error, waitingListId, applicationId, decision }, "Failed to save waiting list match decision");
+    return response.status(500).json({ error: "Keputusan kecocokan belum dapat disimpan." });
   }
 });
 

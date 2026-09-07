@@ -1,5 +1,5 @@
-import { sql } from "drizzle-orm";
-import { db, pendaftarTable, registrationQuotaAdjustmentTable } from "@workspace/db";
+import { and, eq, sql } from "drizzle-orm";
+import { db, pendaftarTable, registrationQuotaAdjustmentTable, waitingListTable } from "@workspace/db";
 
 export const registrationQuotaDefinitions = [
   { jenjang: "Playgroup", quota: 15, genderQuotas: null },
@@ -19,6 +19,12 @@ export type RegistrationQuotaAdjustment = {
   jenjang: string;
   jenisKelamin: string | null;
   filled: number;
+};
+
+export type ActiveWaitingCount = {
+  jenjang: string;
+  jenisKelamin: string | null;
+  count: number;
 };
 
 export class RegistrationQuotaFullError extends Error {
@@ -88,6 +94,35 @@ async function readManualAdjustments(): Promise<RegistrationQuotaAdjustment[]> {
   }
 }
 
+export async function listActiveWaitingCounts(): Promise<ActiveWaitingCount[]> {
+  try {
+    const rows = await db
+      .select({
+        jenjang: waitingListTable.jenjang,
+        jenisKelamin: waitingListTable.jenis_kelamin,
+        count: sql<number>`count(*)`,
+      })
+      .from(waitingListTable)
+      .where(eq(waitingListTable.status, "active"))
+      .groupBy(waitingListTable.jenjang, waitingListTable.jenis_kelamin);
+    return rows.map((row) => ({
+      jenjang: row.jenjang,
+      jenisKelamin: row.jenisKelamin,
+      count: Number(row.count) || 0,
+    }));
+  } catch (error) {
+    const errorWithCause = error as { code?: unknown; cause?: unknown } | null;
+    const causeWithCode = errorWithCause?.cause as { code?: unknown } | null;
+    if (
+      String(errorWithCause?.code || "") === "42P01"
+      || String(causeWithCode?.code || "") === "42P01"
+    ) {
+      return [];
+    }
+    throw error;
+  }
+}
+
 export async function listRegistrationQuotaAdjustments(): Promise<RegistrationQuotaAdjustment[]> {
   const stored = await readManualAdjustments();
   const storedByScope = new Map(stored.map((item) => [adjustmentScope(item.jenjang, item.jenisKelamin), item.filled]));
@@ -118,7 +153,7 @@ export async function saveRegistrationQuotaAdjustments(
 }
 
 export async function getRegistrationQuotaSummary() {
-  const [rows, manualAdjustments] = await Promise.all([
+  const [rows, manualAdjustments, waitingCounts] = await Promise.all([
     db
       .select({
         jenjang: pendaftarTable.jenjang,
@@ -128,12 +163,16 @@ export async function getRegistrationQuotaSummary() {
       .from(pendaftarTable)
       .groupBy(pendaftarTable.jenjang, pendaftarTable.jenis_kelamin),
     listRegistrationQuotaAdjustments(),
+    listActiveWaitingCounts(),
   ]);
 
   return {
     levels: registrationQuotaDefinitions.map((definition) => {
       const levelRows = rows.filter((row) => row.jenjang === definition.jenjang);
       const registeredFilled = levelRows.reduce((total, row) => total + Number(row.count), 0);
+      const waitingLevelCount = waitingCounts
+        .filter((item) => item.jenjang === definition.jenjang)
+        .reduce((total, item) => total + item.count, 0);
       const levelManual = manualAdjustments.find((item) => item.jenjang === definition.jenjang && item.jenisKelamin === null)?.filled || 0;
       const gender = definition.genderQuotas
         ? Object.entries(definition.genderQuotas).map(([jenisKelamin, quota]) => {
@@ -141,27 +180,35 @@ export async function getRegistrationQuotaSummary() {
               .filter((row) => row.jenisKelamin === jenisKelamin)
               .reduce((total, row) => total + Number(row.count), 0);
             const manualFilled = manualAdjustments.find((item) => item.jenjang === definition.jenjang && item.jenisKelamin === jenisKelamin)?.filled || 0;
+            const waitingFilled = waitingCounts
+              .filter((item) => item.jenjang === definition.jenjang && item.jenisKelamin === jenisKelamin)
+              .reduce((total, item) => total + item.count, 0);
             return {
               jenisKelamin,
               quota,
               registeredFilled: genderFilled,
               manualFilled,
-              filled: genderFilled + manualFilled,
-              remaining: remaining(quota, genderFilled + manualFilled),
-              isFull: genderFilled + manualFilled >= quota,
+              waitingFilled,
+              filled: genderFilled + manualFilled + waitingFilled,
+              remaining: remaining(quota, genderFilled + manualFilled + waitingFilled),
+              isFull: genderFilled + manualFilled + waitingFilled >= quota,
             };
           })
         : null;
       const manualFilled = definition.genderQuotas
         ? (gender || []).reduce((total, item) => total + item.manualFilled, 0)
         : levelManual;
-      const filled = registeredFilled + manualFilled;
+      const waitingFilled = definition.genderQuotas
+        ? (gender || []).reduce((total, item) => total + item.waitingFilled, 0)
+        : waitingLevelCount;
+      const filled = registeredFilled + manualFilled + waitingFilled;
 
       return {
         jenjang: definition.jenjang,
         quota: definition.quota,
         registeredFilled,
         manualFilled,
+        waitingFilled,
         filled,
         remaining: remaining(definition.quota, filled),
         isFull: definition.quota !== null && filled >= definition.quota,

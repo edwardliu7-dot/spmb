@@ -60,6 +60,7 @@ type RegistrationQuotaGender = {
   quota: number;
   registeredFilled: number;
   manualFilled: number;
+  waitingFilled: number;
   filled: number;
   remaining: number;
   isFull: boolean;
@@ -70,6 +71,7 @@ type RegistrationQuota = {
   quota: number | null;
   registeredFilled: number;
   manualFilled: number;
+  waitingFilled: number;
   filled: number;
   remaining: number | null;
   isFull: boolean;
@@ -85,6 +87,28 @@ type RegistrationQuotaAdjustment = {
   jenjang: string;
   jenisKelamin: string | null;
   filled: number;
+};
+
+type WaitingListMatch = {
+  waitingListId: number;
+  applicationId: number;
+  waitingName: string;
+  applicationName: string;
+  jenjang: string;
+  confidence: number;
+  reason: string;
+  source: "ai" | "heuristic";
+};
+
+type WaitingListItem = {
+  id: number;
+  nama: string;
+  jenjang: string;
+  jenis_kelamin: string | null;
+  catatan: string | null;
+  created_at: string;
+  added_by: string;
+  matches: WaitingListMatch[];
 };
 
 type SubmissionMonitoringResponse = {
@@ -516,6 +540,7 @@ function renderDashboard(user: AuthUser) {
             <button class="decision-nav-item" type="button" data-view="applications"><span aria-hidden="true">▤</span>Data pendaftar</button>
             <button class="decision-nav-item" type="button" data-view="observations"><span aria-hidden="true">◌</span>Observasi per jenjang</button>
             <button class="decision-nav-item" type="button" data-view="master"><span aria-hidden="true">▥</span>Master data</button>
+             ${user.username.toLowerCase() === "admin" ? '<button class="decision-nav-item" type="button" data-view="waiting-list"><span aria-hidden="true">◌</span>Waiting list</button>' : ""}
             <button class="decision-nav-item" type="button" data-view="notifications"><span aria-hidden="true">◔</span>Notifikasi<span class="nav-unread-count" id="nav-unread-count" hidden>0</span></button>
           </nav>
         </div>
@@ -618,6 +643,27 @@ function renderDashboard(user: AuthUser) {
             <div class="admin-table-wrap" id="master-table"></div>
           </section>
 
+           ${user.username.toLowerCase() === "admin" ? `<section class="admin-view" id="waiting-list-view" hidden>
+             <div class="admin-view-heading"><div><p class="decision-kicker decision-accent">Antrean manual</p><h2>Waiting list siswa</h2><p>Nama yang belum mengisi formulir tetap menahan satu kursi. Saat ada pengajuan baru, AI hanya memberi saran kecocokan — admin tetap menentukan apakah itu siswa yang sama.</p></div><span class="share-recap-note">ADMIN ONLY</span></div>
+             <div class="waiting-list-layout">
+               <section class="waiting-list-form-card">
+                 <div class="share-recap-heading"><div><p class="decision-kicker decision-accent">Tambah nama</p><h3>Simpan calon siswa</h3><p>Gunakan nama yang diterima dari daftar manual atau WhatsApp.</p></div></div>
+                 <form id="waiting-list-form" class="waiting-list-form">
+                   <label>Nama siswa<input id="waiting-list-name" name="nama" type="text" maxlength="120" placeholder="Contoh: Faisal" required /></label>
+                   <label>Jenjang<select id="waiting-list-level" name="jenjang" required>${allowedLevels.map((level) => `<option value="${escapeHtml(level)}">${escapeHtml(level)}</option>`).join("")}</select></label>
+                   <label>Jenis kelamin<select id="waiting-list-gender" name="jenisKelamin"><option value="">Belum diketahui</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select></label>
+                   <label>Catatan <span class="waiting-list-optional">opsional</span><textarea id="waiting-list-note" name="catatan" maxlength="500" rows="3" placeholder="Contoh: sudah bayar, menunggu link formulir"></textarea></label>
+                   <p id="waiting-list-form-feedback" class="waiting-list-feedback" aria-live="polite"></p>
+                   <button class="admin-export-button" type="submit" id="waiting-list-save">Tambahkan ke waiting list</button>
+                 </form>
+               </section>
+               <section class="waiting-list-content-card">
+                 <div class="share-recap-heading"><div><p class="decision-kicker decision-accent">Kuota yang ditahan</p><h3>Nama yang belum mendaftar</h3><p id="waiting-list-ai-note">Memuat daftar tunggu…</p></div><button class="ledger-refresh-button" id="waiting-list-refresh" type="button" aria-label="Segarkan waiting list">↻</button></div>
+                 <div id="waiting-list-content"><div class="admin-loading">Memuat waiting list…</div></div>
+               </section>
+             </div>
+           </section>` : ""}
+
           <section class="admin-view" id="notifications-view" hidden>
             <div class="admin-view-heading"><div><p class="decision-kicker decision-accent">Pusat notifikasi</p><h2>Hal yang perlu ditindaklanjuti</h2><p>Notifikasi disaring berdasarkan jenjang kewenangan akun Anda.</p></div><button class="admin-export-button" id="mark-all-read-button" type="button">Tandai semua sudah dibaca</button></div>
             <div id="notifications-content" class="notifications-content"><div class="admin-loading">Memuat notifikasi…</div></div>
@@ -669,7 +715,7 @@ function renderDashboard(user: AuthUser) {
     document.querySelector<HTMLElement>(".decision-briefing")?.toggleAttribute("hidden", !isDashboard);
     document.querySelector<HTMLElement>(".decision-metrics")?.toggleAttribute("hidden", !isDashboard);
     document.querySelector<HTMLElement>(".decision-workspace")?.toggleAttribute("hidden", !isDashboard);
-    ["applications", "observations", "master", "notifications"].forEach((name) => {
+    ["applications", "observations", "master", "waiting-list", "notifications"].forEach((name) => {
       document.getElementById(`${name}-view`)?.toggleAttribute("hidden", view !== name);
     });
     document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((button) => {
@@ -684,6 +730,7 @@ function renderDashboard(user: AuthUser) {
         void loadQuotaAdjustmentEditor();
       }
     }
+    if (view === "waiting-list" && user.username.toLowerCase() === "admin") void loadWaitingList();
     if (view === "notifications") void loadNotifications();
     closeRail();
   }
@@ -914,10 +961,10 @@ function renderDashboard(user: AuthUser) {
     const levelCards = summary.levels.map((level) => {
       const genderRows = level.gender?.map((gender) => {
         const value = adjustmentValue(level.jenjang, gender.jenisKelamin);
-        return `<label class="quota-adjustment-field"><span>${gender.jenisKelamin === "Laki-laki" ? "Putra" : "Putri"}</span><input type="number" min="0" max="100000" step="1" inputmode="numeric" value="${value}" data-quota-jenjang="${escapeHtml(level.jenjang)}" data-quota-gender="${escapeHtml(gender.jenisKelamin)}" /><small>Formulir ${gender.registeredFilled} + tambahan ${value} = ${gender.filled}/${gender.quota}</small></label>`;
+        return `<label class="quota-adjustment-field"><span>${gender.jenisKelamin === "Laki-laki" ? "Putra" : "Putri"}</span><input type="number" min="0" max="100000" step="1" inputmode="numeric" value="${value}" data-quota-jenjang="${escapeHtml(level.jenjang)}" data-quota-gender="${escapeHtml(gender.jenisKelamin)}" /><small>Formulir ${gender.registeredFilled} + waiting ${gender.waitingFilled} + tambahan ${value} = ${gender.filled}/${gender.quota}</small></label>`;
       }).join("");
       const value = level.gender ? null : adjustmentValue(level.jenjang, null);
-      return `<article class="quota-adjustment-card"><div class="quota-adjustment-card-head"><div><span class="admin-level-tag">${escapeHtml(level.jenjang)}</span><strong>${level.quota === null ? "Tidak dibatasi" : `Kuota ${level.quota}`}</strong></div><small>Terisi efektif ${level.filled}</small></div>${genderRows || `<label class="quota-adjustment-field"><span>Tambahan terisi</span><input type="number" min="0" max="100000" step="1" inputmode="numeric" value="${value || 0}" data-quota-jenjang="${escapeHtml(level.jenjang)}" data-quota-gender="" /><small>Formulir ${level.registeredFilled} + tambahan ${value || 0} = ${level.filled}${level.quota === null ? "" : `/${level.quota}`}</small></label>`}</article>`;
+       return `<article class="quota-adjustment-card"><div class="quota-adjustment-card-head"><div><span class="admin-level-tag">${escapeHtml(level.jenjang)}</span><strong>${level.quota === null ? "Tidak dibatasi" : `Kuota ${level.quota}`}</strong></div><small>Terisi efektif ${level.filled}</small></div>${genderRows || `<label class="quota-adjustment-field"><span>Tambahan terisi</span><input type="number" min="0" max="100000" step="1" inputmode="numeric" value="${value || 0}" data-quota-jenjang="${escapeHtml(level.jenjang)}" data-quota-gender="" /><small>Formulir ${level.registeredFilled} + waiting ${level.waitingFilled} + tambahan ${value || 0} = ${level.filled}${level.quota === null ? "" : `/${level.quota}`}</small></label>`}</article>`;
     }).join("");
     target.innerHTML = `<form class="quota-adjustment-form" id="quota-adjustment-form"><div class="quota-adjustment-grid">${levelCards}</div><div class="quota-adjustment-actions"><p id="quota-adjustment-feedback" class="quota-adjustment-feedback">Perubahan hanya berlaku untuk hitungan kuota, bukan jumlah formulir.</p><button class="admin-export-button" type="submit" id="quota-adjustment-save">Simpan penyesuaian kuota</button></div></form>`;
     document.getElementById("quota-adjustment-form")?.addEventListener("submit", async (event) => {
@@ -971,6 +1018,108 @@ function renderDashboard(user: AuthUser) {
       target.innerHTML = `<div class="admin-empty is-error">${escapeHtml(error instanceof Error ? error.message : "Pengaturan kuota belum dapat dimuat.")}</div>`;
     }
   }
+
+  function renderWaitingList(items: WaitingListItem[], aiEnabled: boolean) {
+    const target = document.getElementById("waiting-list-content");
+    const note = document.getElementById("waiting-list-ai-note");
+    if (!target || !note) return;
+    note.textContent = aiEnabled
+      ? "Pencocokan nama dibantu AI. Semua hasil wajib dikonfirmasi admin."
+      : "AI belum aktif; sistem memakai pemeriksaan kemiripan nama sebagai cadangan.";
+    if (!items.length) {
+      target.innerHTML = `<div class="admin-empty"><strong>Waiting list masih kosong</strong><span>Tambahkan nama siswa untuk menahan kursi sebelum mereka mengisi formulir.</span></div>`;
+      return;
+    }
+    target.innerHTML = `<div class="waiting-list-summary"><strong>${items.length}</strong><span>nama aktif · kursi yang sedang ditahan</span></div>${items.map((item) => {
+      const matches = item.matches.slice(0, 3);
+      return `<article class="waiting-list-item">
+        <div class="waiting-list-item-head"><div><span class="admin-level-tag">${escapeHtml(item.jenjang)}</span><h4>${escapeHtml(item.nama)}</h4><small>Ditambahkan ${escapeHtml(formatDate(item.created_at))} · ${escapeHtml(item.jenis_kelamin || "Jenis kelamin belum diketahui")}</small></div><span class="waiting-list-reserve">1 kursi ditahan</span></div>
+        ${item.catatan ? `<p class="waiting-list-note">${escapeHtml(item.catatan)}</p>` : ""}
+        <div class="waiting-list-match-area">
+          <div class="waiting-list-match-heading"><span>${matches.length ? "Saran kecocokan pengajuan" : "Belum ada saran kecocokan"}</span>${matches.length ? "<small>Periksa nama sebelum menghapus antrean</small>" : "<small>Waiting list tetap aktif</small>"}</div>
+          ${matches.map((match) => `<div class="waiting-list-match">
+            <div class="waiting-list-match-copy"><strong>${escapeHtml(match.applicationName)}</strong><span>${Math.round(match.confidence * 100)}% mirip · ${escapeHtml(match.source === "ai" ? "AI" : "pemeriksaan nama")}</span><small>${escapeHtml(match.reason)}</small></div>
+            <div class="waiting-list-match-actions"><button class="waiting-list-confirm" type="button" data-waiting-decision="confirmed" data-waiting-id="${item.id}" data-application-id="${match.applicationId}">Ya, siswa yang sama</button><button class="waiting-list-reject" type="button" data-waiting-decision="rejected" data-waiting-id="${item.id}" data-application-id="${match.applicationId}">Bukan orang yang sama</button></div>
+          </div>`).join("")}
+        </div>
+      </article>`;
+    }).join("")}`;
+    target.querySelectorAll<HTMLButtonElement>("[data-waiting-decision]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const waitingListId = Number(button.dataset.waitingId);
+        const applicationId = Number(button.dataset.applicationId);
+        const decision = button.dataset.waitingDecision;
+        if (!waitingListId || !applicationId || !decision) return;
+        if (decision === "confirmed" && !window.confirm(`Konfirmasi bahwa pendaftar ${button.closest(".waiting-list-match")?.querySelector("strong")?.textContent || ""} adalah ${button.closest(".waiting-list-item")?.querySelector("h4")?.textContent || ""}? Nama ini akan dihapus dari waiting list.`)) return;
+        button.disabled = true;
+        try {
+          await requestJSON(`/api/admin/waiting-list/${waitingListId}/match-decision`, {
+            method: "POST",
+            body: JSON.stringify({ applicationId, decision }),
+          });
+          await loadWaitingList();
+          await loadShareRecap();
+          showNotice(decision === "confirmed" ? "Kecocokan dikonfirmasi; nama dihapus dari waiting list." : "Saran kecocokan ditolak dan tidak akan ditampilkan lagi.");
+        } catch (error) {
+          button.disabled = false;
+          showNotice(error instanceof Error ? error.message : "Keputusan kecocokan belum dapat disimpan.");
+        }
+      });
+    });
+  }
+
+  async function loadWaitingList() {
+    const target = document.getElementById("waiting-list-content");
+    if (!target) return;
+    target.innerHTML = `<div class="admin-loading">Mencari kecocokan nama…</div>`;
+    try {
+      const result = await requestJSON<{ items: WaitingListItem[]; aiEnabled: boolean }>("/api/admin/waiting-list");
+      renderWaitingList(result.items, result.aiEnabled);
+    } catch (error) {
+      target.innerHTML = `<div class="admin-empty is-error">${escapeHtml(error instanceof Error ? error.message : "Waiting list belum dapat dimuat.")}</div>`;
+    }
+  }
+
+  document.getElementById("waiting-list-form")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    const button = document.getElementById("waiting-list-save") as HTMLButtonElement | null;
+    const feedback = document.getElementById("waiting-list-form-feedback");
+    const nama = (document.getElementById("waiting-list-name") as HTMLInputElement).value.trim();
+    const jenjang = (document.getElementById("waiting-list-level") as HTMLSelectElement).value;
+    const jenisKelamin = (document.getElementById("waiting-list-gender") as HTMLSelectElement).value || null;
+    const catatan = (document.getElementById("waiting-list-note") as HTMLTextAreaElement).value.trim();
+    if (!nama) return;
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Menyimpan…";
+    }
+    if (feedback) feedback.textContent = "";
+    try {
+      await requestJSON("/api/admin/waiting-list", {
+        method: "POST",
+        body: JSON.stringify({ nama, jenjang, jenisKelamin, catatan }),
+      });
+      form.reset();
+      if (feedback) {
+        feedback.textContent = "Nama berhasil ditambahkan dan satu kursi ditahan.";
+        feedback.className = "waiting-list-feedback is-success";
+      }
+      await loadWaitingList();
+      await loadShareRecap();
+    } catch (error) {
+      if (feedback) {
+        feedback.textContent = error instanceof Error ? error.message : "Nama belum dapat ditambahkan.";
+        feedback.className = "waiting-list-feedback is-error";
+      }
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = "Tambahkan ke waiting list";
+      }
+    }
+  });
+  document.getElementById("waiting-list-refresh")?.addEventListener("click", () => void loadWaitingList());
 
   function renderNotifications(items: AdminNotification[]) {
     const target = document.getElementById("notifications-content");

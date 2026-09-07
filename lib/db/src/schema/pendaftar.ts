@@ -110,6 +110,28 @@ export const registrationQuotaAdjustmentTable = pgTable("registration_quota_adju
   updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const waitingListTable = pgTable("waiting_list", {
+  id: serial("id").primaryKey(),
+  nama: text("nama").notNull(),
+  jenjang: text("jenjang").notNull(),
+  jenis_kelamin: text("jenis_kelamin"),
+  catatan: text("catatan"),
+  status: text("status").notNull().default("active"),
+  added_by: text("added_by").notNull(),
+  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const waitingListMatchTable = pgTable("waiting_list_match", {
+  id: serial("id").primaryKey(),
+  waiting_list_id: integer("waiting_list_id").notNull().references(() => waitingListTable.id, { onDelete: "cascade" }),
+  application_id: integer("application_id").notNull().references(() => pendaftarTable.id, { onDelete: "cascade" }),
+  decision: text("decision").notNull(),
+  decided_by: text("decided_by").notNull(),
+  decided_at: timestamp("decided_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  waitingApplicationUnique: uniqueIndex("waiting_list_match_pair_unique").on(table.waiting_list_id, table.application_id),
+}));
+
 export const committeeAuditLogTable = pgTable("committee_audit_log", {
   id: serial("id").primaryKey(),
   username: text("username").notNull(),

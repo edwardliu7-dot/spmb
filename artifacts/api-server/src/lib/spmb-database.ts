@@ -18,6 +18,7 @@ import {
   committeeNotificationTable,
   pendaftarTable,
   registrationQuotaAdjustmentTable,
+  waitingListTable,
   type InsertPendaftar,
   type Pendaftar,
 } from "@workspace/db";
@@ -88,7 +89,16 @@ export async function insertPendaftar(values: InsertPendaftar, files: Applicatio
             .from(registrationQuotaAdjustmentTable)
             .where(eq(registrationQuotaAdjustmentTable.scope, adjustmentScope(values.jenjang, null)))
         : [];
-      if (Number(levelCount?.count || 0) + Number(manualLevel?.filled || 0) >= quotaDefinition.quota) {
+      const [waitingLevel] = tables.has("waiting_list")
+        ? await tx
+            .select({ count: sql<number>`count(*)` })
+            .from(waitingListTable)
+            .where(and(
+              eq(waitingListTable.jenjang, values.jenjang),
+              eq(waitingListTable.status, "active"),
+            ))
+        : [];
+      if (Number(levelCount?.count || 0) + Number(manualLevel?.filled || 0) + Number(waitingLevel?.count || 0) >= quotaDefinition.quota) {
         throw new RegistrationQuotaFullError(values.jenjang, null, quotaDefinition.quota);
       }
 
@@ -111,7 +121,17 @@ export async function insertPendaftar(values: InsertPendaftar, files: Applicatio
                   adjustmentScope(values.jenjang, values.jenis_kelamin),
                 ))
             : [];
-          if (Number(genderCount?.count || 0) + Number(manualGender?.filled || 0) >= genderQuota) {
+          const [waitingGender] = tables.has("waiting_list")
+            ? await tx
+                .select({ count: sql<number>`count(*)` })
+                .from(waitingListTable)
+                .where(and(
+                  eq(waitingListTable.jenjang, values.jenjang),
+                  eq(waitingListTable.jenis_kelamin, values.jenis_kelamin),
+                  eq(waitingListTable.status, "active"),
+                ))
+            : [];
+          if (Number(genderCount?.count || 0) + Number(manualGender?.filled || 0) + Number(waitingGender?.count || 0) >= genderQuota) {
             throw new RegistrationQuotaFullError(values.jenjang, values.jenis_kelamin, genderQuota);
           }
         }
