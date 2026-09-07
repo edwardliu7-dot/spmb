@@ -58,6 +58,8 @@ type ObservationResponse = {
 type RegistrationQuotaGender = {
   jenisKelamin: string;
   quota: number;
+  registeredFilled: number;
+  manualFilled: number;
   filled: number;
   remaining: number;
   isFull: boolean;
@@ -66,6 +68,8 @@ type RegistrationQuotaGender = {
 type RegistrationQuota = {
   jenjang: string;
   quota: number | null;
+  registeredFilled: number;
+  manualFilled: number;
   filled: number;
   remaining: number | null;
   isFull: boolean;
@@ -75,6 +79,12 @@ type RegistrationQuota = {
 type RegistrationQuotaSummary = {
   levels: RegistrationQuota[];
   updatedAt: string;
+};
+
+type RegistrationQuotaAdjustment = {
+  jenjang: string;
+  jenisKelamin: string | null;
+  filled: number;
 };
 
 type SubmissionMonitoringResponse = {
@@ -603,7 +613,7 @@ function renderDashboard(user: AuthUser) {
 
            <section class="admin-view" id="master-view" hidden>
               <div class="admin-view-heading"><div><p class="decision-kicker decision-accent">Master data</p><h2>Master pendaftar</h2><p>Nomor pengajuan menjadi identitas utama; NIK anak dan NISN tetap ditampilkan sebagai data terpisah.</p></div><div class="admin-heading-actions"><button class="admin-export-button" id="master-export-button" type="button">Download Excel</button><button class="admin-zip-button" id="bulk-zip-button" type="button">Download ZIP terpilih</button></div></div>
-              ${user.username.toLowerCase() === "admin" ? `<section class="share-recap-panel" aria-labelledby="share-recap-title"><div class="share-recap-heading"><div><p class="decision-kicker decision-accent">Bagikan rekap</p><h3 id="share-recap-title">Rekap pendaftar ke WhatsApp</h3><p>Pilih jenjang untuk membuka WhatsApp dengan daftar nama yang sudah diurutkan dari waktu pendaftaran paling awal.</p></div><span class="share-recap-note">ADMIN ONLY</span></div><div class="share-recap-list" id="share-recap-list"><div class="admin-loading">Menyiapkan rekap…</div></div></section>` : ""}
+               ${user.username.toLowerCase() === "admin" ? `<section class="quota-adjustment-panel" aria-labelledby="quota-adjustment-title"><div class="share-recap-heading"><div><p class="decision-kicker decision-accent">Penyesuaian kuota</p><h3 id="quota-adjustment-title">Kuota sudah terisi</h3><p>Tambahkan pembayaran yang sudah masuk tetapi belum menjadi formulir. Nilai ini ikut menghitung sisa kuota dan pembatasan pendaftaran.</p></div><span class="share-recap-note">ADMIN ONLY</span></div><div id="quota-adjustment-content"><div class="admin-loading">Memuat pengaturan kuota…</div></div></section><section class="share-recap-panel" aria-labelledby="share-recap-title"><div class="share-recap-heading"><div><p class="decision-kicker decision-accent">Bagikan rekap</p><h3 id="share-recap-title">Rekap pendaftar ke WhatsApp</h3><p>Pilih jenjang untuk membuka WhatsApp dengan daftar nama yang sudah diurutkan dari waktu pendaftaran paling awal.</p></div><span class="share-recap-note">ADMIN ONLY</span></div><div class="share-recap-list" id="share-recap-list"><div class="admin-loading">Menyiapkan rekap…</div></div></section>` : ""}
              <div class="admin-filter-row"><label>Cari<input id="master-search-input" type="search" placeholder="Nama, nomor pengajuan, atau sekolah" /></label><label>Jenjang<select id="master-level-filter"><option value="Semua">Semua jenjang</option>${allowedLevels.map((level) => `<option value="${escapeHtml(level)}">${escapeHtml(level)}</option>`).join("")}</select></label><label>Status<select id="master-status-filter"><option value="Semua">Semua status</option>${statuses.map((status) => `<option value="${escapeHtml(status)}">${escapeHtml(status)}</option>`).join("")}</select></label><label>Urutkan<select id="master-sort-filter"><option value="newest">Terbaru</option><option value="oldest">Terlama</option><option value="name">Nama A–Z</option><option value="status">Status</option></select></label></div>
             <div class="admin-table-wrap" id="master-table"></div>
           </section>
@@ -669,7 +679,10 @@ function renderDashboard(user: AuthUser) {
     if (view === "observations") void loadObservation();
     if (view === "master") {
       void loadMasterData();
-      if (user.username.toLowerCase() === "admin") void loadShareRecap();
+      if (user.username.toLowerCase() === "admin") {
+        void loadShareRecap();
+        void loadQuotaAdjustmentEditor();
+      }
     }
     if (view === "notifications") void loadNotifications();
     closeRail();
@@ -887,6 +900,75 @@ function renderDashboard(user: AuthUser) {
       renderShareRecap(result.items, quotaSummary);
     } catch (error) {
       target.innerHTML = `<div class="admin-empty is-error">${escapeHtml(error instanceof Error ? error.message : "Rekap belum dapat dimuat.")}</div>`;
+    }
+  }
+
+  function renderQuotaAdjustmentEditor(
+    adjustments: RegistrationQuotaAdjustment[],
+    summary: RegistrationQuotaSummary,
+  ) {
+    const target = document.getElementById("quota-adjustment-content");
+    if (!target) return;
+    const adjustmentValue = (jenjang: string, jenisKelamin: string | null) =>
+      adjustments.find((item) => item.jenjang === jenjang && item.jenisKelamin === jenisKelamin)?.filled || 0;
+    const levelCards = summary.levels.map((level) => {
+      const genderRows = level.gender?.map((gender) => {
+        const value = adjustmentValue(level.jenjang, gender.jenisKelamin);
+        return `<label class="quota-adjustment-field"><span>${gender.jenisKelamin === "Laki-laki" ? "Putra" : "Putri"}</span><input type="number" min="0" max="100000" step="1" inputmode="numeric" value="${value}" data-quota-jenjang="${escapeHtml(level.jenjang)}" data-quota-gender="${escapeHtml(gender.jenisKelamin)}" /><small>Formulir ${gender.registeredFilled} + tambahan ${value} = ${gender.filled}/${gender.quota}</small></label>`;
+      }).join("");
+      const value = level.gender ? null : adjustmentValue(level.jenjang, null);
+      return `<article class="quota-adjustment-card"><div class="quota-adjustment-card-head"><div><span class="admin-level-tag">${escapeHtml(level.jenjang)}</span><strong>${level.quota === null ? "Tidak dibatasi" : `Kuota ${level.quota}`}</strong></div><small>Terisi efektif ${level.filled}</small></div>${genderRows || `<label class="quota-adjustment-field"><span>Tambahan terisi</span><input type="number" min="0" max="100000" step="1" inputmode="numeric" value="${value || 0}" data-quota-jenjang="${escapeHtml(level.jenjang)}" data-quota-gender="" /><small>Formulir ${level.registeredFilled} + tambahan ${value || 0} = ${level.filled}${level.quota === null ? "" : `/${level.quota}`}</small></label>`}</article>`;
+    }).join("");
+    target.innerHTML = `<form class="quota-adjustment-form" id="quota-adjustment-form"><div class="quota-adjustment-grid">${levelCards}</div><div class="quota-adjustment-actions"><p id="quota-adjustment-feedback" class="quota-adjustment-feedback">Perubahan hanya berlaku untuk hitungan kuota, bukan jumlah formulir.</p><button class="admin-export-button" type="submit" id="quota-adjustment-save">Simpan penyesuaian kuota</button></div></form>`;
+    document.getElementById("quota-adjustment-form")?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = document.getElementById("quota-adjustment-save") as HTMLButtonElement | null;
+      const feedback = document.getElementById("quota-adjustment-feedback");
+      const inputs = [...target.querySelectorAll<HTMLInputElement>("[data-quota-jenjang]")];
+      const payload = inputs.map((input) => ({
+        jenjang: input.dataset.quotaJenjang || "",
+        jenisKelamin: input.dataset.quotaGender || null,
+        filled: Number(input.value),
+      }));
+      if (payload.some((item) => !Number.isSafeInteger(item.filled) || item.filled < 0)) {
+        if (feedback) feedback.textContent = "Gunakan bilangan bulat 0 atau lebih.";
+        return;
+      }
+      if (button) {
+        button.disabled = true;
+        button.textContent = "Menyimpan…";
+      }
+      try {
+        const result = await requestJSON<{ summary: RegistrationQuotaSummary }>("/api/admin/quota-adjustments", {
+          method: "PUT",
+          body: JSON.stringify({ adjustments: payload }),
+        });
+        renderQuotaAdjustmentEditor(payload, result.summary);
+        await loadShareRecap();
+        showNotice("Penyesuaian kuota berhasil disimpan.");
+      } catch (error) {
+        if (feedback) feedback.textContent = error instanceof Error ? error.message : "Penyesuaian kuota belum dapat disimpan.";
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = "Simpan penyesuaian kuota";
+        }
+      }
+    });
+  }
+
+  async function loadQuotaAdjustmentEditor() {
+    const target = document.getElementById("quota-adjustment-content");
+    if (!target) return;
+    target.innerHTML = `<div class="admin-loading">Memuat pengaturan kuota…</div>`;
+    try {
+      const [adjustments, summary] = await Promise.all([
+        requestJSON<{ items: RegistrationQuotaAdjustment[] }>("/api/admin/quota-adjustments"),
+        requestJSON<RegistrationQuotaSummary>("/api/quotas"),
+      ]);
+      renderQuotaAdjustmentEditor(adjustments.items, summary);
+    } catch (error) {
+      target.innerHTML = `<div class="admin-empty is-error">${escapeHtml(error instanceof Error ? error.message : "Pengaturan kuota belum dapat dimuat.")}</div>`;
     }
   }
 

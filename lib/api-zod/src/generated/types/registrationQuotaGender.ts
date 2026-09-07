@@ -9,6 +9,8 @@
 export interface RegistrationQuotaGender {
   jenisKelamin: string;
   quota: number;
+  registeredFilled: number;
+  manualFilled: number;
   filled: number;
   remaining: number;
   isFull: boolean;

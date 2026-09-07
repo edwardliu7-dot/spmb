@@ -101,6 +101,15 @@ export const applicationStatusHistoryTable = pgTable("application_status_history
   changed_at: timestamp("changed_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const registrationQuotaAdjustmentTable = pgTable("registration_quota_adjustment", {
+  scope: text("scope").primaryKey(),
+  jenjang: text("jenjang").notNull(),
+  jenis_kelamin: text("jenis_kelamin"),
+  filled: integer("filled").notNull().default(0),
+  updated_by: text("updated_by").notNull(),
+  updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const committeeAuditLogTable = pgTable("committee_audit_log", {
   id: serial("id").primaryKey(),
   username: text("username").notNull(),

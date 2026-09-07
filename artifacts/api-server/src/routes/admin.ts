@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request } from "express";
 import path from "node:path";
 import { canAccessJenjang, requireCommitteeAuth } from "../middlewares/committee-auth";
 import {
@@ -15,9 +15,91 @@ import { getApplicationFileFields, readApplicationFile } from "../lib/applicatio
 import { resolveStoredUpload } from "./applications";
 import { createSpmbReceipt } from "../lib/spmb-receipt";
 import { getSubmissionMonitoring } from "../lib/submission-monitor";
+import {
+  getRegistrationQuotaSummary,
+  listRegistrationQuotaAdjustments,
+  registrationQuotaDefinitions,
+  saveRegistrationQuotaAdjustments,
+} from "../lib/registration-quota";
 
 const router = Router();
 router.use("/admin", requireCommitteeAuth);
+
+function isAdministrator(request: Request): boolean {
+  return request.committeeAccount?.username.toLowerCase() === "admin";
+}
+
+router.get("/admin/quota-adjustments", async (request, response) => {
+  if (!isAdministrator(request)) return response.status(403).json({ error: "Hanya administrator yang dapat mengatur kuota terisi." });
+  try {
+    return response.json({
+      items: await listRegistrationQuotaAdjustments(),
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    request.log.error({ err: error }, "Failed to load registration quota adjustments");
+    return response.status(500).json({ error: "Pengaturan kuota terisi belum dapat dimuat." });
+  }
+});
+
+router.put("/admin/quota-adjustments", async (request, response) => {
+  if (!isAdministrator(request)) return response.status(403).json({ error: "Hanya administrator yang dapat mengatur kuota terisi." });
+  const rawAdjustments = request.body?.adjustments;
+  if (!Array.isArray(rawAdjustments) || rawAdjustments.length !== registrationQuotaDefinitions.reduce(
+    (total, definition) => total + (definition.genderQuotas ? Object.keys(definition.genderQuotas).length : 1),
+    0,
+  )) {
+    return response.status(400).json({ error: "Data kuota terisi belum lengkap." });
+  }
+
+  const allowedScopes = new Set(
+    registrationQuotaDefinitions.flatMap((definition) => definition.genderQuotas
+      ? Object.keys(definition.genderQuotas).map((jenisKelamin) => `${definition.jenjang}:${jenisKelamin}`)
+      : [definition.jenjang]),
+  );
+  const seenScopes = new Set<string>();
+  const adjustments = [];
+  for (const item of rawAdjustments) {
+    const jenjang = typeof item?.jenjang === "string" ? item.jenjang : "";
+    const jenisKelamin = item?.jenisKelamin === null || item?.jenisKelamin === undefined
+      ? null
+      : typeof item.jenisKelamin === "string" ? item.jenisKelamin : "";
+    const filled = Number(item?.filled);
+    const scope = jenisKelamin ? `${jenjang}:${jenisKelamin}` : jenjang;
+    if (
+      !allowedScopes.has(scope)
+      || seenScopes.has(scope)
+      || !Number.isSafeInteger(filled)
+      || filled < 0
+      || filled > 100000
+    ) {
+      return response.status(400).json({ error: "Nilai tambahan kuota harus berupa bilangan bulat 0 atau lebih." });
+    }
+    seenScopes.add(scope);
+    adjustments.push({ jenjang, jenisKelamin, filled });
+  }
+
+  if (seenScopes.size !== allowedScopes.size) {
+    return response.status(400).json({ error: "Data kuota terisi belum mencakup semua jenjang." });
+  }
+
+  try {
+    const saved = await saveRegistrationQuotaAdjustments(adjustments, request.committeeAccount!.username);
+    await recordCommitteeAudit({
+      username: request.committeeAccount!.username,
+      action: "update_quota_adjustments",
+      details: JSON.stringify(adjustments),
+    });
+    return response.json({
+      items: saved,
+      summary: await getRegistrationQuotaSummary(),
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    request.log.error({ err: error }, "Failed to save registration quota adjustments");
+    return response.status(500).json({ error: "Pengaturan kuota terisi belum dapat disimpan." });
+  }
+});
 
 const documentFields = [
   { key: "foto_3x4_path", field: "foto_3x4", file: "foto-3x4" },

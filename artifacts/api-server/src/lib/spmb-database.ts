@@ -17,13 +17,14 @@ import {
   committeeNotificationReadTable,
   committeeNotificationTable,
   pendaftarTable,
+  registrationQuotaAdjustmentTable,
   type InsertPendaftar,
   type Pendaftar,
 } from "@workspace/db";
 import type { ApplicationFileInput } from "./application-files";
 import { logger } from "./logger";
 import { resolveStoredUpload, uploadsDirectory } from "./upload-storage";
-import { getQuotaDefinition, RegistrationQuotaFullError } from "./registration-quota";
+import { adjustmentScope, getQuotaDefinition, RegistrationQuotaFullError } from "./registration-quota";
 
 export { uploadsDirectory } from "./upload-storage";
 
@@ -81,7 +82,13 @@ export async function insertPendaftar(values: InsertPendaftar, files: Applicatio
         .select({ count: sql<number>`count(*)` })
         .from(pendaftarTable)
         .where(eq(pendaftarTable.jenjang, values.jenjang));
-      if (Number(levelCount?.count || 0) >= quotaDefinition.quota) {
+      const [manualLevel] = tables.has("registration_quota_adjustment")
+        ? await tx
+            .select({ filled: registrationQuotaAdjustmentTable.filled })
+            .from(registrationQuotaAdjustmentTable)
+            .where(eq(registrationQuotaAdjustmentTable.scope, adjustmentScope(values.jenjang, null)))
+        : [];
+      if (Number(levelCount?.count || 0) + Number(manualLevel?.filled || 0) >= quotaDefinition.quota) {
         throw new RegistrationQuotaFullError(values.jenjang, null, quotaDefinition.quota);
       }
 
@@ -95,7 +102,16 @@ export async function insertPendaftar(values: InsertPendaftar, files: Applicatio
               eq(pendaftarTable.jenjang, values.jenjang),
               eq(pendaftarTable.jenis_kelamin, values.jenis_kelamin),
             ));
-          if (Number(genderCount?.count || 0) >= genderQuota) {
+          const [manualGender] = tables.has("registration_quota_adjustment")
+            ? await tx
+                .select({ filled: registrationQuotaAdjustmentTable.filled })
+                .from(registrationQuotaAdjustmentTable)
+                .where(eq(
+                  registrationQuotaAdjustmentTable.scope,
+                  adjustmentScope(values.jenjang, values.jenis_kelamin),
+                ))
+            : [];
+          if (Number(genderCount?.count || 0) + Number(manualGender?.filled || 0) >= genderQuota) {
             throw new RegistrationQuotaFullError(values.jenjang, values.jenis_kelamin, genderQuota);
           }
         }
@@ -190,8 +206,39 @@ export async function updatePendaftar(
           eq(pendaftarTable.jenjang, values.jenjang),
           sql`${pendaftarTable.id} <> ${id}`,
         ));
-      if (Number(levelCount?.count || 0) >= quotaDefinition.quota) {
+      const [manualLevel] = tables.has("registration_quota_adjustment")
+        ? await tx
+            .select({ filled: registrationQuotaAdjustmentTable.filled })
+            .from(registrationQuotaAdjustmentTable)
+            .where(eq(registrationQuotaAdjustmentTable.scope, adjustmentScope(values.jenjang, null)))
+        : [];
+      if (Number(levelCount?.count || 0) + Number(manualLevel?.filled || 0) >= quotaDefinition.quota) {
         throw new RegistrationQuotaFullError(values.jenjang, null, quotaDefinition.quota);
+      }
+      if (quotaDefinition.genderQuotas) {
+        const genderQuota = quotaDefinition.genderQuotas[values.jenis_kelamin as keyof typeof quotaDefinition.genderQuotas];
+        if (genderQuota) {
+          const [genderCount] = await tx
+            .select({ count: sql<number>`count(*)` })
+            .from(pendaftarTable)
+            .where(and(
+              eq(pendaftarTable.jenjang, values.jenjang),
+              eq(pendaftarTable.jenis_kelamin, values.jenis_kelamin),
+              sql`${pendaftarTable.id} <> ${id}`,
+            ));
+          const [manualGender] = tables.has("registration_quota_adjustment")
+            ? await tx
+                .select({ filled: registrationQuotaAdjustmentTable.filled })
+                .from(registrationQuotaAdjustmentTable)
+                .where(eq(
+                  registrationQuotaAdjustmentTable.scope,
+                  adjustmentScope(values.jenjang, values.jenis_kelamin),
+                ))
+            : [];
+          if (Number(genderCount?.count || 0) + Number(manualGender?.filled || 0) >= genderQuota) {
+            throw new RegistrationQuotaFullError(values.jenjang, values.jenis_kelamin, genderQuota);
+          }
+        }
       }
     }
 

@@ -13,6 +13,8 @@ export interface HealthStatus {
 export interface RegistrationQuotaGender {
   jenisKelamin: string;
   quota: number;
+  registeredFilled: number;
+  manualFilled: number;
   filled: number;
   remaining: number;
   isFull: boolean;
@@ -21,6 +23,8 @@ export interface RegistrationQuotaGender {
 export interface RegistrationQuota {
   jenjang: string;
   quota: number | null;
+  registeredFilled: number;
+  manualFilled: number;
   filled: number;
   remaining: number | null;
   isFull: boolean;
@@ -29,6 +33,29 @@ export interface RegistrationQuota {
 
 export interface RegistrationQuotaResponse {
   levels: RegistrationQuota[];
+  updatedAt: string;
+}
+
+export interface QuotaAdjustment {
+  jenjang: string;
+  jenisKelamin: string | null;
+  /** @minimum 0 */
+  filled: number;
+}
+
+export interface QuotaAdjustmentUpdate {
+  /** @minItems 1 */
+  adjustments: QuotaAdjustment[];
+}
+
+export interface QuotaAdjustmentResponse {
+  items: QuotaAdjustment[];
+  updatedAt: string;
+}
+
+export interface QuotaAdjustmentUpdateResponse {
+  items: QuotaAdjustment[];
+  summary: RegistrationQuotaResponse;
   updatedAt: string;
 }
 

@@ -1790,6 +1790,85 @@
   padding: 18px;
 }
 
+.quota-adjustment-panel {
+  margin-bottom: 22px;
+  border: 1px solid #d9d4c7;
+  border-radius: 12px;
+  background: #f4f0e5;
+  padding: 18px;
+}
+
+.quota-adjustment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.quota-adjustment-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #e2ded3;
+  border-radius: 9px;
+  background: #fffdf8;
+  padding: 12px;
+}
+
+.quota-adjustment-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.quota-adjustment-card-head > div,
+.quota-adjustment-field {
+  display: grid;
+  gap: 6px;
+}
+
+.quota-adjustment-card-head strong {
+  color: #315f5c;
+  font-size: 11px;
+}
+
+.quota-adjustment-card-head small,
+.quota-adjustment-field small {
+  color: #92998f;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.quota-adjustment-field span {
+  color: #4c675f;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.quota-adjustment-field input {
+  width: 100%;
+  border: 1px solid #d3d1c5;
+  border-radius: 7px;
+  background: #fbf9f2;
+  color: #294646;
+  padding: 9px;
+  font: 700 14px "IBM Plex Mono", monospace;
+}
+
+.quota-adjustment-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.quota-adjustment-feedback {
+  margin: 0;
+  color: #7c897f;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
 .share-recap-heading {
   display: flex;
   align-items: flex-start;

@@ -26,17 +26,90 @@ export const GetRegistrationQuotasResponse = zod.object({
   "levels": zod.array(zod.object({
   "jenjang": zod.string(),
   "quota": zod.number().nullable(),
+  "registeredFilled": zod.number(),
+  "manualFilled": zod.number(),
   "filled": zod.number(),
   "remaining": zod.number().nullable(),
   "isFull": zod.boolean(),
   "gender": zod.array(zod.object({
   "jenisKelamin": zod.string(),
   "quota": zod.number(),
+  "registeredFilled": zod.number(),
+  "manualFilled": zod.number(),
   "filled": zod.number(),
   "remaining": zod.number(),
   "isFull": zod.boolean()
 })).nullable()
 })),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get manual quota fill adjustments
+ */
+export const getQuotaAdjustmentsResponseItemsItemFilledMin = 0;
+
+
+
+export const GetQuotaAdjustmentsResponse = zod.object({
+  "items": zod.array(zod.object({
+  "jenjang": zod.string(),
+  "jenisKelamin": zod.string().nullable(),
+  "filled": zod.number().min(getQuotaAdjustmentsResponseItemsItemFilledMin)
+})),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * Stores paid-but-not-yet-submitted applicants as filled quota without creating an application record.
+ * @summary Update manual quota fill adjustments
+ */
+export const updateQuotaAdjustmentsBodyAdjustmentsItemFilledMin = 0;
+
+
+
+
+export const UpdateQuotaAdjustmentsBody = zod.object({
+  "adjustments": zod.array(zod.object({
+  "jenjang": zod.string(),
+  "jenisKelamin": zod.string().nullable(),
+  "filled": zod.number().min(updateQuotaAdjustmentsBodyAdjustmentsItemFilledMin)
+})).min(1)
+})
+
+export const updateQuotaAdjustmentsResponseItemsItemFilledMin = 0;
+
+
+
+export const UpdateQuotaAdjustmentsResponse = zod.object({
+  "items": zod.array(zod.object({
+  "jenjang": zod.string(),
+  "jenisKelamin": zod.string().nullable(),
+  "filled": zod.number().min(updateQuotaAdjustmentsResponseItemsItemFilledMin)
+})),
+  "summary": zod.object({
+  "levels": zod.array(zod.object({
+  "jenjang": zod.string(),
+  "quota": zod.number().nullable(),
+  "registeredFilled": zod.number(),
+  "manualFilled": zod.number(),
+  "filled": zod.number(),
+  "remaining": zod.number().nullable(),
+  "isFull": zod.boolean(),
+  "gender": zod.array(zod.object({
+  "jenisKelamin": zod.string(),
+  "quota": zod.number(),
+  "registeredFilled": zod.number(),
+  "manualFilled": zod.number(),
+  "filled": zod.number(),
+  "remaining": zod.number(),
+  "isFull": zod.boolean()
+})).nullable()
+})),
+  "updatedAt": zod.coerce.date()
+}),
   "updatedAt": zod.coerce.date()
 })
 

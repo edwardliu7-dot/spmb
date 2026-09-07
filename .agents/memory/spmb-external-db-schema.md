@@ -49,3 +49,9 @@ Correction-status notes are another additive field: development and published sc
 **Why:** A schema-aware fallback can keep old records readable, but it cannot store a new reviewer note on a database that lacks the column.
 
 **How to apply:** Add the nullable column through the supported schema synchronization flow before enabling the status, then retain metadata-aware reads and writes for older runtime databases.
+
+Quota adjustment reads can fail with a Drizzle query wrapper whose PostgreSQL `42P01` code is nested under `cause`, not on the top-level error. The quota summary should treat that missing additive table as an empty adjustment set, while writes remain explicit failures until the schema is synchronized.
+
+**Why:** A newly added quota-adjustment table was absent in a development database and caused the public quota endpoint to return 500 even though the underlying PostgreSQL error was a normal missing-relation condition.
+
+**How to apply:** When adding optional feature tables, handle wrapped missing-relation errors and guard transactional reads against the startup schema inventory; synchronize the table before enabling the corresponding admin write flow.

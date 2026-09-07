@@ -51,6 +51,58 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /admin/quota-adjustments:
+    get:
+      operationId: getQuotaAdjustments
+      tags: [applications]
+      summary: Get manual quota fill adjustments
+      security:
+        - committeeSession: []
+      responses:
+        "200":
+          description: Manual quota fill adjustments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuotaAdjustmentResponse"
+        "403":
+          description: Administrator access required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateQuotaAdjustments
+      tags: [applications]
+      summary: Update manual quota fill adjustments
+      description: Stores paid-but-not-yet-submitted applicants as filled quota without creating an application record.
+      security:
+        - committeeSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuotaAdjustmentUpdate"
+      responses:
+        "200":
+          description: Updated quota adjustments and summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuotaAdjustmentUpdateResponse"
+        "400":
+          description: Invalid quota adjustment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Administrator access required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /submit:
     post:
       operationId: submitApplication
@@ -640,15 +692,19 @@ components:
       properties:
         jenisKelamin: { type: string }
         quota: { type: number }
+        registeredFilled: { type: number }
+        manualFilled: { type: number }
         filled: { type: number }
         remaining: { type: number }
         isFull: { type: boolean }
-      required: [jenisKelamin, quota, filled, remaining, isFull]
+      required: [jenisKelamin, quota, registeredFilled, manualFilled, filled, remaining, isFull]
     RegistrationQuota:
       type: object
       properties:
         jenjang: { type: string }
         quota: { type: number, nullable: true }
+        registeredFilled: { type: number }
+        manualFilled: { type: number }
         filled: { type: number }
         remaining: { type: number, nullable: true }
         isFull: { type: boolean }
@@ -657,7 +713,7 @@ components:
           nullable: true
           items:
             $ref: "#/components/schemas/RegistrationQuotaGender"
-      required: [jenjang, quota, filled, remaining, isFull, gender]
+      required: [jenjang, quota, registeredFilled, manualFilled, filled, remaining, isFull, gender]
     RegistrationQuotaResponse:
       type: object
       properties:
@@ -667,6 +723,42 @@ components:
             $ref: "#/components/schemas/RegistrationQuota"
         updatedAt: { type: string, format: date-time }
       required: [levels, updatedAt]
+    QuotaAdjustment:
+      type: object
+      properties:
+        jenjang: { type: string }
+        jenisKelamin: { type: string, nullable: true }
+        filled: { type: number, minimum: 0 }
+      required: [jenjang, jenisKelamin, filled]
+    QuotaAdjustmentUpdate:
+      type: object
+      properties:
+        adjustments:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/QuotaAdjustment"
+      required: [adjustments]
+    QuotaAdjustmentResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuotaAdjustment"
+        updatedAt: { type: string, format: date-time }
+      required: [items, updatedAt]
+    QuotaAdjustmentUpdateResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuotaAdjustment"
+        summary:
+          $ref: "#/components/schemas/RegistrationQuotaResponse"
+        updatedAt: { type: string, format: date-time }
+      required: [items, summary, updatedAt]
     StudentApplicationInput:
       type: object
       required:

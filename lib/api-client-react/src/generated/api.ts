@@ -44,6 +44,9 @@ import type {
   ObservationResponse,
   PaymentVerificationInput,
   PaymentVerificationResult,
+  QuotaAdjustmentResponse,
+  QuotaAdjustmentUpdate,
+  QuotaAdjustmentUpdateResponse,
   RegistrationQuotaResponse,
   StudentApplicationInput,
   StudentApplicationUpdateInput,
@@ -235,6 +238,155 @@ export function useGetRegistrationQuotas<TData = Awaited<ReturnType<typeof getRe
 
 
 
+
+export const getGetQuotaAdjustmentsUrl = () => {
+
+
+
+
+  return `/api/admin/quota-adjustments`
+}
+
+/**
+ * @summary Get manual quota fill adjustments
+ */
+export const getQuotaAdjustments = async ( options?: Parameters<typeof customFetch>[1]): Promise<QuotaAdjustmentResponse> => {
+
+  return customFetch<QuotaAdjustmentResponse>(getGetQuotaAdjustmentsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetQuotaAdjustmentsQueryKey = () => {
+    return [
+    `/api/admin/quota-adjustments`
+    ] as const;
+    }
+
+
+export const getGetQuotaAdjustmentsQueryOptions = <TData = Awaited<ReturnType<typeof getQuotaAdjustments>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getQuotaAdjustments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetQuotaAdjustmentsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getQuotaAdjustments>>> = ({ signal }) => getQuotaAdjustments({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getQuotaAdjustments>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetQuotaAdjustmentsQueryResult = NonNullable<Awaited<ReturnType<typeof getQuotaAdjustments>>>
+export type GetQuotaAdjustmentsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get manual quota fill adjustments
+ */
+
+export function useGetQuotaAdjustments<TData = Awaited<ReturnType<typeof getQuotaAdjustments>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getQuotaAdjustments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetQuotaAdjustmentsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateQuotaAdjustmentsUrl = () => {
+
+
+
+
+  return `/api/admin/quota-adjustments`
+}
+
+/**
+ * Stores paid-but-not-yet-submitted applicants as filled quota without creating an application record.
+ * @summary Update manual quota fill adjustments
+ */
+export const updateQuotaAdjustments = async (quotaAdjustmentUpdate: QuotaAdjustmentUpdate, options?: Parameters<typeof customFetch>[1]): Promise<QuotaAdjustmentUpdateResponse> => {
+
+  return customFetch<QuotaAdjustmentUpdateResponse>(getUpdateQuotaAdjustmentsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(quotaAdjustmentUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateQuotaAdjustmentsMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateQuotaAdjustments>>, TError,{data: BodyType<QuotaAdjustmentUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateQuotaAdjustments>>, TError,{data: BodyType<QuotaAdjustmentUpdate>}, TContext> => {
+
+const mutationKey = ['updateQuotaAdjustments'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateQuotaAdjustments>>, {data: BodyType<QuotaAdjustmentUpdate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateQuotaAdjustments(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateQuotaAdjustmentsMutationResult = NonNullable<Awaited<ReturnType<typeof updateQuotaAdjustments>>>
+    export type UpdateQuotaAdjustmentsMutationBody = BodyType<QuotaAdjustmentUpdate>
+    export type UpdateQuotaAdjustmentsMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Update manual quota fill adjustments
+ */
+export const useUpdateQuotaAdjustments = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateQuotaAdjustments>>, TError,{data: BodyType<QuotaAdjustmentUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateQuotaAdjustments>>,
+        TError,
+        {data: BodyType<QuotaAdjustmentUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateQuotaAdjustmentsMutationOptions(options));
+    }
 
 export const getSubmitApplicationUrl = () => {
 

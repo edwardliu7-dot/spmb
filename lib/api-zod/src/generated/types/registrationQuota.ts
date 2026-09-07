@@ -10,6 +10,8 @@ import type { RegistrationQuotaGender } from './registrationQuotaGender';
 export interface RegistrationQuota {
   jenjang: string;
   quota: number | null;
+  registeredFilled: number;
+  manualFilled: number;
   filled: number;
   remaining: number | null;
   isFull: boolean;
