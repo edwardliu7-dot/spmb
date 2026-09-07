@@ -374,7 +374,6 @@ async function queryApplicationList(
       email: pendaftarTable.email,
       status: pendaftarTable.status,
       created_at: pendaftarTable.created_at,
-      catatan_perbaikan: pendaftarTable.catatan_perbaikan,
     })
     .from(pendaftarTable)
     .where(where)
