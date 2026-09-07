@@ -1208,6 +1208,40 @@
   background: #b55341;
 }
 
+.form-board-statement-box {
+  padding: 18px 20px 19px;
+  border: 1px solid #d8ded5;
+  border-radius: 10px;
+  background: #f1f5ed;
+  color: #53665f;
+}
+
+.form-board-statement-lead {
+  margin: 0 0 10px;
+  color: #315653;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.form-board-statement-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 21px;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.form-board-statement-list li {
+  padding-left: 4px;
+}
+
+.form-board-statement-section .form-board-consent-field {
+  margin: 20px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid #dedbd0;
+}
+
 .form-board-field-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1525,9 +1559,10 @@
 
 .form-board-consent input {
   flex: 0 0 auto;
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
   margin: 0;
+  margin-top: 1px;
   accent-color: #1f5a5b;
 }
 
@@ -1549,7 +1584,7 @@
 
 .form-board-consent-error {
   display: none;
-  margin: 7px 0 0 29px;
+  margin: 7px 0 0 24px;
   color: #984131;
   font-size: 10px;
   line-height: 1.4;

@@ -188,7 +188,7 @@ const whatsappGroupLinks: Record<string, { name: string; url: string }> = {
   SMP: { name: 'SMP', url: 'https://chat.whatsapp.com/BWNC9GTG9t67I3tyUv5Zrl' },
 };
 
-const sectionIds = ['section-student', 'section-school', 'section-parent', 'section-upload'];
+const sectionIds = ['section-student', 'section-school', 'section-parent', 'section-upload', 'section-statement'];
 const uploadFieldNames = ['foto_3x4', 'akte_lahir', 'kartu_keluarga', 'ktp_orangtua', 'bukti_bayar'];
 const draftStorageKey = 'spmb-2027-form-draft';
 const draftFilesDatabase = 'spmb-2027-draft-files';
@@ -351,13 +351,14 @@ root.innerHTML = `
         <aside class="form-board-sidebar" aria-label="Kemajuan formulir">
           <div class="form-board-sidebar-head">
             <div><div class="form-board-panel-kicker">${icon('file')}Tahapan pendaftaran</div><h2>Formulir<br /><em>pendaftaran.</em></h2></div>
-            <span class="form-board-progress-count"><span id="progress-current">01</span><span>/04</span></span>
+             <span class="form-board-progress-count"><span id="progress-current">01</span><span>/05</span></span>
           </div>
           <ol class="form-board-step-list">
             <li><button class="form-board-step progress-item form-board-step-active is-active" type="button" data-go-section="section-student" data-testid="button-progress-student"><span class="form-board-step-number">01</span><span><strong>Calon peserta didik</strong><small>Identitas utama</small></span></button></li>
             <li><button class="form-board-step progress-item" type="button" data-go-section="section-school" data-testid="button-progress-school"><span class="form-board-step-number">02</span><span><strong>Sekolah asal</strong><small>Riwayat pendidikan</small></span></button></li>
             <li><button class="form-board-step progress-item" type="button" data-go-section="section-parent" data-testid="button-progress-parent"><span class="form-board-step-number">03</span><span><strong>Orang tua & wali</strong><small>Kontak keluarga</small></span></button></li>
             <li><button class="form-board-step progress-item" type="button" data-go-section="section-upload" data-testid="button-progress-upload"><span class="form-board-step-number">04</span><span><strong>Upload berkas</strong><small>Dokumen pendukung</small></span></button></li>
+             <li><button class="form-board-step progress-item" type="button" data-go-section="section-statement" data-testid="button-progress-statement"><span class="form-board-step-number">05</span><span><strong>Pernyataan</strong><small>Persetujuan akhir</small></span></button></li>
           </ol>
           <div class="form-board-sidebar-note">${icon('lock')}<div><strong>Data tersimpan aman</strong><p>Informasi Anda hanya digunakan untuk proses penerimaan murid baru.</p></div></div>
           <div class="form-board-sidebar-help">${icon('info')}<span>Wajib diisi ditandai dengan <b>*</b></span></div>
@@ -382,16 +383,32 @@ root.innerHTML = `
                 </div>
                 <div class="form-board-upload-grid">${uploadFields}</div>
               </fieldset>
+               <fieldset class="form-board-section form-board-statement-section" id="section-statement" data-section="05">
+                 <div class="form-board-section-heading">
+                   <span class="form-board-section-index">05</span>
+                   <div class="form-board-section-copy"><div class="form-board-section-kicker"><span>Bagian 05</span><span class="form-board-section-rule"></span></div><h3>Pernyataan</h3><p>Mohon baca dan pahami pernyataan berikut sebelum mengirim pengajuan.</p></div>
+                   <span class="form-board-section-check"><span></span></span>
+                 </div>
+                 <div class="form-board-statement-box">
+                   <p class="form-board-statement-lead">Dengan ini kami bersedia dan sanggup:</p>
+                   <ol class="form-board-statement-list">
+                     <li>Menaati dan memenuhi kewajiban ketentuan peraturan yang ditetapkan oleh sekolah Tisa Islamic School</li>
+                     <li>Sanggup melunasi semua pembayaran sekolah sesuai dengan peraturan yang ditetapkan oleh Tisa Islamic School</li>
+                     <li>Siap menerima sanksi dalam bentuk apapun bila tidak menaati peraturan yang berlaku</li>
+                     <li>Uang yang sudah dibayarkan tidak dapat dikembalikan.</li>
+                   </ol>
+                 </div>
+                 <div class="form-board-consent-field" data-field="consent">
+                   <label class="form-board-consent" for="consent"><input id="consent" name="consent" type="checkbox" required aria-describedby="consent-error" data-testid="input-consent" /><span>Saya telah membaca dan menyetujui pernyataan diatas</span></label>
+                   <span class="error-message form-board-consent-error" id="consent-error" role="alert" aria-live="polite"></span>
+                 </div>
+               </fieldset>
               <div class="form-board-step-navigation" id="step-navigation">
                 <button class="form-board-step-button form-board-step-button-secondary" type="button" id="step-back" data-testid="button-step-back">${icon('chevron')}<span>Kembali</span></button>
                 <span class="form-board-step-navigation-copy" id="step-navigation-copy">Lengkapi bagian ini, lalu lanjutkan.</span>
                 <button class="form-board-step-button form-board-step-button-primary" type="button" id="step-next" data-testid="button-step-next"><span>Lanjut</span>${icon('chevron')}</button>
               </div>
               <div class="form-board-submit-area">
-                <div class="form-board-consent-field" data-field="consent">
-                  <label class="form-board-consent" for="consent"><input id="consent" name="consent" type="checkbox" required aria-describedby="consent-error" data-testid="input-consent" /><span>Saya memastikan data yang diisi <b>benar dan dapat dipertanggungjawabkan</b>.</span></label>
-                  <span class="error-message form-board-consent-error" id="consent-error" role="alert" aria-live="polite"></span>
-                </div>
                 <div class="form-board-submit-row">
                   <div class="form-board-submit-info">${icon('shield')}<span>Periksa kembali data sebelum mengirim.<small>Pengajuan akan diproses oleh panitia SPMB.</small></span></div>
                   <button class="form-board-submit-button submit-button" type="submit" id="submit-button" data-testid="button-submit-application"><span class="submit-label">Kirim pengajuan</span>${icon('check')}</button>
