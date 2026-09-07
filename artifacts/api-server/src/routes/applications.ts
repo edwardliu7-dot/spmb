@@ -125,6 +125,15 @@ router.patch("/applications/status", async (request, response) => {
     .filter((value: number): value is number => Number.isSafeInteger(value) && value > 0);
   const ids = [...new Set<number>(normalizedIds)];
   const status = typeof request.body?.status === "string" ? request.body.status : "";
+  const correctionNote = typeof request.body?.catatan_perbaikan === "string"
+    ? request.body.catatan_perbaikan.trim()
+    : "";
+  if (status === "Perlu Perbaikan Data" && !correctionNote) {
+    return response.status(400).json({ error: "Catatan perbaikan wajib diisi untuk status ini." });
+  }
+  if (correctionNote.length > 2000) {
+    return response.status(400).json({ error: "Catatan perbaikan maksimal 2.000 karakter." });
+  }
   if (!ids.length || ids.length > 100 || !committeeStatuses.includes(status as (typeof committeeStatuses)[number])) {
     return response.status(400).json({ error: "Daftar pendaftar atau status tidak valid." });
   }
@@ -134,7 +143,7 @@ router.patch("/applications/status", async (request, response) => {
     for (const id of ids) {
       const application = await getPendaftar(id);
       if (!application || !request.committeeAccount || !canAccessJenjang(request.committeeAccount, application.jenjang)) continue;
-      const updated = await updatePendaftarStatus(id, status, request.committeeAccount.username);
+       const updated = await updatePendaftarStatus(id, status, request.committeeAccount.username, correctionNote);
       if (updated) updatedIds.push(updated.id);
     }
     return response.json({
@@ -153,6 +162,15 @@ router.patch("/applications/status", async (request, response) => {
 router.patch("/applications/:id/status", async (request, response) => {
   const id = parseId(request.params.id);
   const status = typeof request.body?.status === "string" ? request.body.status : "";
+  const correctionNote = typeof request.body?.catatan_perbaikan === "string"
+    ? request.body.catatan_perbaikan.trim()
+    : "";
+  if (status === "Perlu Perbaikan Data" && !correctionNote) {
+    return response.status(400).json({ error: "Catatan perbaikan wajib diisi untuk status ini." });
+  }
+  if (correctionNote.length > 2000) {
+    return response.status(400).json({ error: "Catatan perbaikan maksimal 2.000 karakter." });
+  }
   if (!id || !committeeStatuses.includes(status as (typeof committeeStatuses)[number])) {
     return response.status(400).json({ error: "Status pendaftar tidak valid." });
   }
@@ -162,7 +180,7 @@ router.patch("/applications/:id/status", async (request, response) => {
     if (!application || !request.committeeAccount || !canAccessJenjang(request.committeeAccount, application.jenjang)) {
       return response.status(404).json({ error: "Pendaftar tidak ditemukan." });
     }
-    const updated = await updatePendaftarStatus(id, status, request.committeeAccount.username);
+    const updated = await updatePendaftarStatus(id, status, request.committeeAccount.username, correctionNote);
     if (!updated) return response.status(404).json({ error: "Pendaftar tidak ditemukan." });
     request.log.info({ applicationId: id, status }, "SPMB application status updated");
     return response.json({

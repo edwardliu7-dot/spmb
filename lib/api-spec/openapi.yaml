@@ -230,7 +230,7 @@ paths:
         - name: status
           in: query
           required: false
-          schema: { type: string, enum: [Semua, Baru, "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima] }
+          schema: { type: string, enum: [Semua, Baru, "Perlu Perbaikan Data", "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima] }
       responses:
         "200":
           description: Application summaries
@@ -386,6 +386,66 @@ paths:
             application/octet-stream: {}
         "404":
           description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /submissions/{id}/edit:
+    get:
+      operationId: getSubmissionEditData
+      tags: [applications]
+      summary: Get data for correcting an application
+      description: Returns the editable application data only while the application is marked as needing data corrections.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: number }
+      responses:
+        "200":
+          description: Editable application data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionEditData"
+        "404":
+          description: Application not found or not open for corrections
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /submissions/{id}/resubmit:
+    post:
+      operationId: resubmitApplication
+      tags: [applications]
+      summary: Resubmit an application after correcting data
+      description: Updates the existing application and keeps its application number. Existing documents are retained when a replacement is not uploaded.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: number }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/StudentApplicationUpdateInput"
+      responses:
+        "200":
+          description: Application resubmitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResult"
+        "400":
+          description: Invalid corrected data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Application not found or not open for corrections
           content:
             application/json:
               schema:
@@ -738,9 +798,28 @@ components:
         applicationNumber: { type: string }
         nama_calon: { type: string }
         jenjang: { type: string }
-        status: { type: string, enum: [Baru, "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima] }
+        status: { type: string, enum: [Baru, "Perlu Perbaikan Data", "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima] }
         created_at: { type: string }
-      required: [id, applicationNumber, nama_calon, jenjang, status, created_at]
+        catatan_perbaikan: { type: string, nullable: true }
+        canEdit: { type: boolean }
+      required: [id, applicationNumber, nama_calon, jenjang, status, created_at, catatan_perbaikan, canEdit]
+    StudentApplicationUpdateInput:
+      description: Same student fields as StudentApplicationInput. Supporting document fields are optional during correction and retained when omitted.
+      allOf:
+        - $ref: "#/components/schemas/StudentApplicationInput"
+    SubmissionEditData:
+      allOf:
+        - $ref: "#/components/schemas/StudentApplicationInput"
+        - type: object
+          properties:
+            id: { type: number }
+            applicationNumber: { type: string }
+            status: { type: string }
+            files:
+              type: array
+              items:
+                $ref: "#/components/schemas/ApplicationFile"
+          required: [id, applicationNumber, status, files]
     ApplicationListItem:
       type: object
       properties:
@@ -749,7 +828,7 @@ components:
         jenjang: { type: string }
         nama_sekolah_asal: { type: string, nullable: true }
         email: { type: string }
-        status: { type: string }
+        status: { type: string, enum: [Baru, "Perlu Perbaikan Data", "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima] }
         created_at: { type: string }
       required: [id, nama_calon, jenjang, nama_sekolah_asal, email, status, created_at]
     ApplicationListResponse:
@@ -878,7 +957,12 @@ components:
       properties:
         status:
           type: string
-          enum: [Baru, "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima]
+          enum: [Baru, "Perlu Perbaikan Data", "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima]
+        catatan_perbaikan:
+          type: string
+          nullable: true
+          maxLength: 2000
+          description: Required when status is Perlu Perbaikan Data.
       required: [status]
     BulkApplicationStatusUpdate:
       type: object
@@ -890,7 +974,12 @@ components:
           maxItems: 100
         status:
           type: string
-          enum: [Baru, "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima]
+          enum: [Baru, "Perlu Perbaikan Data", "Lolos Verifikasi Berkas", Observasi, "Lolos Observasi", Diterima]
+        catatan_perbaikan:
+          type: string
+          nullable: true
+          maxLength: 2000
+          description: Required when status is Perlu Perbaikan Data.
       required: [ids, status]
     BulkApplicationStatusResponse:
       type: object

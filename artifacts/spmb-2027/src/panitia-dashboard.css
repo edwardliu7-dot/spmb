@@ -1338,6 +1338,51 @@
   padding: 0 9px;
 }
 
+.manual-status-save {
+  display: none;
+  width: 100%;
+  margin-top: 8px;
+  border: 1px solid #b27642;
+  border-radius: 7px;
+  background: #b27642;
+  color: #fffaf0;
+  padding: 9px 12px;
+  font: 700 10px "DM Sans", sans-serif;
+  cursor: pointer;
+}
+
+.manual-status-save:not([hidden]) {
+  display: block;
+}
+
+.correction-note-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+
+.correction-note-label small {
+  color: #b27642;
+  font: 8px "DM Sans", sans-serif;
+  text-transform: none;
+}
+
+.inspector-actions textarea {
+  width: 100%;
+  min-height: 78px;
+  margin-top: 7px;
+  padding: 9px;
+  border: 1px solid #d3d1c5;
+  border-radius: 7px;
+  outline: none;
+  resize: vertical;
+  background: #ebe8de;
+  color: #294646;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .detail-section .detail-grid {
   margin-top: 14px;
 }

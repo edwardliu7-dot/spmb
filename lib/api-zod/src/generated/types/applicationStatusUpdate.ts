@@ -9,4 +9,9 @@ import type { ApplicationStatusUpdateStatus } from './applicationStatusUpdateSta
 
 export interface ApplicationStatusUpdate {
   status: ApplicationStatusUpdateStatus;
+  /**
+     * Required when status is Perlu Perbaikan Data.
+     * @maxLength 2000
+     */
+  catatan_perbaikan?: string | null;
 }

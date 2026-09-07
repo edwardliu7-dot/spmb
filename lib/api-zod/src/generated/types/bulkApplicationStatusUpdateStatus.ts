@@ -11,6 +11,7 @@ export type BulkApplicationStatusUpdateStatus = typeof BulkApplicationStatusUpda
 
 export const BulkApplicationStatusUpdateStatus = {
   Baru: 'Baru',
+  Perlu_Perbaikan_Data: 'Perlu Perbaikan Data',
   Lolos_Verifikasi_Berkas: 'Lolos Verifikasi Berkas',
   Observasi: 'Observasi',
   Lolos_Observasi: 'Lolos Observasi',

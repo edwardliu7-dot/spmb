@@ -302,6 +302,7 @@ export type SubmissionStatusResponseStatus = typeof SubmissionStatusResponseStat
 
 export const SubmissionStatusResponseStatus = {
   Baru: 'Baru',
+  Perlu_Perbaikan_Data: 'Perlu Perbaikan Data',
   Lolos_Verifikasi_Berkas: 'Lolos Verifikasi Berkas',
   Observasi: 'Observasi',
   Lolos_Observasi: 'Lolos Observasi',
@@ -315,7 +316,40 @@ export interface SubmissionStatusResponse {
   jenjang: string;
   status: SubmissionStatusResponseStatus;
   created_at: string;
+  catatan_perbaikan: string | null;
+  canEdit: boolean;
 }
+
+/**
+ * Same student fields as StudentApplicationInput. Supporting document fields are optional during correction and retained when omitted.
+ */
+export type StudentApplicationUpdateInput = StudentApplicationInput;
+
+export interface ApplicationFile {
+  field: string;
+  label: string;
+  url: string;
+  available: boolean;
+}
+
+export type SubmissionEditData = StudentApplicationInput & {
+  id: number;
+  applicationNumber: string;
+  status: string;
+  files: ApplicationFile[];
+};
+
+export type ApplicationListItemStatus = typeof ApplicationListItemStatus[keyof typeof ApplicationListItemStatus];
+
+
+export const ApplicationListItemStatus = {
+  Baru: 'Baru',
+  Perlu_Perbaikan_Data: 'Perlu Perbaikan Data',
+  Lolos_Verifikasi_Berkas: 'Lolos Verifikasi Berkas',
+  Observasi: 'Observasi',
+  Lolos_Observasi: 'Lolos Observasi',
+  Diterima: 'Diterima',
+} as const;
 
 export interface ApplicationListItem {
   id: number;
@@ -323,7 +357,7 @@ export interface ApplicationListItem {
   jenjang: string;
   nama_sekolah_asal: string | null;
   email: string;
-  status: string;
+  status: ApplicationListItemStatus;
   created_at: string;
 }
 
@@ -337,13 +371,6 @@ export interface ApplicationDeleteResponse {
   message: string;
   id: number;
   filesRemoved: number;
-}
-
-export interface ApplicationFile {
-  field: string;
-  label: string;
-  url: string;
-  available: boolean;
 }
 
 export type ApplicationDetail = ApplicationListItem & StudentApplicationInput & {
@@ -427,6 +454,7 @@ export type ApplicationStatusUpdateStatus = typeof ApplicationStatusUpdateStatus
 
 export const ApplicationStatusUpdateStatus = {
   Baru: 'Baru',
+  Perlu_Perbaikan_Data: 'Perlu Perbaikan Data',
   Lolos_Verifikasi_Berkas: 'Lolos Verifikasi Berkas',
   Observasi: 'Observasi',
   Lolos_Observasi: 'Lolos Observasi',
@@ -435,6 +463,11 @@ export const ApplicationStatusUpdateStatus = {
 
 export interface ApplicationStatusUpdate {
   status: ApplicationStatusUpdateStatus;
+  /**
+     * Required when status is Perlu Perbaikan Data.
+     * @maxLength 2000
+     */
+  catatan_perbaikan?: string | null;
 }
 
 export type BulkApplicationStatusUpdateStatus = typeof BulkApplicationStatusUpdateStatus[keyof typeof BulkApplicationStatusUpdateStatus];
@@ -442,6 +475,7 @@ export type BulkApplicationStatusUpdateStatus = typeof BulkApplicationStatusUpda
 
 export const BulkApplicationStatusUpdateStatus = {
   Baru: 'Baru',
+  Perlu_Perbaikan_Data: 'Perlu Perbaikan Data',
   Lolos_Verifikasi_Berkas: 'Lolos Verifikasi Berkas',
   Observasi: 'Observasi',
   Lolos_Observasi: 'Lolos Observasi',
@@ -455,6 +489,11 @@ export interface BulkApplicationStatusUpdate {
      */
   ids: number[];
   status: BulkApplicationStatusUpdateStatus;
+  /**
+     * Required when status is Perlu Perbaikan Data.
+     * @maxLength 2000
+     */
+  catatan_perbaikan?: string | null;
 }
 
 export interface BulkApplicationStatusResponse {
@@ -532,6 +571,7 @@ export type ListApplicationsStatus = typeof ListApplicationsStatus[keyof typeof 
 export const ListApplicationsStatus = {
   Semua: 'Semua',
   Baru: 'Baru',
+  Perlu_Perbaikan_Data: 'Perlu Perbaikan Data',
   Lolos_Verifikasi_Berkas: 'Lolos Verifikasi Berkas',
   Observasi: 'Observasi',
   Lolos_Observasi: 'Lolos Observasi',

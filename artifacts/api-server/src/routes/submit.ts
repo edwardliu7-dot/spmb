@@ -2,8 +2,8 @@ import { Router, type NextFunction, type Request, type Response } from "express"
 import multer from "multer";
 import path from "node:path";
 import { SubmitApplicationBody } from "@workspace/api-zod";
-import { getPendaftar, getPublicPendaftarStatus, insertPendaftar } from "../lib/spmb-database";
-import { type ApplicationFileInput } from "../lib/application-files";
+import { getPendaftar, getPublicPendaftarStatus, insertPendaftar, updatePendaftar } from "../lib/spmb-database";
+import { getApplicationFileFields, readApplicationFile, type ApplicationFileInput } from "../lib/application-files";
 import { allJenjang } from "../middlewares/committee-auth";
 import { createReceiptToken, createSpmbReceipt, isValidReceiptToken } from "../lib/spmb-receipt";
 import { getRegistrationQuotaSummary, RegistrationQuotaFullError } from "../lib/registration-quota";
@@ -342,7 +342,23 @@ function handleUpload(request: Request, response: Parameters<typeof uploadMiddle
   });
 }
 
-router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, response): Promise<void> => {
+router.post(["/submit", "/submissions/:id/resubmit"], enforceSubmitRateLimit, handleUpload, async (request, response): Promise<void> => {
+  const resubmitId = request.params.id ? parseId(String(request.params.id)) : null;
+  const isResubmission = Boolean(request.params.id);
+  let existingApplication: Awaited<ReturnType<typeof getPendaftar>> = undefined;
+  let existingFileFields = new Set<string>();
+  if (isResubmission) {
+    if (!resubmitId) {
+      response.status(400).json({ error: "Nomor pengajuan tidak valid." });
+      return;
+    }
+    existingApplication = await getPendaftar(resubmitId);
+    if (!existingApplication || existingApplication.status !== "Perlu Perbaikan Data") {
+      response.status(404).json({ error: "Pengajuan tidak sedang menunggu perbaikan data." });
+      return;
+    }
+    existingFileFields = await getApplicationFileFields(resubmitId);
+  }
   const email = getValue(request, "email");
   const jenjang = getValue(request, "jenjang");
   const schoolDataRequired = !earlyEducationLevels.has(jenjang);
@@ -367,7 +383,13 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
     // The generated multipart contract represents uploads as strings. Use
     // their original names for contract validation while Multer keeps the
     // actual files available for signature and size checks below.
-    ...documentFields.map((field) => [field, getUploadedFile(request, field)?.originalname]),
+     ...documentFields.map((field) => [
+       field,
+       getUploadedFile(request, field)?.originalname
+         || (isResubmission && (existingFileFields.has(field) || Boolean((existingApplication as Record<string, unknown>)[`${field}_path`])))
+           ? "existing-file"
+           : undefined,
+     ]),
   ]);
   const contractResult = SubmitApplicationBody.safeParse(bodyForValidation);
   const schemaFields = contractResult.success
@@ -393,7 +415,8 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
       (rule.integer && !Number.isInteger(value))
     );
   });
-  const missingFiles = documentFields.filter((field) => !getUploadedFile(request, field));
+  const missingFiles = documentFields.filter((field) => !getUploadedFile(request, field)
+    && !(isResubmission && (existingFileFields.has(field) || Boolean((existingApplication as Record<string, unknown>)[`${field}_path`]))));
   const invalidFormats: string[] = [];
   const nisn = getValue(request, "nisn");
   const nikAnak = getValue(request, "nik_anak");
@@ -536,21 +559,27 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
       instansi_jabatan_ibu: getValue(request, "instansi_jabatan_ibu"),
       nama_wali: getValue(request, "nama_wali") || null,
       hubungan_wali: getValue(request, "hubungan_wali") || null,
-      foto_3x4_path: null,
-      akte_lahir_path: null,
-      kartu_keluarga_path: null,
-      ktp_orangtua_path: null,
-      bukti_bayar_path: null,
+       foto_3x4_path: isResubmission ? String((existingApplication as Record<string, unknown>).foto_3x4_path ?? "") || null : null,
+       akte_lahir_path: isResubmission ? String((existingApplication as Record<string, unknown>).akte_lahir_path ?? "") || null : null,
+       kartu_keluarga_path: isResubmission ? String((existingApplication as Record<string, unknown>).kartu_keluarga_path ?? "") || null : null,
+       ktp_orangtua_path: isResubmission ? String((existingApplication as Record<string, unknown>).ktp_orangtua_path ?? "") || null : null,
+       bukti_bayar_path: isResubmission ? String((existingApplication as Record<string, unknown>).bukti_bayar_path ?? "") || null : null,
     };
 
-    const result = await insertPendaftar(values, uploadedFiles);
+     const result = isResubmission
+       ? await updatePendaftar(resubmitId!, values, uploadedFiles)
+       : await insertPendaftar(values, uploadedFiles);
+     if (!result) {
+       response.status(404).json({ error: "Pengajuan tidak ditemukan." });
+       return;
+     }
     const id = Number(result.id);
     recordSubmissionSuccess();
     request.log.info({ event: "spmb_submission_succeeded", applicationId: id, jenjang }, "SPMB application submitted");
 
-    response.status(201).json({
+     response.status(isResubmission ? 200 : 201).json({
       success: true,
-      message: "Pendaftaran berhasil dikirim.",
+       message: isResubmission ? "Perbaikan data berhasil dikirim." : "Pendaftaran berhasil dikirim.",
       id,
       receiptUrl: `/api/submissions/${id}/receipt?token=${createReceiptToken(id)}`,
     });
@@ -573,6 +602,33 @@ router.post("/submit", enforceSubmitRateLimit, handleUpload, async (request, res
       error: getSubmissionFailureMessage(error),
     });
     return;
+  }
+});
+
+router.get("/submissions/:id/edit", async (request, response) => {
+  const id = parseId(request.params.id);
+  if (!id) return response.status(400).json({ error: "Nomor pengajuan tidak valid." });
+
+  try {
+    const application = await getPendaftar(id);
+    if (!application || application.status !== "Perlu Perbaikan Data") {
+      return response.status(404).json({ error: "Pengajuan tidak sedang menunggu perbaikan data." });
+    }
+    const values = Object.fromEntries(textFields.map((field) => [field, (application as Record<string, unknown>)[field] ?? null]));
+    const files = await Promise.all(documentFields.map(async (field) => {
+      const stored = await readApplicationFile(id, field, (application as Record<string, unknown>)[`${field}_path`]);
+      return { field, available: Boolean(stored) };
+    }));
+    return response.json({
+      ...values,
+      id,
+      applicationNumber: `SPMB-${String(id).padStart(6, "0")}`,
+      status: application.status,
+      files,
+    });
+  } catch (error) {
+    request.log.error({ err: error, applicationId: id }, "Failed to load public SPMB correction data");
+    return response.status(500).json({ error: "Data pengajuan belum dapat dimuat." });
   }
 });
 
@@ -608,6 +664,8 @@ router.get("/submissions/status", async (request, response) => {
       jenjang: application.jenjang,
       status: application.status,
       created_at: application.created_at,
+       catatan_perbaikan: application.catatan_perbaikan ?? null,
+       canEdit: application.status === "Perlu Perbaikan Data",
     });
   } catch (error) {
     request.log.error({ err: error, applicationId: id }, "Failed to check SPMB application status");

@@ -298,6 +298,10 @@ root.innerHTML = `
            </div>
            <div class="form-board-status-timeline" id="status-result-timeline"></div>
            <div class="form-board-status-note" id="status-result-note"></div>
+            <div class="form-board-status-edit-actions" id="status-result-edit-actions" hidden>
+              <div><strong>Perlu ada perbaikan?</strong><span>Perbarui data atau ganti berkas yang diminta panitia.</span></div>
+              <button type="button" id="status-result-edit-button">Perbaiki Data ${icon('chevron')}</button>
+            </div>
          </article>
        </section>
 
@@ -476,6 +480,8 @@ const statusResultLevel = document.getElementById('status-result-level') as HTML
 const statusResultDate = document.getElementById('status-result-date') as HTMLElement;
 const statusResultTimeline = document.getElementById('status-result-timeline') as HTMLElement;
 const statusResultNote = document.getElementById('status-result-note') as HTMLElement;
+const statusResultEditActions = document.getElementById('status-result-edit-actions') as HTMLElement;
+const statusResultEditButton = document.getElementById('status-result-edit-button') as HTMLButtonElement;
 const progressCurrent = document.getElementById('progress-current') as HTMLSpanElement;
 const stepNavigation = document.getElementById('step-navigation') as HTMLDivElement;
 const stepNavigationCopy = document.getElementById('step-navigation-copy') as HTMLSpanElement;
@@ -485,13 +491,14 @@ const submitArea = document.querySelector<HTMLElement>('.form-board-submit-area'
 
 const statusDescriptions: Record<string, string> = {
   Baru: 'Pengajuan sudah diterima dan menunggu pemeriksaan panitia.',
+  'Perlu Perbaikan Data': 'Panitia meminta Anda memperbaiki data atau berkas sebelum pengajuan diproses kembali.',
   'Lolos Verifikasi Berkas': 'Berkas pendaftaran telah lolos verifikasi panitia.',
   Observasi: 'Calon peserta didik sedang mengikuti tahap observasi.',
   'Lolos Observasi': 'Calon peserta didik telah lolos tahap observasi.',
   Diterima: 'Pengajuan telah diterima. Ikuti informasi lanjutan dari sekolah.',
   Ditolak: 'Pengajuan belum dapat diterima pada proses seleksi ini.',
 };
-const statusSteps = ['Baru', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima'];
+const statusSteps = ['Baru', 'Perlu Perbaikan Data', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima'];
 
 type CachedFileMetadata = {
   name: string;
@@ -504,10 +511,13 @@ type DraftState = {
   fields: Record<string, string | boolean>;
   files: Record<string, CachedFileMetadata>;
   currentSection: number;
+  resubmissionId?: number | null;
 };
 
 let activeSectionIndex = 0;
+let resubmissionId: number | null = null;
 let cachedFileMetadata: Record<string, CachedFileMetadata> = {};
+let correctionFileFields = new Set<string>();
 let sectionNavigationInProgress = false;
 const normalizedUploadFiles = new Map<string, File>();
 const uploadNormalizationPromises = new Map<string, Promise<void>>();
@@ -555,6 +565,7 @@ function readDraft(): DraftState | null {
       fields: draft.fields && typeof draft.fields === 'object' ? draft.fields : {},
       files: draft.files && typeof draft.files === 'object' ? draft.files : {},
       currentSection: typeof draft.currentSection === 'number' ? draft.currentSection : 0,
+      resubmissionId: typeof draft.resubmissionId === 'number' ? draft.resubmissionId : null,
     };
   } catch {
     return null;
@@ -574,6 +585,7 @@ function saveDraft(): void {
       fields,
       files: cachedFileMetadata,
       currentSection: activeSectionIndex,
+      resubmissionId,
     } satisfies DraftState));
   } catch {
     // Form submission remains available if browser storage is unavailable.
@@ -729,6 +741,7 @@ function restoreDraft(): void {
   const draft = readDraft();
   if (!draft) return;
   cachedFileMetadata = draft.files;
+  resubmissionId = draft.resubmissionId ?? null;
   activeSectionIndex = Math.min(Math.max(draft.currentSection, 0), sectionIds.length - 1);
   Object.entries(draft.fields).forEach(([name, value]) => {
     const control = getFieldControl(name) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
@@ -869,7 +882,10 @@ async function validateForm(scope: ParentNode = form): Promise<boolean> {
     clearError(control);
     const input = control as HTMLInputElement;
     if (input.type === 'file') {
-      const hasFile = Boolean(input.files?.[0]) || Boolean(await getCachedDraftFile(input.name));
+      const hasExistingCorrectionFile = resubmissionId !== null && correctionFileFields.has(input.name);
+      const hasFile = Boolean(input.files?.[0])
+        || Boolean(await getCachedDraftFile(input.name))
+        || hasExistingCorrectionFile;
       if (!hasFile && input.required) markInvalid(control, 'Berkas ini wajib diunggah.');
       continue;
     }
@@ -1066,7 +1082,10 @@ function formatStatusDate(value: string): string {
   }).format(date);
 }
 
-function renderStatusResult(result: Awaited<ReturnType<typeof getSubmissionStatus>>): void {
+function renderStatusResult(result: Awaited<ReturnType<typeof getSubmissionStatus>> & {
+  catatan_perbaikan?: string | null;
+  canEdit?: boolean;
+}): void {
   const currentIndex = statusSteps.indexOf(result.status);
   const isRejected = String(result.status) === 'Ditolak';
   const statusLabel = result.status === 'Baru' ? 'Diterima sistem' : result.status;
@@ -1086,8 +1105,73 @@ function renderStatusResult(result: Awaited<ReturnType<typeof getSubmissionStatu
     </div>`;
   }).join('');
   statusResultNote.className = `form-board-status-note${isRejected ? ' is-rejected' : result.status === 'Diterima' ? ' is-success' : ''}`;
-  statusResultNote.innerHTML = `<strong>${escapeHtml(statusLabel)}</strong><span>${escapeHtml(statusDescriptions[result.status] || 'Status pengajuan sedang diperbarui.')}</span>`;
+  const correctionNote = result.catatan_perbaikan?.trim();
+  const noteCopy = result.status === 'Perlu Perbaikan Data' && correctionNote
+    ? `${statusDescriptions[result.status]} Catatan panitia: ${correctionNote}`
+    : statusDescriptions[result.status] || 'Status pengajuan sedang diperbarui.';
+  statusResultNote.innerHTML = `<strong>${escapeHtml(statusLabel)}</strong><span>${escapeHtml(noteCopy)}</span>`;
+  statusResultEditActions.hidden = !(result.canEdit || result.status === 'Perlu Perbaikan Data');
   statusResult.hidden = false;
+}
+
+async function loadCorrectionData(id: number): Promise<void> {
+  const response = await fetch(`/api/submissions/${id}/edit`);
+  const data = await response.json().catch(() => ({})) as Record<string, unknown>;
+  if (!response.ok) throw new Error(typeof data.error === 'string' ? data.error : 'Data pengajuan belum dapat dimuat.');
+
+  form.reset();
+  clearDraft();
+  resubmissionId = id;
+  cachedFileMetadata = {};
+  correctionFileFields = new Set<string>();
+  Object.entries(data).forEach(([name, value]) => {
+    if (name === 'id' || name === 'applicationNumber' || name === 'status' || name === 'files') return;
+    const control = getFieldControl(name) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
+    if (
+      control
+      && control.type !== 'file'
+      && value !== null
+      && value !== undefined
+      && (typeof value === 'string' || typeof value === 'number')
+    ) {
+      const stringValue = String(value);
+      control.value = control.type === 'date' ? stringValue.slice(0, 10) : stringValue;
+    }
+  });
+  const consentControl = getFieldControl('consent') as HTMLInputElement | null;
+  if (consentControl?.type === 'checkbox') consentControl.checked = true;
+  const files = Array.isArray(data.files) ? data.files as Array<{ field?: unknown; available?: unknown }> : [];
+  files.forEach((file) => {
+    if (typeof file.field !== 'string' || file.available !== true) return;
+    correctionFileFields.add(file.field);
+    cachedFileMetadata[file.field] = { name: 'Berkas tersimpan', size: 0, type: '', lastModified: 0 };
+    const label = document.querySelector<HTMLElement>(`[data-file-name="${file.field}"]`);
+    if (label) label.textContent = 'Berkas tersimpan · pilih berkas baru bila ingin mengganti';
+  });
+  normalizedUploadFiles.clear();
+  uploadNormalizationPromises.clear();
+  formBody.classList.remove('is-hidden');
+  successView.classList.remove('is-visible');
+  statusResult.hidden = true;
+  setPageView('registration');
+  activeSectionIndex = 0;
+  applyPublicTheme((getFieldControl('jenjang') as HTMLSelectElement | null)?.value || '');
+  updateSchoolFieldsRequirement();
+  updateProgress();
+  submitButton.querySelector('.submit-label')!.textContent = 'Kirim perbaikan data';
+  showNotice('Data pengajuan dimuat. Perbaiki bagian yang diminta panitia.');
+  form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function resubmitCorrection(id: number, formData: FormData, signal: AbortSignal): Promise<{ id: number; receiptUrl: string }> {
+  const response = await fetch(`/api/submissions/${id}/resubmit`, { method: 'POST', body: formData, signal });
+  const data = await response.json().catch(() => ({})) as Record<string, unknown>;
+  if (!response.ok) {
+    const error = new Error(typeof data.error === 'string' ? data.error : 'Perbaikan data belum dapat dikirim.');
+    (error as Error & { data?: unknown }).data = data;
+    throw error;
+  }
+  return data as { id: number; receiptUrl: string };
 }
 
 function getStatusErrorMessage(error: unknown): string {
@@ -1257,6 +1341,22 @@ statusForm.addEventListener('submit', async (event) => {
   }
 });
 
+statusResultEditButton.addEventListener('click', async () => {
+  const id = Number(statusResultNumber.textContent?.replace(/\D/g, ''));
+  if (!id) return;
+  statusResultEditButton.disabled = true;
+  statusResultEditButton.textContent = 'Memuat data…';
+  try {
+    await loadCorrectionData(id);
+  } catch (error) {
+    statusAlert.textContent = error instanceof Error ? error.message : 'Data pengajuan belum dapat dimuat.';
+    statusAlert.hidden = false;
+  } finally {
+    statusResultEditButton.disabled = false;
+    statusResultEditButton.innerHTML = `Perbaiki Data ${icon('chevron')}`;
+  }
+});
+
 successStatusButton.addEventListener('click', () => {
   setPageView('status');
   statusForm.requestSubmit();
@@ -1411,17 +1511,22 @@ form.addEventListener('submit', async (event) => {
     formData.forEach((value, key) => {
       if (key !== 'consent' && (typeof value === 'string' ? value : value.name)) payload[key] = value;
     });
-    const result = await submitApplication(
-      payload as unknown as Parameters<typeof submitApplication>[0],
-      { signal: submissionController.signal },
-    );
+    const result = resubmissionId
+      ? await resubmitCorrection(resubmissionId, formData, submissionController.signal)
+      : await submitApplication(
+          payload as unknown as Parameters<typeof submitApplication>[0],
+          { signal: submissionController.signal },
+        );
     const selectedWhatsappGroup = whatsappGroupLinks[submittedJenjang];
+    const wasResubmission = resubmissionId !== null;
     form.reset();
+    resubmissionId = null;
+    correctionFileFields = new Set<string>();
     clearDraft();
     document.querySelectorAll<HTMLElement>('[data-file-name]').forEach((label) => { label.textContent = 'Belum ada berkas dipilih'; });
     document.querySelectorAll<HTMLElement>('[data-field]').forEach((field) => field.classList.remove('field-error'));
     const formattedApplicationNumber = `SPMB-${String(result.id).padStart(6, '0')}`;
-    submissionId.textContent = `Nomor pengajuan: ${formattedApplicationNumber}`;
+    submissionId.textContent = `${wasResubmission ? 'Nomor pengajuan tetap' : 'Nomor pengajuan'}: ${formattedApplicationNumber}`;
     statusNumberInput.value = formattedApplicationNumber;
     receiptDownload.href = result.receiptUrl;
     receiptDownload.hidden = false;
@@ -1478,6 +1583,8 @@ resetButton.addEventListener('click', () => {
     whatsappRedirectTimer = undefined;
   }
   clearDraft();
+  resubmissionId = null;
+  correctionFileFields = new Set<string>();
   successView.classList.remove('is-visible');
   receiptDownload.hidden = true;
   receiptDownload.removeAttribute('href');

@@ -14,4 +14,9 @@ export interface BulkApplicationStatusUpdate {
      */
   ids: number[];
   status: BulkApplicationStatusUpdateStatus;
+  /**
+     * Required when status is Perlu Perbaikan Data.
+     * @maxLength 2000
+     */
+  catatan_perbaikan?: string | null;
 }

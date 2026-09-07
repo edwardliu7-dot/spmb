@@ -6,11 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ListApplicationsStatus = typeof ListApplicationsStatus[keyof typeof ListApplicationsStatus];
+export type ApplicationListItemStatus = typeof ApplicationListItemStatus[keyof typeof ApplicationListItemStatus];
 
 
-export const ListApplicationsStatus = {
-  Semua: 'Semua',
+export const ApplicationListItemStatus = {
   Baru: 'Baru',
   Perlu_Perbaikan_Data: 'Perlu Perbaikan Data',
   Lolos_Verifikasi_Berkas: 'Lolos Verifikasi Berkas',

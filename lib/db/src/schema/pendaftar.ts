@@ -52,6 +52,7 @@ export const pendaftarTable = pgTable("pendaftar", {
   nama_wali: text("nama_wali"),
   hubungan_wali: text("hubungan_wali"),
   status: text("status").notNull().default("Baru"),
+  catatan_perbaikan: text("catatan_perbaikan"),
   foto_3x4_path: text("foto_3x4_path"),
   akte_lahir_path: text("akte_lahir_path"),
   kartu_keluarga_path: text("kartu_keluarga_path"),

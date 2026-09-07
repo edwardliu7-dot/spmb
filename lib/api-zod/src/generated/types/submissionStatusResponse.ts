@@ -14,4 +14,6 @@ export interface SubmissionStatusResponse {
   jenjang: string;
   status: SubmissionStatusResponseStatus;
   created_at: string;
+  catatan_perbaikan: string | null;
+  canEdit: boolean;
 }

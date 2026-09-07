@@ -237,8 +237,10 @@ export const GetSubmissionStatusResponse = zod.object({
   "applicationNumber": zod.string(),
   "nama_calon": zod.string(),
   "jenjang": zod.string(),
-  "status": zod.enum(['Baru', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima']),
-  "created_at": zod.string()
+  "status": zod.enum(['Baru', 'Perlu Perbaikan Data', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima']),
+  "created_at": zod.string(),
+  "catatan_perbaikan": zod.string().nullable(),
+  "canEdit": zod.boolean()
 })
 
 
@@ -269,7 +271,7 @@ export const CommitteeLogoutResponse = zod.object({
 export const ListApplicationsQueryParams = zod.object({
   "q": zod.coerce.string().optional().describe('Search by applicant name or application number.'),
   "jenjang": zod.enum(['Semua', 'Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']).optional(),
-  "status": zod.enum(['Semua', 'Baru', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima']).optional()
+  "status": zod.enum(['Semua', 'Baru', 'Perlu Perbaikan Data', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima']).optional()
 })
 
 export const ListApplicationsResponse = zod.object({
@@ -279,7 +281,7 @@ export const ListApplicationsResponse = zod.object({
   "jenjang": zod.string(),
   "nama_sekolah_asal": zod.string().nullable(),
   "email": zod.string(),
-  "status": zod.string(),
+  "status": zod.enum(['Baru', 'Perlu Perbaikan Data', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima']),
   "created_at": zod.string()
 })),
   "total": zod.number()
@@ -390,7 +392,7 @@ export const GetApplicationResponse = zod.object({
   "jenjang": zod.string(),
   "nama_sekolah_asal": zod.string().nullable(),
   "email": zod.string(),
-  "status": zod.string(),
+  "status": zod.enum(['Baru', 'Perlu Perbaikan Data', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima']),
   "created_at": zod.string()
 }).and(zod.object({
   "jenjang": zod.enum(['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']),
@@ -472,8 +474,13 @@ export const UpdateApplicationStatusParams = zod.object({
   "id": zod.coerce.number()
 })
 
+export const updateApplicationStatusBodyCatatanPerbaikanMax = 2000;
+
+
+
 export const UpdateApplicationStatusBody = zod.object({
-  "status": zod.enum(['Baru', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima'])
+  "status": zod.enum(['Baru', 'Perlu Perbaikan Data', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima']),
+  "catatan_perbaikan": zod.string().max(updateApplicationStatusBodyCatatanPerbaikanMax).nullish().describe('Required when status is Perlu Perbaikan Data.')
 })
 
 export const UpdateApplicationStatusResponse = zod.object({
@@ -489,11 +496,14 @@ export const UpdateApplicationStatusResponse = zod.object({
  */
 export const bulkUpdateApplicationStatusBodyIdsMax = 100;
 
+export const bulkUpdateApplicationStatusBodyCatatanPerbaikanMax = 2000;
+
 
 
 export const BulkUpdateApplicationStatusBody = zod.object({
   "ids": zod.array(zod.number()).min(1).max(bulkUpdateApplicationStatusBodyIdsMax),
-  "status": zod.enum(['Baru', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima'])
+  "status": zod.enum(['Baru', 'Perlu Perbaikan Data', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima']),
+  "catatan_perbaikan": zod.string().max(bulkUpdateApplicationStatusBodyCatatanPerbaikanMax).nullish().describe('Required when status is Perlu Perbaikan Data.')
 })
 
 export const BulkUpdateApplicationStatusResponse = zod.object({
@@ -514,6 +524,321 @@ export const GetApplicationFileParams = zod.object({
 })
 
 export const GetApplicationFileResponse = zod.unknown()
+
+
+/**
+ * Returns the editable application data only while the application is marked as needing data corrections.
+ * @summary Get data for correcting an application
+ */
+export const GetSubmissionEditDataParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const getSubmissionEditDataResponseOneNamaCalonMin = 2;
+export const getSubmissionEditDataResponseOneNamaCalonMax = 100;
+
+export const getSubmissionEditDataResponseOneNamaPanggilanMax = 100;
+
+export const getSubmissionEditDataResponseOneTempatLahirMax = 100;
+
+export const getSubmissionEditDataResponseOneNisnMax = 10;
+
+
+export const getSubmissionEditDataResponseOneNisnRegExp = new RegExp('^[0-9]{10}$');
+export const getSubmissionEditDataResponseOneNikAnakMin = 16;
+export const getSubmissionEditDataResponseOneNikAnakMax = 16;
+
+
+export const getSubmissionEditDataResponseOneNikAnakRegExp = new RegExp('^[0-9]{16}$');
+export const getSubmissionEditDataResponseOneAlamatDomisiliMax = 1000;
+
+export const getSubmissionEditDataResponseOneAnakKeRegExp = new RegExp('^[0-9]+$');
+export const getSubmissionEditDataResponseOneJumlahSaudaraRegExp = new RegExp('^[0-9]+$');
+export const getSubmissionEditDataResponseOneStatusAnakMax = 50;
+
+export const getSubmissionEditDataResponseOneAgamaMax = 50;
+
+export const getSubmissionEditDataResponseOneWargaNegaraMax = 50;
+
+export const getSubmissionEditDataResponseOneTinggiBadanRegExp = new RegExp('^[0-9]+([.][0-9]+)?$');
+export const getSubmissionEditDataResponseOneBeratBadanRegExp = new RegExp('^[0-9]+([.][0-9]+)?$');
+export const getSubmissionEditDataResponseOneRiwayatPenyakitMax = 1000;
+
+export const getSubmissionEditDataResponseOneTransportasiMax = 50;
+
+export const getSubmissionEditDataResponseOneJarakSekolahMax = 100;
+
+export const getSubmissionEditDataResponseOneNamaSekolahAsalMax = 255;
+
+export const getSubmissionEditDataResponseOneTahunLulusRegExp = new RegExp('^[0-9]{4}$');
+export const getSubmissionEditDataResponseOneAlamatSekolahAsalMax = 1000;
+
+export const getSubmissionEditDataResponseOneNomorKkMin = 16;
+export const getSubmissionEditDataResponseOneNomorKkMax = 16;
+
+
+export const getSubmissionEditDataResponseOneNomorKkRegExp = new RegExp('^[0-9]{16}$');
+export const getSubmissionEditDataResponseOneNikAyahMin = 16;
+export const getSubmissionEditDataResponseOneNikAyahMax = 16;
+
+
+export const getSubmissionEditDataResponseOneNikAyahRegExp = new RegExp('^[0-9]{16}$');
+export const getSubmissionEditDataResponseOneNikIbuMin = 16;
+export const getSubmissionEditDataResponseOneNikIbuMax = 16;
+
+
+export const getSubmissionEditDataResponseOneNikIbuRegExp = new RegExp('^[0-9]{16}$');
+export const getSubmissionEditDataResponseOneNomorHpOrangtuaMin = 10;
+export const getSubmissionEditDataResponseOneNomorHpOrangtuaMax = 16;
+
+export const getSubmissionEditDataResponseOneEmailMax = 254;
+
+
+export const getSubmissionEditDataResponseOneEmailRegExp = new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+export const getSubmissionEditDataResponseOneNamaAyahMax = 100;
+
+export const getSubmissionEditDataResponseOneTtlAyahMax = 150;
+
+export const getSubmissionEditDataResponseOnePendidikanAyahMax = 100;
+
+export const getSubmissionEditDataResponseOnePekerjaanAyahMax = 100;
+
+export const getSubmissionEditDataResponseOnePenghasilanAyahMax = 100;
+
+export const getSubmissionEditDataResponseOneInstansiJabatanAyahMax = 150;
+
+export const getSubmissionEditDataResponseOneNamaIbuMax = 100;
+
+export const getSubmissionEditDataResponseOneTtlIbuMax = 150;
+
+export const getSubmissionEditDataResponseOnePendidikanIbuMax = 100;
+
+export const getSubmissionEditDataResponseOnePekerjaanIbuMax = 100;
+
+export const getSubmissionEditDataResponseOnePenghasilanIbuMax = 100;
+
+export const getSubmissionEditDataResponseOneInstansiJabatanIbuMax = 150;
+
+export const getSubmissionEditDataResponseOneNamaWaliMax = 100;
+
+export const getSubmissionEditDataResponseOneHubunganWaliMax = 100;
+
+
+
+export const GetSubmissionEditDataResponse = zod.object({
+  "jenjang": zod.enum(['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']),
+  "nama_calon": zod.string().min(getSubmissionEditDataResponseOneNamaCalonMin).max(getSubmissionEditDataResponseOneNamaCalonMax),
+  "nama_panggilan": zod.string().min(1).max(getSubmissionEditDataResponseOneNamaPanggilanMax),
+  "jenis_kelamin": zod.enum(['Laki-laki', 'Perempuan']),
+  "tempat_lahir": zod.string().min(1).max(getSubmissionEditDataResponseOneTempatLahirMax),
+  "tanggal_lahir": zod.coerce.date().describe('Usia dihitung pada 31 Juli 2027. Minimum: Playgroup 3 tahun, TK-A 4 tahun, TK-B 5 tahun, SD 6 tahun. Daycare dan SMP tidak memiliki batas usia minimum.'),
+  "nisn": zod.string().max(getSubmissionEditDataResponseOneNisnMax).regex(getSubmissionEditDataResponseOneNisnRegExp).nullish(),
+  "nik_anak": zod.string().min(getSubmissionEditDataResponseOneNikAnakMin).max(getSubmissionEditDataResponseOneNikAnakMax).regex(getSubmissionEditDataResponseOneNikAnakRegExp),
+  "alamat_domisili": zod.string().min(1).max(getSubmissionEditDataResponseOneAlamatDomisiliMax),
+  "anak_ke": zod.string().regex(getSubmissionEditDataResponseOneAnakKeRegExp).describe('Integer from 1 to 20'),
+  "jumlah_saudara": zod.string().regex(getSubmissionEditDataResponseOneJumlahSaudaraRegExp).describe('Integer from 0 to 50'),
+  "status_anak": zod.string().min(1).max(getSubmissionEditDataResponseOneStatusAnakMax),
+  "agama": zod.string().min(1).max(getSubmissionEditDataResponseOneAgamaMax),
+  "warga_negara": zod.string().min(1).max(getSubmissionEditDataResponseOneWargaNegaraMax),
+  "tinggi_badan": zod.string().regex(getSubmissionEditDataResponseOneTinggiBadanRegExp).describe('Height in centimeters'),
+  "berat_badan": zod.string().regex(getSubmissionEditDataResponseOneBeratBadanRegExp).describe('Weight in kilograms'),
+  "riwayat_penyakit": zod.string().max(getSubmissionEditDataResponseOneRiwayatPenyakitMax).nullish(),
+  "transportasi": zod.string().min(1).max(getSubmissionEditDataResponseOneTransportasiMax),
+  "jarak_sekolah": zod.string().min(1).max(getSubmissionEditDataResponseOneJarakSekolahMax),
+  "nama_sekolah_asal": zod.string().min(1).max(getSubmissionEditDataResponseOneNamaSekolahAsalMax).nullish().describe('Required for SD and SMP; not required for Playgroup, Daycare, TK-A, or TK-B'),
+  "tahun_lulus": zod.string().regex(getSubmissionEditDataResponseOneTahunLulusRegExp).nullish().describe('Graduation year, 1900 or later; required for SD and SMP'),
+  "alamat_sekolah_asal": zod.string().min(1).max(getSubmissionEditDataResponseOneAlamatSekolahAsalMax).nullish().describe('Required for SD and SMP; not required for Playgroup, Daycare, TK-A, or TK-B'),
+  "nomor_kk": zod.string().min(getSubmissionEditDataResponseOneNomorKkMin).max(getSubmissionEditDataResponseOneNomorKkMax).regex(getSubmissionEditDataResponseOneNomorKkRegExp),
+  "nik_ayah": zod.string().min(getSubmissionEditDataResponseOneNikAyahMin).max(getSubmissionEditDataResponseOneNikAyahMax).regex(getSubmissionEditDataResponseOneNikAyahRegExp),
+  "nik_ibu": zod.string().min(getSubmissionEditDataResponseOneNikIbuMin).max(getSubmissionEditDataResponseOneNikIbuMax).regex(getSubmissionEditDataResponseOneNikIbuRegExp).nullable(),
+  "nomor_hp_orangtua": zod.string().min(getSubmissionEditDataResponseOneNomorHpOrangtuaMin).max(getSubmissionEditDataResponseOneNomorHpOrangtuaMax),
+  "email": zod.string().max(getSubmissionEditDataResponseOneEmailMax).regex(getSubmissionEditDataResponseOneEmailRegExp),
+  "nama_ayah": zod.string().min(1).max(getSubmissionEditDataResponseOneNamaAyahMax),
+  "ttl_ayah": zod.string().min(1).max(getSubmissionEditDataResponseOneTtlAyahMax),
+  "pendidikan_ayah": zod.string().min(1).max(getSubmissionEditDataResponseOnePendidikanAyahMax),
+  "pekerjaan_ayah": zod.string().min(1).max(getSubmissionEditDataResponseOnePekerjaanAyahMax),
+  "penghasilan_ayah": zod.string().min(1).max(getSubmissionEditDataResponseOnePenghasilanAyahMax),
+  "instansi_jabatan_ayah": zod.string().min(1).max(getSubmissionEditDataResponseOneInstansiJabatanAyahMax),
+  "nama_ibu": zod.string().min(1).max(getSubmissionEditDataResponseOneNamaIbuMax),
+  "ttl_ibu": zod.string().min(1).max(getSubmissionEditDataResponseOneTtlIbuMax),
+  "pendidikan_ibu": zod.string().min(1).max(getSubmissionEditDataResponseOnePendidikanIbuMax),
+  "pekerjaan_ibu": zod.string().min(1).max(getSubmissionEditDataResponseOnePekerjaanIbuMax),
+  "penghasilan_ibu": zod.string().min(1).max(getSubmissionEditDataResponseOnePenghasilanIbuMax),
+  "instansi_jabatan_ibu": zod.string().min(1).max(getSubmissionEditDataResponseOneInstansiJabatanIbuMax),
+  "nama_wali": zod.string().max(getSubmissionEditDataResponseOneNamaWaliMax).nullish(),
+  "hubungan_wali": zod.string().max(getSubmissionEditDataResponseOneHubunganWaliMax).nullish(),
+  "foto_3x4": zod.string().describe('Uploaded JPG or PNG file, maximum 5 MB'),
+  "akte_lahir": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "kartu_keluarga": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "ktp_orangtua": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB')
+}).and(zod.object({
+  "id": zod.number(),
+  "applicationNumber": zod.string(),
+  "status": zod.string(),
+  "files": zod.array(zod.object({
+  "field": zod.string(),
+  "label": zod.string(),
+  "url": zod.string(),
+  "available": zod.boolean()
+}))
+}))
+
+
+/**
+ * Updates the existing application and keeps its application number. Existing documents are retained when a replacement is not uploaded.
+ * @summary Resubmit an application after correcting data
+ */
+export const ResubmitApplicationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const resubmitApplicationBodyOneNamaCalonMin = 2;
+export const resubmitApplicationBodyOneNamaCalonMax = 100;
+
+export const resubmitApplicationBodyOneNamaPanggilanMax = 100;
+
+export const resubmitApplicationBodyOneTempatLahirMax = 100;
+
+export const resubmitApplicationBodyOneNisnMax = 10;
+
+
+export const resubmitApplicationBodyOneNisnRegExp = new RegExp('^[0-9]{10}$');
+export const resubmitApplicationBodyOneNikAnakMin = 16;
+export const resubmitApplicationBodyOneNikAnakMax = 16;
+
+
+export const resubmitApplicationBodyOneNikAnakRegExp = new RegExp('^[0-9]{16}$');
+export const resubmitApplicationBodyOneAlamatDomisiliMax = 1000;
+
+export const resubmitApplicationBodyOneAnakKeRegExp = new RegExp('^[0-9]+$');
+export const resubmitApplicationBodyOneJumlahSaudaraRegExp = new RegExp('^[0-9]+$');
+export const resubmitApplicationBodyOneStatusAnakMax = 50;
+
+export const resubmitApplicationBodyOneAgamaMax = 50;
+
+export const resubmitApplicationBodyOneWargaNegaraMax = 50;
+
+export const resubmitApplicationBodyOneTinggiBadanRegExp = new RegExp('^[0-9]+([.][0-9]+)?$');
+export const resubmitApplicationBodyOneBeratBadanRegExp = new RegExp('^[0-9]+([.][0-9]+)?$');
+export const resubmitApplicationBodyOneRiwayatPenyakitMax = 1000;
+
+export const resubmitApplicationBodyOneTransportasiMax = 50;
+
+export const resubmitApplicationBodyOneJarakSekolahMax = 100;
+
+export const resubmitApplicationBodyOneNamaSekolahAsalMax = 255;
+
+export const resubmitApplicationBodyOneTahunLulusRegExp = new RegExp('^[0-9]{4}$');
+export const resubmitApplicationBodyOneAlamatSekolahAsalMax = 1000;
+
+export const resubmitApplicationBodyOneNomorKkMin = 16;
+export const resubmitApplicationBodyOneNomorKkMax = 16;
+
+
+export const resubmitApplicationBodyOneNomorKkRegExp = new RegExp('^[0-9]{16}$');
+export const resubmitApplicationBodyOneNikAyahMin = 16;
+export const resubmitApplicationBodyOneNikAyahMax = 16;
+
+
+export const resubmitApplicationBodyOneNikAyahRegExp = new RegExp('^[0-9]{16}$');
+export const resubmitApplicationBodyOneNikIbuMin = 16;
+export const resubmitApplicationBodyOneNikIbuMax = 16;
+
+
+export const resubmitApplicationBodyOneNikIbuRegExp = new RegExp('^[0-9]{16}$');
+export const resubmitApplicationBodyOneNomorHpOrangtuaMin = 10;
+export const resubmitApplicationBodyOneNomorHpOrangtuaMax = 16;
+
+export const resubmitApplicationBodyOneEmailMax = 254;
+
+
+export const resubmitApplicationBodyOneEmailRegExp = new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+export const resubmitApplicationBodyOneNamaAyahMax = 100;
+
+export const resubmitApplicationBodyOneTtlAyahMax = 150;
+
+export const resubmitApplicationBodyOnePendidikanAyahMax = 100;
+
+export const resubmitApplicationBodyOnePekerjaanAyahMax = 100;
+
+export const resubmitApplicationBodyOnePenghasilanAyahMax = 100;
+
+export const resubmitApplicationBodyOneInstansiJabatanAyahMax = 150;
+
+export const resubmitApplicationBodyOneNamaIbuMax = 100;
+
+export const resubmitApplicationBodyOneTtlIbuMax = 150;
+
+export const resubmitApplicationBodyOnePendidikanIbuMax = 100;
+
+export const resubmitApplicationBodyOnePekerjaanIbuMax = 100;
+
+export const resubmitApplicationBodyOnePenghasilanIbuMax = 100;
+
+export const resubmitApplicationBodyOneInstansiJabatanIbuMax = 150;
+
+export const resubmitApplicationBodyOneNamaWaliMax = 100;
+
+export const resubmitApplicationBodyOneHubunganWaliMax = 100;
+
+
+
+export const ResubmitApplicationBody = zod.object({
+  "jenjang": zod.enum(['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']),
+  "nama_calon": zod.string().min(resubmitApplicationBodyOneNamaCalonMin).max(resubmitApplicationBodyOneNamaCalonMax),
+  "nama_panggilan": zod.string().min(1).max(resubmitApplicationBodyOneNamaPanggilanMax),
+  "jenis_kelamin": zod.enum(['Laki-laki', 'Perempuan']),
+  "tempat_lahir": zod.string().min(1).max(resubmitApplicationBodyOneTempatLahirMax),
+  "tanggal_lahir": zod.coerce.date().describe('Usia dihitung pada 31 Juli 2027. Minimum: Playgroup 3 tahun, TK-A 4 tahun, TK-B 5 tahun, SD 6 tahun. Daycare dan SMP tidak memiliki batas usia minimum.'),
+  "nisn": zod.string().max(resubmitApplicationBodyOneNisnMax).regex(resubmitApplicationBodyOneNisnRegExp).nullish(),
+  "nik_anak": zod.string().min(resubmitApplicationBodyOneNikAnakMin).max(resubmitApplicationBodyOneNikAnakMax).regex(resubmitApplicationBodyOneNikAnakRegExp),
+  "alamat_domisili": zod.string().min(1).max(resubmitApplicationBodyOneAlamatDomisiliMax),
+  "anak_ke": zod.string().regex(resubmitApplicationBodyOneAnakKeRegExp).describe('Integer from 1 to 20'),
+  "jumlah_saudara": zod.string().regex(resubmitApplicationBodyOneJumlahSaudaraRegExp).describe('Integer from 0 to 50'),
+  "status_anak": zod.string().min(1).max(resubmitApplicationBodyOneStatusAnakMax),
+  "agama": zod.string().min(1).max(resubmitApplicationBodyOneAgamaMax),
+  "warga_negara": zod.string().min(1).max(resubmitApplicationBodyOneWargaNegaraMax),
+  "tinggi_badan": zod.string().regex(resubmitApplicationBodyOneTinggiBadanRegExp).describe('Height in centimeters'),
+  "berat_badan": zod.string().regex(resubmitApplicationBodyOneBeratBadanRegExp).describe('Weight in kilograms'),
+  "riwayat_penyakit": zod.string().max(resubmitApplicationBodyOneRiwayatPenyakitMax).nullish(),
+  "transportasi": zod.string().min(1).max(resubmitApplicationBodyOneTransportasiMax),
+  "jarak_sekolah": zod.string().min(1).max(resubmitApplicationBodyOneJarakSekolahMax),
+  "nama_sekolah_asal": zod.string().min(1).max(resubmitApplicationBodyOneNamaSekolahAsalMax).nullish().describe('Required for SD and SMP; not required for Playgroup, Daycare, TK-A, or TK-B'),
+  "tahun_lulus": zod.string().regex(resubmitApplicationBodyOneTahunLulusRegExp).nullish().describe('Graduation year, 1900 or later; required for SD and SMP'),
+  "alamat_sekolah_asal": zod.string().min(1).max(resubmitApplicationBodyOneAlamatSekolahAsalMax).nullish().describe('Required for SD and SMP; not required for Playgroup, Daycare, TK-A, or TK-B'),
+  "nomor_kk": zod.string().min(resubmitApplicationBodyOneNomorKkMin).max(resubmitApplicationBodyOneNomorKkMax).regex(resubmitApplicationBodyOneNomorKkRegExp),
+  "nik_ayah": zod.string().min(resubmitApplicationBodyOneNikAyahMin).max(resubmitApplicationBodyOneNikAyahMax).regex(resubmitApplicationBodyOneNikAyahRegExp),
+  "nik_ibu": zod.string().min(resubmitApplicationBodyOneNikIbuMin).max(resubmitApplicationBodyOneNikIbuMax).regex(resubmitApplicationBodyOneNikIbuRegExp).nullable(),
+  "nomor_hp_orangtua": zod.string().min(resubmitApplicationBodyOneNomorHpOrangtuaMin).max(resubmitApplicationBodyOneNomorHpOrangtuaMax),
+  "email": zod.string().max(resubmitApplicationBodyOneEmailMax).regex(resubmitApplicationBodyOneEmailRegExp),
+  "nama_ayah": zod.string().min(1).max(resubmitApplicationBodyOneNamaAyahMax),
+  "ttl_ayah": zod.string().min(1).max(resubmitApplicationBodyOneTtlAyahMax),
+  "pendidikan_ayah": zod.string().min(1).max(resubmitApplicationBodyOnePendidikanAyahMax),
+  "pekerjaan_ayah": zod.string().min(1).max(resubmitApplicationBodyOnePekerjaanAyahMax),
+  "penghasilan_ayah": zod.string().min(1).max(resubmitApplicationBodyOnePenghasilanAyahMax),
+  "instansi_jabatan_ayah": zod.string().min(1).max(resubmitApplicationBodyOneInstansiJabatanAyahMax),
+  "nama_ibu": zod.string().min(1).max(resubmitApplicationBodyOneNamaIbuMax),
+  "ttl_ibu": zod.string().min(1).max(resubmitApplicationBodyOneTtlIbuMax),
+  "pendidikan_ibu": zod.string().min(1).max(resubmitApplicationBodyOnePendidikanIbuMax),
+  "pekerjaan_ibu": zod.string().min(1).max(resubmitApplicationBodyOnePekerjaanIbuMax),
+  "penghasilan_ibu": zod.string().min(1).max(resubmitApplicationBodyOnePenghasilanIbuMax),
+  "instansi_jabatan_ibu": zod.string().min(1).max(resubmitApplicationBodyOneInstansiJabatanIbuMax),
+  "nama_wali": zod.string().max(resubmitApplicationBodyOneNamaWaliMax).nullish(),
+  "hubungan_wali": zod.string().max(resubmitApplicationBodyOneHubunganWaliMax).nullish(),
+  "foto_3x4": zod.string().describe('Uploaded JPG or PNG file, maximum 5 MB'),
+  "akte_lahir": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "kartu_keluarga": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "ktp_orangtua": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB'),
+  "bukti_bayar": zod.string().describe('Uploaded PDF, JPG, or PNG file, maximum 5 MB')
+}).describe('Same student fields as StudentApplicationInput. Supporting document fields are optional during correction and retained when omitted.')
+
+export const ResubmitApplicationResponse = zod.object({
+  "success": zod.boolean(),
+  "message": zod.string(),
+  "id": zod.number(),
+  "receiptUrl": zod.string()
+})
 
 
 /**
@@ -721,7 +1046,7 @@ export const ListAdminMasterDataResponse = zod.object({
   "jenjang": zod.string(),
   "nama_sekolah_asal": zod.string().nullable(),
   "email": zod.string(),
-  "status": zod.string(),
+  "status": zod.enum(['Baru', 'Perlu Perbaikan Data', 'Lolos Verifikasi Berkas', 'Observasi', 'Lolos Observasi', 'Diterima']),
   "created_at": zod.string()
 }).and(zod.object({
   "jenjang": zod.enum(['Playgroup', 'Daycare', 'TK-A', 'TK-B', 'SD', 'SMP']),

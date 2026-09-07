@@ -11,6 +11,7 @@ export type SubmissionStatusResponseStatus = typeof SubmissionStatusResponseStat
 
 export const SubmissionStatusResponseStatus = {
   Baru: 'Baru',
+  Perlu_Perbaikan_Data: 'Perlu Perbaikan Data',
   Lolos_Verifikasi_Berkas: 'Lolos Verifikasi Berkas',
   Observasi: 'Observasi',
   Lolos_Observasi: 'Lolos Observasi',

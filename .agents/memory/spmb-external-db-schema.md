@@ -43,3 +43,9 @@ again.
 updates, skip unavailable additive features, and treat failures in optional
 history, audit, or notification writes as non-fatal so the successful core
 insert/status update is returned.
+
+Correction-status notes are another additive field: development and published schemas must include `pendaftar.catatan_perbaikan` before the public correction workflow can persist reviewer instructions.
+
+**Why:** A schema-aware fallback can keep old records readable, but it cannot store a new reviewer note on a database that lacks the column.
+
+**How to apply:** Add the nullable column through the supported schema synchronization flow before enabling the status, then retain metadata-aware reads and writes for older runtime databases.

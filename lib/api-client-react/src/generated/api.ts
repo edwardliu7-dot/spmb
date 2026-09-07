@@ -46,6 +46,8 @@ import type {
   PaymentVerificationResult,
   RegistrationQuotaResponse,
   StudentApplicationInput,
+  StudentApplicationUpdateInput,
+  SubmissionEditData,
   SubmissionMonitoringResponse,
   SubmissionResult,
   SubmissionStatusResponse
@@ -1134,6 +1136,220 @@ export function useGetApplicationFile<TData = Awaited<ReturnType<typeof getAppli
 
 
 
+
+export const getGetSubmissionEditDataUrl = (id: number,) => {
+
+
+
+
+  return `/api/submissions/${id}/edit`
+}
+
+/**
+ * Returns the editable application data only while the application is marked as needing data corrections.
+ * @summary Get data for correcting an application
+ */
+export const getSubmissionEditData = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<SubmissionEditData> => {
+
+  return customFetch<SubmissionEditData>(getGetSubmissionEditDataUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSubmissionEditDataQueryKey = (id: number,) => {
+    return [
+    `/api/submissions/${id}/edit`
+    ] as const;
+    }
+
+
+export const getGetSubmissionEditDataQueryOptions = <TData = Awaited<ReturnType<typeof getSubmissionEditData>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSubmissionEditData>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSubmissionEditDataQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSubmissionEditData>>> = ({ signal }) => getSubmissionEditData(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSubmissionEditData>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSubmissionEditDataQueryResult = NonNullable<Awaited<ReturnType<typeof getSubmissionEditData>>>
+export type GetSubmissionEditDataQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get data for correcting an application
+ */
+
+export function useGetSubmissionEditData<TData = Awaited<ReturnType<typeof getSubmissionEditData>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSubmissionEditData>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSubmissionEditDataQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getResubmitApplicationUrl = (id: number,) => {
+
+
+
+
+  return `/api/submissions/${id}/resubmit`
+}
+
+/**
+ * Updates the existing application and keeps its application number. Existing documents are retained when a replacement is not uploaded.
+ * @summary Resubmit an application after correcting data
+ */
+export const resubmitApplication = async (id: number,
+    studentApplicationUpdateInput: StudentApplicationUpdateInput, options?: Parameters<typeof customFetch>[1]): Promise<SubmissionResult> => {
+    const formData = new FormData();
+formData.append(`jenjang`, studentApplicationUpdateInput.jenjang);
+formData.append(`nama_calon`, studentApplicationUpdateInput.nama_calon);
+formData.append(`nama_panggilan`, studentApplicationUpdateInput.nama_panggilan);
+formData.append(`jenis_kelamin`, studentApplicationUpdateInput.jenis_kelamin);
+formData.append(`tempat_lahir`, studentApplicationUpdateInput.tempat_lahir);
+formData.append(`tanggal_lahir`, studentApplicationUpdateInput.tanggal_lahir);
+if(studentApplicationUpdateInput.nisn !== undefined && studentApplicationUpdateInput.nisn !== null) {
+ formData.append(`nisn`, studentApplicationUpdateInput.nisn);
+ }
+formData.append(`nik_anak`, studentApplicationUpdateInput.nik_anak);
+formData.append(`alamat_domisili`, studentApplicationUpdateInput.alamat_domisili);
+formData.append(`anak_ke`, studentApplicationUpdateInput.anak_ke);
+formData.append(`jumlah_saudara`, studentApplicationUpdateInput.jumlah_saudara);
+formData.append(`status_anak`, studentApplicationUpdateInput.status_anak);
+formData.append(`agama`, studentApplicationUpdateInput.agama);
+formData.append(`warga_negara`, studentApplicationUpdateInput.warga_negara);
+formData.append(`tinggi_badan`, studentApplicationUpdateInput.tinggi_badan);
+formData.append(`berat_badan`, studentApplicationUpdateInput.berat_badan);
+if(studentApplicationUpdateInput.riwayat_penyakit !== undefined && studentApplicationUpdateInput.riwayat_penyakit !== null) {
+ formData.append(`riwayat_penyakit`, studentApplicationUpdateInput.riwayat_penyakit);
+ }
+formData.append(`transportasi`, studentApplicationUpdateInput.transportasi);
+formData.append(`jarak_sekolah`, studentApplicationUpdateInput.jarak_sekolah);
+if(studentApplicationUpdateInput.nama_sekolah_asal !== undefined && studentApplicationUpdateInput.nama_sekolah_asal !== null) {
+ formData.append(`nama_sekolah_asal`, studentApplicationUpdateInput.nama_sekolah_asal);
+ }
+if(studentApplicationUpdateInput.tahun_lulus !== undefined && studentApplicationUpdateInput.tahun_lulus !== null) {
+ formData.append(`tahun_lulus`, studentApplicationUpdateInput.tahun_lulus);
+ }
+if(studentApplicationUpdateInput.alamat_sekolah_asal !== undefined && studentApplicationUpdateInput.alamat_sekolah_asal !== null) {
+ formData.append(`alamat_sekolah_asal`, studentApplicationUpdateInput.alamat_sekolah_asal);
+ }
+formData.append(`nomor_kk`, studentApplicationUpdateInput.nomor_kk);
+formData.append(`nik_ayah`, studentApplicationUpdateInput.nik_ayah);
+if(studentApplicationUpdateInput.nik_ibu !== null) {
+ formData.append(`nik_ibu`, studentApplicationUpdateInput.nik_ibu);
+ }
+formData.append(`nomor_hp_orangtua`, studentApplicationUpdateInput.nomor_hp_orangtua);
+formData.append(`email`, studentApplicationUpdateInput.email);
+formData.append(`nama_ayah`, studentApplicationUpdateInput.nama_ayah);
+formData.append(`ttl_ayah`, studentApplicationUpdateInput.ttl_ayah);
+formData.append(`pendidikan_ayah`, studentApplicationUpdateInput.pendidikan_ayah);
+formData.append(`pekerjaan_ayah`, studentApplicationUpdateInput.pekerjaan_ayah);
+formData.append(`penghasilan_ayah`, studentApplicationUpdateInput.penghasilan_ayah);
+formData.append(`instansi_jabatan_ayah`, studentApplicationUpdateInput.instansi_jabatan_ayah);
+formData.append(`nama_ibu`, studentApplicationUpdateInput.nama_ibu);
+formData.append(`ttl_ibu`, studentApplicationUpdateInput.ttl_ibu);
+formData.append(`pendidikan_ibu`, studentApplicationUpdateInput.pendidikan_ibu);
+formData.append(`pekerjaan_ibu`, studentApplicationUpdateInput.pekerjaan_ibu);
+formData.append(`penghasilan_ibu`, studentApplicationUpdateInput.penghasilan_ibu);
+formData.append(`instansi_jabatan_ibu`, studentApplicationUpdateInput.instansi_jabatan_ibu);
+if(studentApplicationUpdateInput.nama_wali !== undefined && studentApplicationUpdateInput.nama_wali !== null) {
+ formData.append(`nama_wali`, studentApplicationUpdateInput.nama_wali);
+ }
+if(studentApplicationUpdateInput.hubungan_wali !== undefined && studentApplicationUpdateInput.hubungan_wali !== null) {
+ formData.append(`hubungan_wali`, studentApplicationUpdateInput.hubungan_wali);
+ }
+formData.append(`foto_3x4`, studentApplicationUpdateInput.foto_3x4);
+formData.append(`akte_lahir`, studentApplicationUpdateInput.akte_lahir);
+formData.append(`kartu_keluarga`, studentApplicationUpdateInput.kartu_keluarga);
+formData.append(`ktp_orangtua`, studentApplicationUpdateInput.ktp_orangtua);
+formData.append(`bukti_bayar`, studentApplicationUpdateInput.bukti_bayar);
+
+  return customFetch<SubmissionResult>(getResubmitApplicationUrl(id),
+  {
+    ...options,
+    method: 'POST'
+    ,
+    body: formData
+  }
+);}
+
+
+
+
+
+export const getResubmitApplicationMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resubmitApplication>>, TError,{id: number;data: BodyType<StudentApplicationUpdateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof resubmitApplication>>, TError,{id: number;data: BodyType<StudentApplicationUpdateInput>}, TContext> => {
+
+const mutationKey = ['resubmitApplication'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resubmitApplication>>, {id: number;data: BodyType<StudentApplicationUpdateInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  resubmitApplication(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ResubmitApplicationMutationResult = NonNullable<Awaited<ReturnType<typeof resubmitApplication>>>
+    export type ResubmitApplicationMutationBody = BodyType<StudentApplicationUpdateInput>
+    export type ResubmitApplicationMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Resubmit an application after correcting data
+ */
+export const useResubmitApplication = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resubmitApplication>>, TError,{id: number;data: BodyType<StudentApplicationUpdateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof resubmitApplication>>,
+        TError,
+        {id: number;data: BodyType<StudentApplicationUpdateInput>},
+        TContext
+      > => {
+      return useMutation(getResubmitApplicationMutationOptions(options));
+    }
 
 export const getListAdminNotificationsUrl = (params?: ListAdminNotificationsParams,) => {
   const normalizedParams = new URLSearchParams();

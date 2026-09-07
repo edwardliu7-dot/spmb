@@ -169,7 +169,7 @@ router.get("/admin/observations", async (request, response) => {
   const user = request.committeeAccount!;
   try {
     const rows = await getObservationRows(queryFilters(request.query as Record<string, unknown>, user.allowedJenjang));
-    const statuses = ["Baru", "Lolos Verifikasi Berkas", "Observasi", "Lolos Observasi", "Diterima"];
+    const statuses = ["Baru", "Perlu Perbaikan Data", "Lolos Verifikasi Berkas", "Observasi", "Lolos Observasi", "Diterima"];
     const storedFieldsByApplication = new Map<number, Set<string>>();
     await Promise.all(rows.map(async (row) => {
       storedFieldsByApplication.set(row.id, await getApplicationFileFields(row.id));

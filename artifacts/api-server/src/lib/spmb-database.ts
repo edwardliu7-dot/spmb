@@ -162,6 +162,91 @@ export async function insertPendaftar(values: InsertPendaftar, files: Applicatio
   return created;
 }
 
+export async function updatePendaftar(
+  id: number,
+  values: InsertPendaftar,
+  files: ApplicationFileInput[] = [],
+) {
+  const current = await getPendaftar(id);
+  if (!current) return null;
+  const { pendaftarColumns, tables } = await getSchemaMetadata();
+  const compatibleValues = Object.fromEntries(
+    Object.entries(values).filter(([key]) => pendaftarColumns.has(key)),
+  ) as InsertPendaftar;
+  const updateValues = {
+    ...compatibleValues,
+    status: pendaftarColumns.has("status") ? "Baru" : undefined,
+    catatan_perbaikan: pendaftarColumns.has("catatan_perbaikan") ? null : undefined,
+  };
+
+  const updated = await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(2027202701)`);
+    const quotaDefinition = getQuotaDefinition(values.jenjang);
+    if (quotaDefinition?.quota !== null && quotaDefinition?.quota !== undefined) {
+      const [levelCount] = await tx
+        .select({ count: sql<number>`count(*)` })
+        .from(pendaftarTable)
+        .where(and(
+          eq(pendaftarTable.jenjang, values.jenjang),
+          sql`${pendaftarTable.id} <> ${id}`,
+        ));
+      if (Number(levelCount?.count || 0) >= quotaDefinition.quota) {
+        throw new RegistrationQuotaFullError(values.jenjang, null, quotaDefinition.quota);
+      }
+    }
+
+    const [item] = await tx
+      .update(pendaftarTable)
+      .set(updateValues)
+      .where(eq(pendaftarTable.id, id))
+      .returning({ id: pendaftarTable.id, status: pendaftarTable.status });
+
+    if (!item) return null;
+    if (files.length) {
+      if (!tables.has("application_file")) {
+        throw new Error("Tabel berkas pendaftaran belum tersedia.");
+      }
+      for (const file of files) {
+        await tx.delete(applicationFileTable).where(and(
+          eq(applicationFileTable.application_id, id),
+          eq(applicationFileTable.field, file.field),
+        ));
+        await tx.insert(applicationFileTable).values({
+          application_id: id,
+          field: file.field,
+          original_name: file.originalName,
+          mime_type: file.mimeType || "application/octet-stream",
+          data: file.data,
+        });
+      }
+    }
+    if (tables.has("application_status_history")) {
+      await tx.insert(applicationStatusHistoryTable).values({
+        application_id: id,
+        previous_status: current.status,
+        next_status: "Baru",
+        changed_by: "public-resubmission",
+      });
+    }
+    return item;
+  });
+
+  if (updated && tables.has("committee_notification")) {
+    try {
+      await db.insert(committeeNotificationTable).values({
+        application_id: id,
+        type: "status_changed",
+        title: "Perbaikan data diterima",
+        message: `${values.nama_calon} mengirim ulang data untuk diperiksa.`,
+        jenjang: values.jenjang,
+      });
+    } catch (error) {
+      logger.warn({ err: error, applicationId: id }, "Optional resubmission notification could not be created");
+    }
+  }
+  return updated;
+}
+
 export async function listPendaftar(filters: {
   search?: string;
   jenjang?: string;
@@ -242,6 +327,7 @@ async function queryApplicationList(
       email: pendaftarTable.email,
       status: pendaftarTable.status,
       created_at: pendaftarTable.created_at,
+      catatan_perbaikan: pendaftarTable.catatan_perbaikan,
     })
     .from(pendaftarTable)
     .where(where)
@@ -277,18 +363,40 @@ export async function getPendaftar(id: number) {
 }
 
 export async function getPublicPendaftarStatus(id: number) {
-  const [item] = await db
-    .select({
-      id: pendaftarTable.id,
-      nama_calon: pendaftarTable.nama_calon,
-      jenjang: pendaftarTable.jenjang,
-      status: pendaftarTable.status,
-      created_at: pendaftarTable.created_at,
-    })
-    .from(pendaftarTable)
-    .where(eq(pendaftarTable.id, id))
-    .limit(1);
-  return item;
+  try {
+    const [item] = await db
+      .select({
+        id: pendaftarTable.id,
+        nama_calon: pendaftarTable.nama_calon,
+        jenjang: pendaftarTable.jenjang,
+        status: pendaftarTable.status,
+        created_at: pendaftarTable.created_at,
+        catatan_perbaikan: pendaftarTable.catatan_perbaikan,
+      })
+      .from(pendaftarTable)
+      .where(eq(pendaftarTable.id, id))
+      .limit(1);
+    return item;
+  } catch (error) {
+    if (!isMissingSchemaColumn(error)) throw error;
+    const result = await db.execute(sql`
+      SELECT id, nama_calon, jenjang, status, created_at
+      FROM "pendaftar"
+      WHERE id = ${id}
+      LIMIT 1
+    `);
+    const [legacyItem] = result.rows as Array<Record<string, unknown>>;
+    return legacyItem
+      ? {
+          id: Number(legacyItem.id),
+          nama_calon: String(legacyItem.nama_calon ?? ""),
+          jenjang: String(legacyItem.jenjang ?? ""),
+          status: String(legacyItem.status ?? "Baru"),
+          created_at: legacyItem.created_at,
+          catatan_perbaikan: null,
+        }
+      : undefined;
+  }
 }
 
 function resolveStoredUploadForDeletion(relativePath: unknown): string | null {
@@ -350,13 +458,24 @@ export async function updatePendaftarStatus(
   id: number,
   status: string,
   changedBy: string,
+  correctionNote?: string | null,
 ) {
   const current = await getPendaftar(id);
   if (!current) return current;
-  const { tables } = await getSchemaMetadata();
+  const { tables, pendaftarColumns } = await getSchemaMetadata();
+  const updateValues = {
+    status,
+    ...(pendaftarColumns.has("catatan_perbaikan")
+      ? {
+          catatan_perbaikan: status === "Perlu Perbaikan Data"
+            ? (correctionNote?.trim() || null)
+            : null,
+        }
+      : {}),
+  };
   const [item] = await db
     .update(pendaftarTable)
-    .set({ status })
+    .set(updateValues)
     .where(eq(pendaftarTable.id, id))
     .returning({
       id: pendaftarTable.id,

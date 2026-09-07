@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ApplicationListItemStatus } from './applicationListItemStatus';
 
 export interface ApplicationListItem {
   id: number;
@@ -12,6 +13,6 @@ export interface ApplicationListItem {
   jenjang: string;
   nama_sekolah_asal: string | null;
   email: string;
-  status: string;
+  status: ApplicationListItemStatus;
   created_at: string;
 }

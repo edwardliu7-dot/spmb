@@ -1952,7 +1952,7 @@
 
 .form-board-status-timeline {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 0;
   padding: 25px 22px 20px;
 }
@@ -2036,6 +2036,61 @@
   padding: 11px 13px;
   font-size: 10px;
   line-height: 1.5;
+}
+
+.form-board-status-edit-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 22px 22px;
+  padding: 16px;
+  border: 1px solid #e5c982;
+  border-radius: 10px;
+  background: #fff8df;
+}
+
+.form-board-status-edit-actions[hidden] {
+  display: none;
+}
+
+.form-board-status-edit-actions strong,
+.form-board-status-edit-actions span {
+  display: block;
+}
+
+.form-board-status-edit-actions strong {
+  color: #765d1a;
+  font-size: 13px;
+}
+
+.form-board-status-edit-actions span {
+  margin-top: 4px;
+  color: #806f45;
+  font-size: 11px;
+}
+
+.form-board-status-edit-actions button {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 7px;
+  background: #173f43;
+  color: #fff;
+  padding: 10px 13px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .form-board-status-edit-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .form-board-status-edit-actions button {
+    width: 100%;
+  }
 }
 
 .form-board-status-note strong {
