@@ -259,7 +259,7 @@ root.innerHTML = `
 
        <section class="form-board-quota-overview" aria-labelledby="quota-overview-title">
          <div class="form-board-quota-heading">
-           <div><div class="form-board-panel-kicker">${icon('clipboard')}Ketersediaan kursi</div><h2 id="quota-overview-title">Kuota pendaftaran <em>2027 / 2028.</em></h2><p>Pilih jenjang yang masih memiliki kuota. Kuota SD dibagi seimbang untuk putra dan putri.</p></div>
+         <div><div class="form-board-panel-kicker">${icon('clipboard')}Ketersediaan kursi</div><h2 id="quota-overview-title">Kuota pendaftaran <em>2027 / 2028.</em></h2><p>Pilih jenjang yang masih memiliki kuota. Kuota SD dibagi untuk putra dan putri.</p></div>
            <span class="form-board-quota-updated" id="quota-updated">Memuat kuota</span>
          </div>
          <div class="form-board-quota-grid" id="quota-grid"><div class="form-board-quota-loading">Memuat ketersediaan kursi…</div></div>

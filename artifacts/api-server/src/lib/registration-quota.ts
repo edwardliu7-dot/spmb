@@ -8,8 +8,8 @@ export const registrationQuotaDefinitions = [
   { jenjang: "TK-B", quota: 6, genderQuotas: null },
   {
     jenjang: "SD",
-    quota: 52,
-    genderQuotas: { "Laki-laki": 26, Perempuan: 26 },
+    quota: 53,
+    genderQuotas: { "Laki-laki": 26, Perempuan: 27 },
   },
   { jenjang: "SMP", quota: 25, genderQuotas: null },
 ] as const;
