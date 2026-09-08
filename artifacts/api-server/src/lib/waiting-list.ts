@@ -262,6 +262,21 @@ export async function createWaitingListEntry(input: {
   return item;
 }
 
+export async function deleteWaitingListEntry(id: number) {
+  const [deleted] = await db
+    .delete(waitingListTable)
+    .where(and(
+      eq(waitingListTable.id, id),
+      eq(waitingListTable.status, "active"),
+    ))
+    .returning({
+      id: waitingListTable.id,
+      nama: waitingListTable.nama,
+      jenjang: waitingListTable.jenjang,
+    });
+  return deleted;
+}
+
 export async function listRejectedWaitingMatches(waitingListIds: number[]) {
   if (!waitingListIds.length) return new Set<string>();
   const rows = await db

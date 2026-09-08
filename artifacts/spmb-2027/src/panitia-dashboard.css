@@ -2011,6 +2011,36 @@
   font: 8px "IBM Plex Mono", monospace;
 }
 
+.waiting-list-item-tools {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.waiting-list-delete {
+  border: 1px solid #d9b8b1;
+  border-radius: 999px;
+  background: #fff8f5;
+  padding: 6px 8px;
+  color: #a04f45;
+  cursor: pointer;
+  font: 700 8px "IBM Plex Mono", monospace;
+}
+
+.waiting-list-delete:hover {
+  border-color: #a04f45;
+  background: #a04f45;
+  color: #fff;
+}
+
+.waiting-list-delete:disabled {
+  cursor: wait;
+  opacity: .55;
+}
+
 .waiting-list-note {
   margin: 0;
   border-left: 2px solid #d7c59b;

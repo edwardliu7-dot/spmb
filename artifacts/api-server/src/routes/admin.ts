@@ -23,6 +23,7 @@ import {
 } from "../lib/registration-quota";
 import {
   createWaitingListEntry,
+  deleteWaitingListEntry,
   decideWaitingListMatch,
   findWaitingListMatches,
   listWaitingList,
@@ -175,6 +176,25 @@ router.post("/admin/waiting-list", async (request, response) => {
   } catch (error) {
     request.log.error({ err: error }, "Failed to add waiting list item");
     return response.status(500).json({ error: "Nama siswa belum dapat ditambahkan ke waiting list." });
+  }
+});
+
+router.delete("/admin/waiting-list/:id", async (request, response) => {
+  if (!isAdministrator(request)) return response.status(403).json({ error: "Hanya administrator yang dapat menghapus waiting list." });
+  const waitingListId = parseId(request.params.id);
+  if (!waitingListId) return response.status(400).json({ error: "ID waiting list tidak valid." });
+  try {
+    const deleted = await deleteWaitingListEntry(waitingListId);
+    if (!deleted) return response.status(404).json({ error: "Nama waiting list tidak ditemukan atau sudah dihapus." });
+    await recordCommitteeAudit({
+      username: request.committeeAccount!.username,
+      action: "waiting_list_deleted",
+      details: JSON.stringify(deleted),
+    });
+    return response.json({ success: true, item: deleted });
+  } catch (error) {
+    request.log.error({ err: error, waitingListId }, "Failed to delete waiting list item");
+    return response.status(500).json({ error: "Nama waiting list belum dapat dihapus." });
   }
 });
 

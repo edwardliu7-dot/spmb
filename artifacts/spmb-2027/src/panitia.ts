@@ -1046,8 +1046,8 @@ function renderDashboard(user: AuthUser) {
     }
     target.innerHTML = `<div class="waiting-list-summary"><strong>${items.length}</strong><span>nama aktif · kursi yang sedang ditahan</span></div>${items.map((item) => {
       const matches = item.matches.slice(0, 3);
-      return `<article class="waiting-list-item">
-        <div class="waiting-list-item-head"><div><span class="admin-level-tag">${escapeHtml(item.jenjang)}</span><h4>${escapeHtml(item.nama)}</h4><small>Ditambahkan ${escapeHtml(formatDate(item.created_at))} · ${escapeHtml(item.jenis_kelamin || "Jenis kelamin belum diketahui")}</small></div><span class="waiting-list-reserve">1 kursi ditahan</span></div>
+       return `<article class="waiting-list-item">
+         <div class="waiting-list-item-head"><div><span class="admin-level-tag">${escapeHtml(item.jenjang)}</span><h4>${escapeHtml(item.nama)}</h4><small>Ditambahkan ${escapeHtml(formatDate(item.created_at))} · ${escapeHtml(item.jenis_kelamin || "Jenis kelamin belum diketahui")}</small></div><div class="waiting-list-item-tools"><span class="waiting-list-reserve">1 kursi ditahan</span><button class="waiting-list-delete" type="button" data-waiting-delete-id="${item.id}" data-waiting-delete-name="${escapeHtml(item.nama)}">Hapus</button></div></div>
         ${item.catatan ? `<p class="waiting-list-note">${escapeHtml(item.catatan)}</p>` : ""}
         <div class="waiting-list-match-area">
           <div class="waiting-list-match-heading"><span>${matches.length ? "Saran kecocokan pengajuan" : "Belum ada saran kecocokan"}</span>${matches.length ? "<small>Periksa nama sebelum menghapus antrean</small>" : "<small>Waiting list tetap aktif</small>"}</div>
@@ -1077,6 +1077,24 @@ function renderDashboard(user: AuthUser) {
         } catch (error) {
           button.disabled = false;
           showNotice(error instanceof Error ? error.message : "Keputusan kecocokan belum dapat disimpan.");
+        }
+      });
+    });
+    target.querySelectorAll<HTMLButtonElement>("[data-waiting-delete-id]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const waitingListId = Number(button.dataset.waitingDeleteId);
+        const waitingName = button.dataset.waitingDeleteName || "nama ini";
+        if (!waitingListId) return;
+        if (!window.confirm(`Hapus ${waitingName} dari waiting list? Kursi yang ditahan akan langsung dibebaskan dan riwayat kecocokannya ikut dihapus.`)) return;
+        button.disabled = true;
+        try {
+          await requestJSON(`/api/admin/waiting-list/${waitingListId}`, { method: "DELETE" });
+          await loadWaitingList();
+          await loadShareRecap();
+          showNotice(`${waitingName} berhasil dihapus dari waiting list.`);
+        } catch (error) {
+          button.disabled = false;
+          showNotice(error instanceof Error ? error.message : "Nama waiting list belum dapat dihapus.");
         }
       });
     });
