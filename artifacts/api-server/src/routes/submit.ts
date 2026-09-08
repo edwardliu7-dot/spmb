@@ -162,6 +162,7 @@ const optionalTextFields = new Set<TextField>([
   "riwayat_penyakit",
   "nama_wali",
   "hubungan_wali",
+  "waiting_list_token",
 ]);
 const requiredTextFields = textFields.filter((field) => !optionalTextFields.has(field));
 const schoolTextFields = new Set<TextField>([
