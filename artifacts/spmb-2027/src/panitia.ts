@@ -838,7 +838,12 @@ function renderDashboard(user: AuthUser) {
     }
   }
 
-  function whatsappRecapUrl(jenjang: string, items: MasterApplication[], quota: RegistrationQuota | undefined): string {
+  function whatsappRecapUrl(
+    jenjang: string,
+    items: MasterApplication[],
+    quota: RegistrationQuota | undefined,
+    waitingItems: WaitingListItem[],
+  ): string {
     const orderedItems = [...items].sort((a, b) => {
       const dateDifference = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       return dateDifference || a.id - b.id;
@@ -848,21 +853,22 @@ function renderDashboard(user: AuthUser) {
       sectionItems: MasterApplication[],
       sectionQuota: number | null,
       sectionRemaining: number | null,
-      sectionWaitingFilled = 0,
+      sectionWaitingItems: WaitingListItem[] = [],
     ) => {
       const slots = sectionQuota === null
         ? Math.max(sectionItems.length, 1)
         : sectionQuota;
-      const bookedSlots = Math.min(
-        Math.max(0, sectionWaitingFilled),
+      const waitingSlots = Math.min(
+        sectionWaitingItems.length,
         Math.max(0, slots - sectionItems.length),
       );
       const lines = Array.from({ length: slots }, (_, index) => {
         const item = sectionItems[index];
+        const waitingItem = sectionWaitingItems[index - sectionItems.length];
         return item
           ? `${index + 1}. ${item.nama_calon} . ${applicationNumber(item.id)}`
-          : index < sectionItems.length + bookedSlots
-            ? `${index + 1}. booked`
+            : index < sectionItems.length + waitingSlots && waitingItem
+            ? `${index + 1}. ${waitingItem.nama}`
           : `${index + 1}.`;
       });
       return [
@@ -879,12 +885,13 @@ function renderDashboard(user: AuthUser) {
       ? quota.gender.map((gender) => {
           const genderValue = gender.jenisKelamin;
           const genderItems = orderedItems.filter((item) => item.jenis_kelamin === genderValue);
+          const genderWaitingItems = waitingItems.filter((item) => item.jenis_kelamin === genderValue);
           return buildSection(
             genderValue === "Laki-laki" ? "PUTRA" : "PUTRI",
             genderItems,
             gender.quota,
             gender.remaining,
-            gender.waitingFilled,
+            genderWaitingItems,
           );
         })
       : [buildSection(
@@ -892,7 +899,7 @@ function renderDashboard(user: AuthUser) {
           orderedItems,
           quota?.quota ?? null,
           quota?.remaining ?? null,
-           quota?.waitingFilled ?? 0,
+           waitingItems,
         )];
 
     const message = [
@@ -904,7 +911,7 @@ function renderDashboard(user: AuthUser) {
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   }
 
-  function renderShareRecap(items: MasterApplication[], summary: RegistrationQuotaSummary) {
+  function renderShareRecap(items: MasterApplication[], summary: RegistrationQuotaSummary, waitingItems: WaitingListItem[]) {
     const target = document.getElementById("share-recap-list");
     if (!target) return;
     const grouped = new Map<string, MasterApplication[]>();
@@ -943,7 +950,8 @@ function renderDashboard(user: AuthUser) {
         if (!jenjang) return;
         const levelItems = grouped.get(jenjang) || [];
         const quota = summary.levels.find((item) => item.jenjang === jenjang);
-        window.open(whatsappRecapUrl(jenjang, levelItems, quota), "_blank", "noopener,noreferrer");
+        const levelWaitingItems = waitingItems.filter((item) => item.jenjang === jenjang);
+        window.open(whatsappRecapUrl(jenjang, levelItems, quota, levelWaitingItems), "_blank", "noopener,noreferrer");
         showNotice(`Rekap ${jenjang} siap dibagikan di WhatsApp.`);
       });
     });
@@ -954,11 +962,12 @@ function renderDashboard(user: AuthUser) {
     if (!target) return;
     target.innerHTML = `<div class="admin-loading">Menyiapkan rekap…</div>`;
     try {
-      const [result, quotaSummary] = await Promise.all([
+      const [result, quotaSummary, waitingResult] = await Promise.all([
         requestJSON<{ items: MasterApplication[]; total: number }>("/api/admin/master-data"),
         requestJSON<RegistrationQuotaSummary>("/api/quotas"),
+        requestJSON<{ items: WaitingListItem[] }>("/api/admin/waiting-list"),
       ]);
-      renderShareRecap(result.items, quotaSummary);
+      renderShareRecap(result.items, quotaSummary, waitingResult.items);
     } catch (error) {
       target.innerHTML = `<div class="admin-empty is-error">${escapeHtml(error instanceof Error ? error.message : "Rekap belum dapat dimuat.")}</div>`;
     }
