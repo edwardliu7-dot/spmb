@@ -1264,9 +1264,9 @@ function updateSelectedQuotaState(summary?: RegistrationQuotaResponse): void {
       ? 'AI menemukan kecocokan dengan booking waiting list. Verifikasi berhasil, silakan lanjutkan pengisian formulir.'
       : 'Booking waiting list cocok dengan nama ini. Verifikasi berhasil, silakan lanjutkan pengisian formulir.'
     : level?.gender && selectedGenderQuota?.isFull
-    ? `Kuota ${selectedLevel} untuk ${quotaGenderLabel(selectedGender)} sudah penuh. Jika sudah booking, masukkan nama yang digunakan saat booking untuk pemeriksaan otomatis.`
+    ? `Kuota ${selectedLevel} untuk ${quotaGenderLabel(selectedGender)} sudah penuh. Nama booking waiting list akan dikenali otomatis, termasuk nama panggilan.`
     : level?.isFull
-      ? `Kuota ${selectedLevel} sudah penuh. Jika sudah booking, masukkan nama yang digunakan saat booking untuk pemeriksaan otomatis.`
+      ? `Kuota ${selectedLevel} sudah penuh. Nama booking waiting list akan dikenali otomatis, termasuk nama panggilan.`
       : level?.remaining !== null && level
         ? `Kuota ${selectedLevel}: ${level.remaining} kursi masih tersedia.`
         : selectedLevel
